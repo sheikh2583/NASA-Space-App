@@ -6,7 +6,7 @@ Folder: ws3_anomaly/. Prompt pack: prompts/ws3_monazir.md. Paste docs/AI_PREAMBL
 1. Register your own FIRMS key and put it in .env.
 
 ## H0 to H6: ingestion
-2. Do P3.1: find out the archive route, the area API's limits and whether SNPP near-real-time exists. Talk to Sheikh: tell him what you found.
+2. Do P3.1: find out the archive route, the area API's limits and whether NOAA-20 near-real-time works (SNPP ended 2 Nov 2026). Talk to Sheikh: tell him what you found.
 3. Do P3.2: normalize the Bangladesh slice. At H4 post a HANDOFF to Sattyam and Samiul. Talk to Sattyam: confirm he can read the columns.
 4. Do P3.3: full demo regions by H6, then wider South Asia if time allows. Post a HANDOFF. Talk to Samiul: ask for the data QA report by H10.
 

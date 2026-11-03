@@ -3,27 +3,27 @@ Folder: ws1_harmonize/ (plus repo setup and integration captain duties)
 
 ## P1.1 Repo setup (H0-1, timebox 60 minutes)
 Inputs: this starter zip.
-Prompt: "(The scripts in scripts/git/ and docs/GIT_WORKFLOW.md already cover most of this; use this prompt only for what is left, such as settings pages.) Give me the exact git and GitHub steps to: create a private repo from this folder, add six collaborators, replace the handles in .github/CODEOWNERS, protect main (pull request required, no force push), tag nothing yet, create a shared drive folder mirroring data/, and open a team channel with docs/HANDOFF_TEMPLATE.md and docs/TIMELINE.md pinned. Then list a 6-line hello-world pull request each teammate should make from their own folder."
+Prompt: "(The scripts in scripts/git/ and docs/GIT_WORKFLOW.md already cover most of this; use this prompt only for what is left, such as settings pages.) Give me the exact git and GitHub steps to: push this folder to the existing public repo (github.com/sheikh2583/NASA-Space-App; judges need a public link), add six collaborators, replace the handles in .github/CODEOWNERS, protect main (pull request required, no force push), tag nothing yet, create a shared drive folder mirroring data/, and open a team channel with docs/HANDOFF_TEMPLATE.md and docs/TIMELINE.md pinned. Then list a 6-line hello-world pull request each teammate should make from their own folder."
 Output: repo live; six hello-world PRs merged; shared drive writable by all. HANDOFF: link to everyone.
 Test: every teammate can clone, push from their folder and read/write the shared drive.
 
 ## P1.2 Panel builder (H3-6)
 Inputs: first grid_daily slice or a fixture; cells.parquet.
-Prompt: "Write ws1_harmonize/panel.py: build_panel(grid_daily, cells, start, end) returning a dense cell-day table for cells that ever had a detection, with MODIS (Terra+Aqua combined) and VIIRS SNPP counts, high-confidence counts and FRP sums as separate columns, day/night splits, mean scan, and an active-satellite flag (Terra only before mid-2002). Missing grid_daily rows are zeros. Add pytest tests on a tiny synthetic input."
+Prompt: "Write ws1_harmonize/panel.py: build_panel(grid_daily, cells, start, end) returning a dense cell-day table for cells that ever had a detection, with MODIS (Terra+Aqua combined), VIIRS SNPP and VIIRS NOAA-20 counts, high-confidence counts and FRP sums as separate columns, day/night splits, mean scan, and a satellite-combination column (terra_only before Aqua's first day in July 2002, terra_aqua after). grid_daily is keyed by sat; missing rows are zeros only where sensor_days.parquet says that satellite was operating, otherwise NaN (decision 18). Add pytest tests on a tiny synthetic input."
 Output: panel.py + tests.
 Test: rows = cells x days; column sums equal grid_daily sums.
 
 ## P1.3 Baselines B0 and B1 (H6-12)
 Inputs: panel; common/metrics (temporary local copy until H12).
-Prompt: "Write baselines.py. B0: one global ratio = sum(VIIRS count)/sum(MODIS count) over the overlap years. B1: ratio per admin1 region x calendar month, same formula. Provide fit_* and apply_* functions, applying to MODIS-only history. Also compute the 5th and 95th percentile of observed/predicted ratios over weekly region sums per region-month. Include tests on synthetic data where the true ratio is known."
+Prompt: "Write baselines.py. B0: one global ratio = sum(SNPP count)/sum(MODIS count) over the overlap years. B1: ratio per admin1 region x calendar month, same formula. Fit both per satellite combination: terra_only uses Terra counts only (so it applies to Nov 2000 to Jul 2002), terra_aqua uses both (decision 19). Use only days on which all satellites involved were operating. Also fit the NOAA-20 to SNPP ratio per region x month on the SNPP/NOAA-20 overlap with the same code (decision 17). Provide fit_* and apply_* functions, applying to MODIS-only history. Also compute the 5th and 95th percentile of observed/predicted ratios over weekly region sums per region-month. Include tests on synthetic data where the true ratio is known."
 Output: baselines.py + tests.
 Test: on synthetic data the fitted ratio matches the known ratio within 1 percent.
 
 ## P1.4 Harmonized v0 and interval_table v0 (H12-14)  HANDOFF
 Inputs: baselines; panel; contracts/parquet_schemas.json; json_schemas/interval_table.schema.json.
-Prompt: "Write write_harmonized.py that produces harmonized.parquet exactly per contracts/parquet_schemas.json: value_count = observed SNPP count where SNPP exists (2012 onward), else the B1 estimate; modeled_count = B1 estimate wherever MODIS inputs exist; source = observed_viirs / modeled_from_modis / mixed; drift_flag False; method_version 'b1'. Also write interval_table.json v0: stratum 'region:<admin1_id>|month:<m>', res week and month, one magnitude bin (max_value null), lo_mult and hi_mult = the 5th and 95th percentile ratios divided by the median ratio, hi_add 0, level 0.9. Validate both files against the contracts."
+Prompt: "Write write_harmonized.py that produces harmonized.parquet exactly per contracts/parquet_schemas.json: value_count = observed SNPP count on SNPP operating days (sensor_days), NOAA-20 count x the NOAA-20-to-SNPP ratio after the SNPP cutoff (2 Nov 2026), else the B1 estimate; modeled_count = B1 estimate wherever MODIS inputs exist; source = observed_viirs / adjusted_from_noaa20 / modeled_from_modis / mixed; observed rows have lo = hi = value (decision 21); drift_flag False; method_version 'b1'. Also write interval_table.json v0: stratum 'region:<admin1_id>|month:<m>', res week and month, one magnitude bin (max_value null), lo_mult and hi_mult = the 5th and 95th percentile ratios divided by the median ratio, hi_add 0, level 0.9. Validate both files against the contracts."
 Output: harmonized.parquet v0, interval_table.json v0. HANDOFF: to Sattyam, Monazir, Samin.
-Test: lo <= value <= hi, no nulls or negatives, source on every row, for 2012+ weekly totals equal observed SNPP totals, JSON validates.
+Test: lo <= value <= hi, no nulls or negatives, source on every row, on SNPP operating days weekly totals equal observed SNPP totals, JSON validates.
 
 ## P1.5 Features and LightGBM (H14-20)
 Inputs: panel; common/splits (H12).
@@ -33,13 +33,13 @@ Test: both tests pass; training runs on a one-region slice.
 
 ## P1.6 Holdout evaluation and out-of-fold file (H20-24)  HANDOFF
 Inputs: model; common/splits and metrics.
-Prompt: "Write evaluate.py: evaluate B0, B1 and LightGBM on AOI-week sums under (a) spatial-block CV, (b) rolling temporal folds, (c) backward holdout (train 2018-2024, test 2012-2017). Report signed relative bias, RMSE on log1p, Spearman and Lin's CCC in one table. Then write predictions_oof.parquet (columns per contracts) with split labels from common/splits; calibration rows are never used for training."
+Prompt: "Write evaluate.py: evaluate B0, B1 and LightGBM on AOI-week sums under (a) spatial-block CV, (b) rolling temporal folds, (c) backward holdout (train 2015-2020, test 2012-2014), plus a drift-era check (train 2015-2020, test 2021 onward) reported separately because Terra and Aqua drifted off their designed orbits. Report signed relative bias, RMSE on log1p, Spearman and Lin's CCC in one table. Then write predictions_oof.parquet (columns per contracts) with split labels from common/splits; calibration rows are never used for training."
 Output: metrics table; predictions_oof.parquet. HANDOFF: to Samin.
 Test: no calib or test row appears in training; file validates against the schema.
 
 ## P1.7 Harmonized v1 (H28-30)  HANDOFF
 Inputs: model; drift_flags.parquet and interval_table.json v1 from Samin.
-Prompt: "Write assemble_v1.py: produce harmonized.parquet v1 with the same value rule (observed SNPP where it exists, else LightGBM), method_version 'v1', drift_flag filled from drift_flags.parquet by region and year, and source flags correct. Run the seam check: modeled share drops to zero at 2012. Validate against the contract."
+Prompt: "Write assemble_v1.py: produce harmonized.parquet v1 with the same value rule (observed SNPP on operating days, NOAA-20 adjusted after the cutoff, else LightGBM), method_version 'v1', drift_flag filled from drift_flags.parquet by region and year, and source flags correct. Run the seam checks: modeled share drops to zero at 20 Jan 2012, and source switches to adjusted_from_noaa20 after 2 Nov 2026. Validate against the contract."
 Output: harmonized.parquet v1. HANDOFF: to Sattyam.
 Test: same checks as P1.4 plus the seam check.
 
@@ -55,6 +55,6 @@ Test: every check-in produces a written blocker list with owners.
 
 ## P1.10 Verification tool and CI (after G0, H3-6)  HANDOFF
 Inputs: contracts/parquet_schemas.json; contracts/json_schemas/.
-Prompt: "Write tools/verify_files.py: given a path in data/processed/, detect the file type, check the columns, types and enum values against contracts/parquet_schemas.json or the matching JSON Schema in contracts/json_schemas/, and print PASS or the first 20 failing rows. Add a GitHub Actions workflow .github/workflows/ci.yml that runs pytest on every pull request, with no secrets and no network access. Add a short usage note to docs/VERIFY.md."
+Prompt: "Write tools/verify_files.py: given a path in data/processed/, detect the file type, check the columns, types and enum values against contracts/parquet_schemas.json or the matching JSON Schema in contracts/json_schemas/, and print PASS or the first 20 failing rows. Add a GitHub Actions workflow .github/workflows/ci.yml (permissions: contents: read) that runs pytest on every pull request, with no secrets and no network access. data/ is not in git and there is no API in CI, so tests that need data files or API_BASE_URL must call pytest.skip when they are missing; CI runs only the unit tests and the contract-file checks. Add a short usage note to docs/VERIFY.md."
 Output: tools/verify_files.py, ci.yml. HANDOFF: to everyone.
 Test: a deliberately broken file prints failing rows; a valid file prints PASS; CI runs on a test pull request.

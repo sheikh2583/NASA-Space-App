@@ -1,102 +1,147 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "outlook_region",
+  "description": "One file for all regions, keyed by admin1_id (decision 20). The API returns one region's entry, plus region_id and region_name.",
   "type": "object",
   "required": [
-    "as_of",
-    "season_to_date_percentile",
-    "expected_range",
-    "skill",
-    "status",
-    "alert"
+    "schema_version",
+    "generated_at",
+    "regions"
   ],
   "properties": {
-    "as_of": {
-      "type": "string",
-      "format": "date"
+    "schema_version": {
+      "type": "string"
     },
-    "season_to_date_percentile": {
-      "type": "number"
+    "generated_at": {
+      "type": "string"
     },
-    "expected_range": {
+    "regions": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/region_outlook"
+      }
+    }
+  },
+  "definitions": {
+    "region_outlook": {
       "type": "object",
       "required": [
-        "q10",
-        "q50",
-        "q90"
+        "region_name",
+        "as_of",
+        "season_to_date_percentile",
+        "expected_range",
+        "skill",
+        "status",
+        "alert",
+        "current_status"
       ],
       "properties": {
-        "q10": {
-          "type": "number"
-        },
-        "q50": {
-          "type": "number"
-        },
-        "q90": {
-          "type": "number"
-        }
-      }
-    },
-    "skill": {
-      "type": "object",
-      "properties": {
-        "vs_climatology": {
-          "type": "number"
-        },
-        "vs_persistence": {
-          "type": "number"
-        },
-        "ci": {
-          "type": "array",
-          "items": {
-            "type": "number"
-          }
-        },
-        "n_seasons": {
-          "type": "integer"
-        }
-      }
-    },
-    "status": {
-      "enum": [
-        "skill",
-        "no_demonstrated_skill"
-      ]
-    },
-    "alert": {
-      "type": "object",
-      "properties": {
-        "level": {
-          "enum": [
-            "none",
-            "watch",
-            "high"
-          ]
-        },
-        "rule": {
+        "region_name": {
           "type": "string"
-        }
-      }
-    },
-    "current_status": {
-      "type": "object",
-      "properties": {
-        "week_percentile": {
-          "type": "number"
         },
-        "level": {
-          "enum": [
-            "none",
-            "watch",
-            "high"
-          ]
-        },
-        "data_through": {
+        "as_of": {
           "type": "string",
           "format": "date"
         },
-        "message": {
-          "type": "string"
+        "season_to_date_percentile": {
+          "type": "number"
+        },
+        "expected_range": {
+          "type": "object",
+          "required": [
+            "q10",
+            "q50",
+            "q90"
+          ],
+          "properties": {
+            "q10": {
+              "type": "number"
+            },
+            "q50": {
+              "type": "number"
+            },
+            "q90": {
+              "type": "number"
+            }
+          }
+        },
+        "skill": {
+          "type": "object",
+          "properties": {
+            "vs_climatology": {
+              "type": "number"
+            },
+            "vs_persistence": {
+              "type": "number"
+            },
+            "ci": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "n_seasons": {
+              "type": "integer"
+            }
+          }
+        },
+        "status": {
+          "enum": [
+            "skill",
+            "no_demonstrated_skill"
+          ]
+        },
+        "alert": {
+          "type": "object",
+          "properties": {
+            "level": {
+              "enum": [
+                "none",
+                "watch",
+                "high"
+              ]
+            },
+            "rule": {
+              "type": "string"
+            }
+          }
+        },
+        "current_status": {
+          "type": "object",
+          "properties": {
+            "week_percentile": {
+              "type": "number"
+            },
+            "level": {
+              "enum": [
+                "none",
+                "watch",
+                "high"
+              ]
+            },
+            "data_through": {
+              "type": "string",
+              "format": "date"
+            },
+            "message": {
+              "type": "string"
+            },
+            "data_source": {
+              "enum": [
+                "VIIRS_NOAA20_NRT",
+                "VIIRS_NOAA21_NRT",
+                "harmonized"
+              ]
+            }
+          },
+          "required": [
+            "week_percentile",
+            "level",
+            "data_through",
+            "message"
+          ]
         }
       }
     }

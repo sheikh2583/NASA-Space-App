@@ -1,24 +1,98 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "drivers_region",
+  "description": "One file for all regions, keyed by admin1_id (decision 20). The API returns one region's entry, plus region_id and region_name.",
   "type": "object",
-  "required": ["items", "caveats"],
+  "required": [
+    "schema_version",
+    "generated_at",
+    "regions"
+  ],
   "properties": {
-    "items": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "required": ["driver", "lag_weeks", "direction", "strength", "ci", "evidence"],
-        "properties": {
-          "driver": {"type": "string"},
-          "lag_weeks": {"type": "integer"},
-          "direction": {"enum": ["positive", "negative"]},
-          "strength": {"type": "number"},
-          "ci": {"type": "array", "items": {"type": "number"}, "minItems": 2, "maxItems": 2},
-          "evidence": {"enum": ["weak", "moderate", "strong"]}
+    "schema_version": {
+      "type": "string"
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "regions": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/region_drivers"
+      }
+    }
+  },
+  "definitions": {
+    "region_drivers": {
+      "type": "object",
+      "required": [
+        "region_name",
+        "items",
+        "caveats"
+      ],
+      "properties": {
+        "region_name": {
+          "type": "string"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "driver",
+              "lag_weeks",
+              "direction",
+              "strength",
+              "ci",
+              "evidence"
+            ],
+            "properties": {
+              "driver": {
+                "type": "string"
+              },
+              "lag_weeks": {
+                "type": "integer"
+              },
+              "direction": {
+                "enum": [
+                  "positive",
+                  "negative"
+                ]
+              },
+              "strength": {
+                "type": "number"
+              },
+              "ci": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                },
+                "minItems": 2,
+                "maxItems": 2
+              },
+              "evidence": {
+                "enum": [
+                  "weak",
+                  "moderate",
+                  "strong"
+                ]
+              }
+            }
+          }
+        },
+        "caveats": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "status": {
+          "enum": [
+            "ok",
+            "insufficient_data"
+          ]
         }
       }
-    },
-    "caveats": {"type": "array", "items": {"type": "string"}}
+    }
   }
 }

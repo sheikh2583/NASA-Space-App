@@ -13,7 +13,7 @@ Test: running it against a deliberately broken response fails with a clear messa
 
 ## P6.3 Data QA (H6-10)  HANDOFF
 Inputs: detections.parquet (H6); grid_daily.parquet and cells.parquet (H8).
-Prompt: "Complete test_data_qa.py and write a data QA report in markdown: no duplicate (cell_id, sensor, date) keys; dates inside the range; counts and FRP non-negative; grid sums equal detection rows; confidence values in the allowed set; admin1 and land-cover fields filled. Add the manual check: pick one day and one AOI and compare the count with the FIRMS web viewer; record the result."
+Prompt: "Complete test_data_qa.py and write a data QA report in markdown: no duplicate (cell_id, date, sat) keys; no grid_daily rows on days sensor_days marks the satellite as not operating; dates inside the range; counts and FRP non-negative; grid sums equal detection rows; confidence values in the allowed set; admin1 and land-cover fields filled. Add the manual check: pick one day and one AOI and compare the count with the FIRMS web viewer, counting by UTC acq_date from detections.parquet; record the result."
 Output: data QA report. HANDOFF: to Sattyam, Monazir.
 Test: every failed check lists the offending rows or files.
 

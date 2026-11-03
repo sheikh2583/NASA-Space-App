@@ -65,6 +65,7 @@ Full list per person: docs/MANUAL_TASKS.md.
 
 ## Branch protection settings (GitHub, Settings > Branches)
 - Require a pull request before merging; no direct pushes to main.
-- Require review from code owners (CODEOWNERS is in .github/).
+- Require the `guard` status check. Do not require approvals: authors are the only code owners of their folders and cannot approve their own PRs. Review contracts/ and common/ PRs yourself by team rule.
+- Turn on "Automatically delete head branches" (protect_main.sh does this).
 - Block force pushes and branch deletion on main.
 - Tell everyone the rule: pull --rebase before pushing; one folder per pull request (docs/WORKING_TOGETHER.md).

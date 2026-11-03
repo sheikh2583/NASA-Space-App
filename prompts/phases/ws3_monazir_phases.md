@@ -5,7 +5,7 @@
 GOAL: Know exactly how we get FIRMS data; start the first slice.
 INPUTS: your own FIRMS MAP_KEY in .env.
 STEPS:
-1. Run P3.1: archive route, area API limits, SNPP near-real-time status. Write the answers in NOTES.md.
+1. Run P3.1: archive route, area API limits, NOAA-20 near-real-time check (SNPP ended 2 Nov 2026). Write the answers in NOTES.md.
 2. Tell Sheikh what you found.
 3. Start P3.2 (normalization) on one day of data.
 DELIVER: written access notes; a working one-day pull.
@@ -13,7 +13,7 @@ DONE WHEN: both pulls return rows with the expected columns.
 IF BLOCKED: ask Sheikh whether another team member can help with account access.
 MANUAL (you do these yourself; the agent cannot):
 - Register your own FIRMS MAP_KEY and an Earthdata login; put the key in your .env
-- Submit the FIRMS archive download requests (MODIS and VIIRS SNPP, demo regions) on the website as early as possible
+- Submit the FIRMS archive download requests (MODIS, VIIRS SNPP and VIIRS NOAA-20, demo regions) on the website as early as possible
 ```
 
 ## PHASE 2: Data (H3-8)

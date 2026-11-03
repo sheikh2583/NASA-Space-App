@@ -10,7 +10,9 @@ if [ -d "$f/tests" ] && [ "${SKIP_TESTS:-0}" != "1" ]; then
     pytest -q "$f/tests" || { echo "Tests failed. Fix them or ask for help. (SKIP_TESTS=1 skips; use only with Sheikh's OK)"; exit 1; }
   else echo "pytest not found; activate your venv (see docs/WHERE_TO_WORK.md)."; exit 1; fi
 fi
-git push -u origin HEAD
+# sync.sh rebases, which rewrites commits already pushed by an earlier ship; --force-with-lease updates
+# your own branch safely (it refuses if someone else pushed to it). The pre-push hook still blocks main.
+git push --force-with-lease -u origin HEAD
 if command -v gh >/dev/null 2>&1; then
   gh pr create --base main --fill || echo "PR may already exist: gh pr view --web"
 else

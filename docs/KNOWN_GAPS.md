@@ -14,14 +14,14 @@ or something you should double-check. Each gap has an H0 check in docs/H0_VERIFI
 | # | Area | The gap | Effect if wrong | Closed by |
 |---|---|---|---|---|
 | 1 | Official rules | Challenge rules and resources, hardware rules, AI-use and disclosure, pre-event preparation, licence, submission format, team size and venue hours were not seen | plan may break a rule or miss a deadline | H0-01 |
-| 2 | FIRMS access | Archive route, area API day and rate limits, MAP_KEY process, SNPP near-real-time availability, presence of a source-type field for each product, confidence formats are from memory | ingestion slower or different from the prompts | H0-02 |
+| 2 | FIRMS access | Archive route, area API day and rate limits, MAP_KEY process, NOAA-20 near-real-time and standard-product start date (SNPP ended 2 Nov 2026), presence of a source-type field for each product, confidence formats are from memory | ingestion slower or different from the prompts | H0-02 |
 | 3 | Land cover | Availability and format of a ready-made 0.05 degree product (such as MCD12C1) and the cropland class mapping are unverified | no cropland fraction; agricultural tag falls back to a region-season rule | H0-03 |
 | 4 | Boundaries | geoBoundaries ADM1 download, licence and stable ids are unverified | regions need another source | H0-04 |
 | 5 | Driver data | CHIRPS and NASA POWER access, resolution, request limits and the soil-wetness field are unverified | drivers panel shrinks or is cut | H0-05 |
 | 6 | Installs | Library versions and installs were not tested; geospatial packages can be hard to install on some laptops | lost time at H0 | H0-06 |
 | 7 | Hosting | Free-tier limits (sleep, memory, size, build minutes) and Docker availability for the chosen hosts are unverified | API unavailable or slow; static fallback carries the demo | H0-07 |
 | 8 | Data size and speed | Row counts, memory and training time are unknown; the 0.1 degree daily panel size is untested | gridding or training too slow on laptops | H0-08 |
-| 9 | Satellite status | Terra/Aqua overpass drift and the end of MODIS operations, and SNPP status, are stated from memory | the harmonization story or the current-season feed changes | H0-09 |
+| 9 | Satellite status | ANSWERED 3 Nov 2026: FIRMS stopped new SNPP data on 2 Nov 2026; NASA says Terra and Aqua begin shutting down late 2026 / early 2027. See decisions 17-18. Still open: whether Aqua or Terra stop before or during the event | another seam or outage window | H0-09 |
 | 10 | Science design | The learned model may not beat the per-region ratio; the AOI-sampling conformal scheme is a custom adaptation with no guarantee under shift (especially before 2012); drift thresholds, STL settings and forecast skill are untested; driver associations may be spurious | claims must be softened; floor tier still works | H12 design review |
 | 11 | Chosen parameters | Demo-region boxes, high-confidence thresholds, the VIIRS confidence mapping, split rule (block_id % 5), 2x2 degree blocks, alert thresholds, AOI size limit and the 1.5 second target are my defaults, not tested on data | defaults need adjusting after the first look at data | H0-08, H12 |
 | 12 | Prompts | No AI tool has run these prompts; results differ by tool; agents can drift from the contracts | code needs review and edits | contract tests, verify tool |
@@ -59,3 +59,12 @@ or something you should double-check. Each gap has an H0 check in docs/H0_VERIFI
 |---|---|---|---|---|
 | 28 | Public repo | The repo is public, so every file in this kit (plans, team handles, notes) is visible to anyone, and it has no licence file yet (so by default all rights are reserved) | exposure; unclear reuse terms | H0-01: confirm the organizers' open-source and licence rules; never commit emails, keys or data |
 | 29 | Push not tested | I could read the repo but have no credentials, so the first push, the invitations and branch protection have not been run | first-use fixes possible | Sheikh runs GIT_WORKFLOW.md section 1 |
+
+## Added after the kit review (3 Nov 2026)
+| # | Area | The gap | Effect | Closed by |
+|---|---|---|---|---|
+| 30 | NOAA-20 overlap | The first date of NOAA-20 standard-product data in FIRMS, and so the length of the SNPP/NOAA-20 overlap used for the adjustment ratio, is unverified | the ratio may need to be per region instead of per region-month | H0-02 |
+| 31 | Sensor outages | sensor_days only knows the windows found in notices and the data's first and last dates; short outages may be missing | a few zero days that should be missing | Samiul's data QA: look for runs of zero days across the whole demo region |
+| 32 | Local solar date | grid_daily uses the local solar date; the FIRMS web viewer uses UTC | the manual one-day comparison must count by UTC from detections.parquet, not grid_daily | QA_CHECKLIST note |
+| 33 | Proposed fixes | Decisions 17-23 and the contract and script changes were drafted by Shammo with an AI assistant and tested only locally (contracts validate; git scripts re-run against a local remote) | Sheikh must approve before G0 | Sheikh review |
+

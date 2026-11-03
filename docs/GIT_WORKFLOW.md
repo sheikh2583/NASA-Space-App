@@ -38,8 +38,10 @@ The scripts were tested against a local test repository only, not against GitHub
 Raw git, if you ever need it: clone `git clone <URL>`; pull `git pull --rebase origin main`; branch `git switch -c ws2/topic`; push `git push -u origin HEAD`.
 
 ## 3. Who merges
-The owner of the changed folder merges the pull request (docs/FILE_OWNERSHIP.md). contracts/ and common/ also need Sheikh's approval.
-Use "Squash and merge" in GitHub. Then the author runs `bash scripts/git/cleanup.sh`.
+The owner of the changed folder merges the pull request once the `guard` check is green (docs/FILE_OWNERSHIP.md). No approval is required by GitHub, because every ws folder has one code owner (its author) and GitHub does not let authors approve their own pull requests. contracts/ and common/ still need Sheikh's approval by team rule: wait for his review before merging.
+Use "Squash and merge" in GitHub. Merged branches are deleted automatically. Then the author runs `bash scripts/git/cleanup.sh`.
+
+If GitHub says the branch has conflicts (usually data/MANIFEST.md), run `bash scripts/git/ship.sh` again: it rebases locally, where .gitattributes keeps both sides' lines, and updates your branch.
 
 ## 4. Your commands (branch prefix and folder)
 | Person | GitHub | Prefix | Folder | Example |
@@ -57,7 +59,9 @@ Everyone may add one line at the bottom of data/MANIFEST.md (append-only). Satty
 - Pre-commit hook: runs scripts/git/guard.py; blocks changes outside your allowed paths (scripts/team.csv), data, .env and files over 5 MB.
 - Pre-push hook: blocks direct pushes to main.
 - GitHub Action `pr-guard` (.github/workflows/pr-guard.yml): runs the same guard on every pull request and checks your branch starts with your prefix.
-- Branch protection (optional, Sheikh): pull request, code-owner review, guard check, no force pushes.
+- Branch protection (Sheikh, free on public repos): pull request required, guard check required, no force pushes to main. No approval count (see section 3).
+- `.gitattributes`: data/MANIFEST.md and docs/CONTRACT_CHANGES.md merge by union, so two people appending at once do not conflict.
+- `ship.sh` updates an already-pushed branch with `--force-with-lease` after rebasing; it never touches main.
 - If the guard blocks something you need: ask the owner (docs/WORKING_TOGETHER.md section 7). Do not bypass it. `GUARD_OVERRIDE=1` exists for Sheikh in emergencies and does not work in CI.
 
 ## 6. When something goes wrong

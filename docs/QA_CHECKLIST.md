@@ -1,18 +1,20 @@
 # QA checklist (owner: Samiul; usable by anyone)
 
 ## Data (after G1)
-- [ ] No duplicate (cell_id, sensor, date) keys in grid_daily
+- [ ] No duplicate (cell_id, date, sat) keys in grid_daily
+- [ ] Points exactly on grid lines land in the cell given by decision 22
 - [ ] Dates inside the expected range; no future dates
 - [ ] Counts and FRP non-negative; no nulls in key columns
 - [ ] Sum of grid_daily n_det equals the number of detection rows
-- [ ] One chosen day and AOI matches the FIRMS web viewer count
+- [ ] One chosen day and AOI matches the FIRMS web viewer count (count by UTC acq_date in detections.parquet; grid_daily uses local solar dates)
 - [ ] Non-vegetation sources filtered; confidence mapped to 20/60/90
 - [ ] cells.parquet: admin1 and land-cover fields filled
 
 ## Harmonized series
 - [ ] lo <= value <= hi; no nulls; no negatives
-- [ ] source set on every row; for 2012 onward value equals observed SNPP
-- [ ] Seam at 2012 visible (modeled share drops to zero)
+- [ ] source set on every row; on SNPP operating days value equals observed SNPP
+- [ ] Seam at 2012 visible (modeled share drops to zero); second seam at 2 Nov 2026 (source adjusted_from_noaa20)
+- [ ] No zero values on days sensor_days marks a satellite as not operating
 
 ## API
 - [ ] Every endpoint validates against contracts/openapi.yaml (mock and live)

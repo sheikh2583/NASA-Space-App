@@ -25,6 +25,6 @@
 
 ## Running things
 - Python: create your own virtual environment (`python3.11 -m venv .venv`), activate it, `pip install -r requirements.txt` (or the lock file once it exists).
-- Web app: `npm install` then `npm run dev`; set `VITE_API_BASE_URL` in `.env` to the hosted mock, then the live API.
+- Web app: `npm install` then `npm run dev`; copy `ws5_frontend/.env.example` to `ws5_frontend/.env` and set `VITE_API_BASE_URL` (hosted mock, then live API) and `VITE_FALLBACK_BASE_URL`.
 - API locally: `uvicorn` on port 8000 from ws2_platform/api/; everyone else uses the hosted mock or live API, not Sattyam's laptop.
 - Tests: `pytest <your folder>/tests`. Samiul's tests take a base URL (`API_BASE_URL=... pytest ws6_validation/tests`).

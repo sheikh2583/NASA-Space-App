@@ -1,0 +1,5 @@
+# Append-only logs: keep both sides' new lines instead of conflicting (docs/WORKING_TOGETHER.md).
+data/MANIFEST.md merge=union
+docs/CONTRACT_CHANGES.md merge=union
+*.sh text eol=lf
+scripts/git/hooks/* text eol=lf

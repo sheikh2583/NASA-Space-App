@@ -1,8 +1,8 @@
-# contracts/ (owner: Sattyam; changes need Sheikh's OK)
+# contracts/ (openapi.yaml and fixtures/: Sattyam; parquet_schemas.json and json_schemas/: Sheikh; see docs/FILE_OWNERSHIP.md)
 The agreements between workstreams.
 
-- openapi.yaml            API skeleton (Sheikh H1), completed by Sattyam at H3
-- parquet_schemas.json    column names and types of every Parquet file (data/processed/)
+- openapi.yaml            API contract: request and response schemas for every endpoint (draft 0.2.0); Sattyam finalizes at H3
+- parquet_schemas.json    column names and types of every Parquet file (data/processed/), plus _enums (allowed string values) and _keys (unique keys)
 - json_schemas/           JSON Schemas for interval_table, drivers_region, outlook_region, validation pieces
 - fixtures/               realistic example responses (Bangladesh AOI, Punjab AOI) used by the mock server and tests
 

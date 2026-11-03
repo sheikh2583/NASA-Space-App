@@ -55,7 +55,7 @@ A coding agent writes and tests code. It cannot sign up for services, use your l
 | Phase | Hours | Task | Why an agent cannot | Done |
 |---|---|---|---|---|
 | 1 | H0-3 | Register your own FIRMS MAP_KEY and an Earthdata login; put the key in your .env | web forms and email confirmation | [ ] |
-| 1 | H0-3 | Submit the FIRMS archive download requests (MODIS and VIIRS SNPP, demo regions) on the website as early as possible | web request forms; links arrive by email later | [ ] |
+| 1 | H0-3 | Submit the FIRMS archive download requests (MODIS, VIIRS SNPP and VIIRS NOAA-20, demo regions) on the website as early as possible | web request forms; links arrive by email later | [ ] |
 | 2 | H3-8 | Check your email for the archive download links, download the big files, and move them to the shared drive | manual downloads and disk space | [ ] |
 | 2 | H3-8 | Check you have enough free disk space on your laptop | depends on your machine | [ ] |
 | 3 | H8-24 | Open the FIRMS web map for one day and one small area and compare it with your rows | a human visual check against the website | [ ] |

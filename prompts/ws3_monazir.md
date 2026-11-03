@@ -3,17 +3,17 @@ Folder: ws3_anomaly/ (ingestion code in ws3_anomaly/ingest/ for the first eight 
 
 ## P3.1 FIRMS access probe (H0-2)
 Inputs: your own FIRMS MAP_KEY in .env.
-Prompt: "Help me probe NASA FIRMS access: (1) what the archive download route offers for country-level standard-product files for MODIS and VIIRS SNPP 375 m, (2) the area API's per-request day limit and rate limit for my key, (3) whether SNPP near-real-time data is still available. Write a tiny script that pulls one day for a small bbox from each source and prints the columns. Note the answers in NOTES.md."
+Prompt: "Help me probe NASA FIRMS access: (1) what the archive download route offers for country-level standard-product files for MODIS, VIIRS SNPP 375 m and VIIRS NOAA-20 375 m, including the first date of NOAA-20 standard-product data, (2) the area API's per-request day limit and rate limit for my key, (3) that VIIRS_NOAA20_NRT works (SNPP near-real-time ended on 2 Nov 2026). Write a tiny script that pulls one day for a small bbox from each source and prints the columns. Note the answers in NOTES.md."
 Output: written answers in NOTES.md; a one-day pull for MODIS and VIIRS.
 Test: both pulls return rows with the expected columns; limits recorded.
 
 ## P3.2 First slice (H2-4)  HANDOFF
-Prompt: "Write ingest/normalize.py that converts raw FIRMS files to the detections.parquet schema in contracts/parquet_schemas.json: map VIIRS confidence classes low/nominal/high to 20/60/90, keep MODIS confidence 0-100, keep source_type and drop non-vegetation detections, label sensor MODIS (Terra and Aqua together) or VIIRS (SNPP), UTC date and HHMM time, cache raw files. Run it for Bangladesh, all available years."
+Prompt: "Write ingest/normalize.py that converts raw FIRMS files to the detections.parquet schema in contracts/parquet_schemas.json: map VIIRS confidence classes low/nominal/high to 20/60/90, keep MODIS confidence 0-100, keep source_type and drop non-vegetation detections, label sensor MODIS or VIIRS and sat Terra, Aqua, SNPP, NOAA20 or NOAA21 (keep satellites separate), UTC date and HHMM time, cache raw files. Run it for Bangladesh, all available years."
 Output: detections.parquet first slice. HANDOFF: to Sattyam, Samiul.
 Test: schema validates; rows after filtering equal raw rows minus dropped sources.
 
 ## P3.3 Full ingestion (H4-6)  HANDOFF
-Prompt: "Extend ingest to the full demo regions (Bangladesh and Punjab-Haryana-Delhi), using the archive route first and the area API in small day windows run in parallel as a fallback; retry on failure, resume after interruption, log gaps. Add the current season from near-real-time data (NOAA-20 if SNPP near-real-time is unavailable, noting the switch). Then widen to the rest of South Asia as time allows."
+Prompt: "Extend ingest to the full demo regions (Bangladesh and Punjab-Haryana-Delhi), using the archive route first and the area API in small day windows run in parallel as a fallback; retry on failure, resume after interruption, log gaps. Ingest NOAA-20 standard product from its first year to now (overlap with SNPP is needed for the adjustment ratio), and the current season from VIIRS_NOAA20_NRT. Drop any record with a duplicate (sat, acq_date, acq_time, lat, lon) when standard and near-real-time files overlap, keeping the standard product. Then widen to the rest of South Asia as time allows."
 Output: detections.parquet for demo regions (wider South Asia later). HANDOFF: to Sattyam, Samiul.
 Test: no date gaps longer than the satellites' known outages; row counts per year look sane.
 
@@ -31,7 +31,7 @@ Test: contracts schemas validate; a spike-injected series yields one ranked peri
 
 ## P3.6 Robust anomalies and seam check (H18-26)
 Inputs: harmonized v0.
-Prompt: "Upgrade score_series: log1p transform; robust STL (period 52) when at least 8 years exist, else the week-of-year median with a +/-2 week window; score = residual / (1.4826 x MAD) within the same season; flag when score > 2 AND lo exceeds the baseline's 90th percentile (exceeds_lower_bound). Add the seam check: also compute baselines on 2012 onward only, and mark flags that appear only with the full series as depends_on_modeled_history. Keep the function signature unchanged."
+Prompt: "Upgrade score_series: log1p transform; robust STL (period 52, ISO week 53 folded into 52) when at least 8 years exist, else the week-of-year median with a +/-2 week window; score = residual / (1.4826 x MAD) within the same season; flag when score > 2 AND lo exceeds the baseline's 90th percentile (exceeds_lower_bound). Add the seam check: also compute baselines on 2012 onward only, and mark flags that appear only with the full series as depends_on_modeled_history. Keep the function signature unchanged."
 Output: robust v1 of score_series.
 Test: spike flagged; pure seasonal noise gives few flags; seam-dependent flags are marked.
 
@@ -42,6 +42,6 @@ Output: loaders + cached anomaly tables. HANDOFF: to Samin (weather anomalies fo
 Test: a known week returns plausible values; reruns use the cache.
 
 ## P3.8 Driver associations and wording review (H30-36, review H44)  HANDOFF
-Prompt: "Write drivers.py: driver_associations(weekly_df, bbox, start, end). For each driver and lag 0 to 8 weeks, Spearman correlation between deseasonalized burning and driver anomalies, with block-permutation p-values (8-week blocks) and block-bootstrap CI; add LightGBM permutation importance with season-block CV. Return the top 3 items {driver, lag_weeks, direction, strength, ci, evidence weak/moderate/strong} and caveats (associations only; burning follows farming calendars; spatially aggregated). Output strings must never use cause, because, due to, leads to or drives. Add a lint test for that."
+Prompt: "Write drivers.py: driver_associations(weekly_df, bbox, start, end), run in batch per admin1 region (never per API request: it is too slow) and written to drivers_region.json keyed by region (decision 20). For each driver and lag 0 to 8 weeks, Spearman correlation between deseasonalized burning and driver anomalies, with block-permutation p-values (8-week blocks) and block-bootstrap CI; add LightGBM permutation importance with season-block CV. Return the top 3 items {driver, lag_weeks, direction, strength, ci, evidence weak/moderate/strong} and caveats (associations only; burning follows farming calendars; spatially aggregated). Output strings must never use cause, because, due to, leads to or drives. Add a lint test for that."
 Output: drivers.py, drivers_region.json. HANDOFF: to Sattyam, Shammo.
 Test: schema validates; lint test passes; sparse AOI returns an insufficient-data result.

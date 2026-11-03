@@ -12,6 +12,15 @@ field() { # field <github-user> <column number>
 me() {
   if [ -f "$ME_FILE" ]; then cat "$ME_FILE"; else echo "Run first: bash scripts/git/setup.sh <your-github-username>" >&2; exit 1; fi
 }
+# me() runs inside $(...) where its exit cannot stop the caller, so check here, before any script does work.
+if [ "${TEAM_SETUP:-0}" != "1" ]; then
+  if [ ! -f "$ME_FILE" ]; then
+    echo "Run first: bash scripts/git/setup.sh <your-github-username>" >&2; exit 1
+  fi
+  if [ -z "$(field "$(cat "$ME_FILE")" 4)" ]; then
+    echo "'$(cat "$ME_FILE")' is not in scripts/team.csv. Ask Sheikh to add you, then rerun setup.sh." >&2; exit 1
+  fi
+fi
 my_prefix() { field "$(me)" 4; }
 my_folder() { field "$(me)" 5; }
 my_name()   { field "$(me)" 2; }

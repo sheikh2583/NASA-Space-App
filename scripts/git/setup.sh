@@ -4,7 +4,7 @@ set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 user="${1:-}"
 [ -n "$user" ] || { echo "usage: bash scripts/git/setup.sh <your-github-username>"; exit 1; }
-source scripts/git/_lib.sh
+TEAM_SETUP=1 source scripts/git/_lib.sh
 [ -n "$(field "$user" 1)" ] || { echo "'$user' is not in scripts/team.csv"; exit 1; }
 echo "$user" > "$ME_FILE"
 git config pull.rebase true

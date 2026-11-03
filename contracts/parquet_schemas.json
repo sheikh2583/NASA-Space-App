@@ -1,5 +1,85 @@
 {
-  "_note": "Column: type. Files live in data/processed/. grid_daily is sparse (missing row = zero detections).",
+  "_note": "Column: type. Files live in data/processed/. Allowed values for string columns are in _enums. grid_daily is sparse and keyed by (cell_id, date, sat): a missing row means zero detections only on days sensor_days says that satellite was operating. grid_daily.date is the local solar date (decision 23); detections.acq_date is UTC. cell_id follows decision 22.",
+  "_enums": {
+    "detections.sensor": [
+      "MODIS",
+      "VIIRS"
+    ],
+    "detections.sat": [
+      "Terra",
+      "Aqua",
+      "SNPP",
+      "NOAA20",
+      "NOAA21"
+    ],
+    "grid_daily.sensor": [
+      "MODIS",
+      "VIIRS"
+    ],
+    "grid_daily.sat": [
+      "Terra",
+      "Aqua",
+      "SNPP",
+      "NOAA20",
+      "NOAA21"
+    ],
+    "sensor_days.sat": [
+      "Terra",
+      "Aqua",
+      "SNPP",
+      "NOAA20",
+      "NOAA21"
+    ],
+    "detections.daynight": [
+      "D",
+      "N"
+    ],
+    "harmonized.source": [
+      "observed_viirs",
+      "adjusted_from_noaa20",
+      "modeled_from_modis",
+      "mixed"
+    ],
+    "predictions_oof.split": [
+      "train",
+      "calib",
+      "test"
+    ],
+    "predictions_oof.sat_combo": [
+      "terra_only",
+      "terra_aqua"
+    ]
+  },
+  "_keys": {
+    "grid_daily": [
+      "cell_id",
+      "date",
+      "sat"
+    ],
+    "sensor_days": [
+      "date",
+      "sat"
+    ],
+    "harmonized": [
+      "cell_id",
+      "date"
+    ],
+    "cells": [
+      "cell_id"
+    ],
+    "anomalies_region_week": [
+      "region_id",
+      "week_start"
+    ],
+    "critical_periods": [
+      "region_id",
+      "period_id"
+    ],
+    "drift_flags": [
+      "region_id",
+      "year"
+    ]
+  },
   "detections": {
     "sensor": "string",
     "sat": "string",
@@ -18,6 +98,7 @@
   "grid_daily": {
     "cell_id": "int32",
     "date": "date32",
+    "sat": "string",
     "sensor": "string",
     "n_det": "int32",
     "n_hiconf": "int32",
@@ -47,7 +128,7 @@
     "lo_count": "float32",
     "hi_count": "float32",
     "level": "float32",
-    "source": "string (observed_viirs | modeled_from_modis | mixed)",
+    "source": "string",
     "drift_flag": "bool",
     "method_version": "string"
   },
@@ -60,7 +141,8 @@
     "y_pred_frp": "float32",
     "fold": "int32",
     "block_id": "int32",
-    "split": "string (train | calib | test)"
+    "split": "string",
+    "sat_combo": "string"
   },
   "drift_flags": {
     "region_id": "string",
@@ -76,7 +158,8 @@
     "score": "float32",
     "flag": "bool",
     "exceeds_lower_bound": "bool",
-    "severity": "float32"
+    "severity": "float32",
+    "depends_on_modeled_history": "bool"
   },
   "critical_periods": {
     "region_id": "string",
@@ -88,6 +171,13 @@
     "peak_value": "float32",
     "agri_tag": "bool",
     "n_weeks": "int32",
-    "agri_share": "float32"
+    "agri_share": "float32",
+    "depends_on_modeled_history": "bool"
+  },
+  "sensor_days": {
+    "date": "date32",
+    "sat": "string",
+    "operating": "bool",
+    "note": "string"
   }
 }

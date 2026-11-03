@@ -29,8 +29,13 @@ releases, then pin them (`pip freeze > requirements.lock.txt`, commit `package-l
 | Notebook compute | laptop first; Kaggle notebooks if training is slow (Colab disconnects) | free, CPU is enough | Sheikh, Samin |
 | Team channel | the team's existing chat (WhatsApp or Discord) | already in use | Sheikh |
 
+## Version notes for AI agents (checked 3 Nov 2026)
+- pandas is held below 3 in requirements.txt (pandas 3 changed copy-on-write and string defaults).
+- DuckDB 2.0: a relation from `duckdb.sql(...)` has no `fetchone()`; use `.fetchall()`, `.df()` or `con.execute(...).fetchone()`.
+- MCD12C1 land cover is HDF4: read it with pyhdf (the rasterio wheel has no HDF4 driver).
+
 ## Data sources
-- NASA FIRMS: MODIS and VIIRS SNPP active fires (archive download, area API, near-real-time). Needs a free MAP_KEY.
+- NASA FIRMS: MODIS, VIIRS SNPP (history to 2 Nov 2026) and VIIRS NOAA-20 (overlap and near-real-time) active fires (archive download, area API). Needs a free MAP_KEY.
 - geoBoundaries ADM1 (regions); a ready-made 0.05 degree land-cover product such as MODIS MCD12C1 (verify at H0).
 - CHIRPS rainfall and NASA POWER (temperature, precipitation, soil wetness) for drivers.
 - Stretch: OpenAQ (PM2.5) and MODIS MCD64A1 burned area (needs an Earthdata login).

@@ -9,7 +9,8 @@ Commands assume you run them from the repo root. DuckDB can be used from the com
 |---|---|---|---|
 | H3 | openapi.yaml, fixtures, mock | open the mock URL in a browser; run the contract test against it (`API_BASE_URL=<mock> pytest ws6_validation/tests/test_contract.py`) | all endpoints return valid shapes |
 | H4/H6 | detections.parquet | `duckdb -c "select sensor, count(*), min(acq_date), max(acq_date) from 'data/processed/detections.parquet' group by 1"`; open the FIRMS web map for one day and small area and compare | rows exist for both sensors; dates in range; counts match the viewer |
-| H8 | grid_daily.parquet | `duckdb -c "select sum(n_det) from 'data/processed/grid_daily.parquet'"` equals `select count(*) from detections`; `select count(*) from (select cell_id, sensor, date from grid_daily group by 1,2,3 having count(*) > 1)` returns 0 | sums equal; no duplicate keys |
+| H8 | grid_daily.parquet | `duckdb -c "select sum(n_det) from 'data/processed/grid_daily.parquet'"` equals `select count(*) from detections`; `select count(*) from (select cell_id, date, sat from grid_daily group by 1,2,3 having count(*) > 1)` returns 0; `select count(*) from grid_daily g anti join sensor_days s on g.date = s.date and g.sat = s.sat and s.operating` returns 0 | sums equal; no duplicate keys |
+| H8 | sensor_days.parquet | `select sat, min(date), max(date), sum(case when operating then 0 else 1 end) from 'data/processed/sensor_days.parquet' group by 1` | SNPP ends 2026-11-02; NOAA20 present to the current week; known outages marked |
 | H8 | cells.parquet | `select count(*) from cells where admin1_id is null` | 0 (or documented) |
 | H10 | common/ functions | `pytest common/` | all pass |
 | H14 | harmonized.parquet v0 | `select count(*) from 'data/processed/harmonized.parquet' where lo_count > value_count or value_count > hi_count or value_count < 0 or source is null` | 0 |
@@ -19,7 +20,7 @@ Commands assume you run them from the repo root. DuckDB can be used from the com
 | H24 | predictions_oof.parquet | `select split, count(*) from 'data/processed/predictions_oof.parquet' group by 1`; check no calib or test row was used for training (the test in ws1_harmonize/tests) | three splits present; leakage test passes |
 | H26 | robust anomalies | `pytest ws3_anomaly/tests` (injected spike flagged; seasonal noise gives few flags) | pass |
 | H30 | interval_table v1, drift_flags | verify schema; read the coverage table: empirical coverage near 90 percent, or the gap is written in limitations | valid; gap reported |
-| H30 | harmonized v1 | same query as H14, plus the 2012 seam: `select year(date), avg(case when source = 'modeled_from_modis' then 1 else 0 end) from harmonized group by 1 order by 1` | modeled share drops to 0 at 2012 |
+| H30 | harmonized v1 | same query as H14, plus the 2012 seam: `select year(date), avg(case when source = 'modeled_from_modis' then 1 else 0 end), avg(case when source = 'adjusted_from_noaa20' then 1 else 0 end) from harmonized group by 1 order by 1` | modeled share drops to 0 at 2012; adjusted_from_noaa20 appears only after 2 Nov 2026 |
 | H30 | /aoi/cells and current status | `curl` the live /aoi/cells for a demo AOI and a flagged week; open the app and select that week; check the status card shows the data-through date | cells returned; map recolours; date shown |
 | H34 | validation pieces | verify each against validation_piece.schema.json; open /meta/validation | all present pieces valid |
 | H36 | drivers | `pytest ws3_anomaly/tests` includes the lint for cause, because, due to, leads to, drives | no causal words |

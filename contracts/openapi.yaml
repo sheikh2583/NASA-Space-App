@@ -1,11 +1,14 @@
 openapi: 3.0.3
 info:
   title: MODIS-VIIRS Harmonization API
-  version: 0.1.0-skeleton
+  version: 0.2.0-draft
   description: >
-    Skeleton drafted by Sheikh at H1; Sattyam completes it and writes fixtures by H3.
-    Day convention is the UTC date; weeks start on Monday. Every response carries
-    schema_version, units, day_convention and a per-point source flag.
+    Drafted from Sheikh's H1 skeleton (0.1.0); Sattyam owns it and writes fixtures by H3.
+    Every JSON response includes the Envelope fields schema_version, units and day_convention.
+    Days are local solar dates (decision 23); weeks start on Monday. Values are SNPP-equivalent
+    active-fire detections (decision 17). Series and live products are computed for the drawn AOI;
+    drivers, drift and the forecast outlook come from the admin1 region holding most of the AOI's
+    cells, named in `region` (decision 20).
 paths:
   /aoi/summary:
     post:
@@ -17,104 +20,363 @@ paths:
             schema: { $ref: '#/components/schemas/AOIRequest' }
       responses:
         '200':
-          description: Series with intervals, source flags and anomaly flags
+          description: Series with intervals, source flags and anomaly flags. An AOI with no cells returns an empty series and a note.
           content:
             application/json:
               schema: { $ref: '#/components/schemas/SummaryResponse' }
-        '422':
-          description: AOI too large or invalid
+        '422': { $ref: '#/components/responses/Invalid' }
   /aoi/cells:
     post:
-      summary: Per-cell burning activity for a period (the where map layer)
+      summary: Per-cell burning activity for a period (the where map layer); start and end set the period
       requestBody:
         required: true
         content:
           application/json:
             schema: { $ref: '#/components/schemas/AOIRequest' }
       responses:
-        '200': { description: 'schema_version, units, day_convention, period{start,end}, cells[{cell_id, lat_c, lon_c, value, modeled_share}]' }
+        '200':
+          description: One entry per cell with activity in the period
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CellsResponse' }
+        '422': { $ref: '#/components/responses/Invalid' }
   /aoi/critical-periods:
     post:
-      summary: Ranked critical periods for an area
+      summary: Ranked critical periods for an area (computed live for the AOI)
       requestBody:
         required: true
         content:
           application/json:
             schema: { $ref: '#/components/schemas/AOIRequest' }
       responses:
-        '200': { description: 'Periods: start, end, severity, rank, peak_value, agri_tag, agri_share, n_weeks, depends_on_modeled_history' }
+        '200':
+          description: Ranked periods, highest severity first
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CriticalPeriodsResponse' }
+        '422': { $ref: '#/components/responses/Invalid' }
   /aoi/drivers:
     post:
-      summary: Associated drivers (associations only, never causes)
+      summary: Associated drivers (associations only, never causes) for the AOI's dominant region
       requestBody:
         required: true
         content:
           application/json:
             schema: { $ref: '#/components/schemas/AOIRequest' }
       responses:
-        '200': { description: 'items[{driver, lag_weeks, direction, strength, ci, evidence}], caveats[]' }
+        '200':
+          description: Top driver associations with caveats
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DriversResponse' }
+        '422': { $ref: '#/components/responses/Invalid' }
   /aoi/outlook:
     post:
-      summary: Current season versus normal
+      summary: Current status (live for the AOI) and season outlook (from the dominant region)
       requestBody:
         required: true
         content:
           application/json:
             schema: { $ref: '#/components/schemas/AOIRequest' }
       responses:
-        '200': { description: 'as_of, current_status{week_percentile, level, data_through, message}, season_to_date_percentile, expected_range, skill, status, alert' }
+        '200':
+          description: Current status, season-to-date position, expected range and skill
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OutlookResponse' }
+        '422': { $ref: '#/components/responses/Invalid' }
   /aoi/compare:
     post:
       summary: Two areas on the same axes
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CompareRequest' }
       responses:
-        '200': { description: 'Two SummaryResponse objects with aligned time axes' }
+        '200':
+          description: Two summaries with aligned time axes
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CompareResponse' }
+        '422': { $ref: '#/components/responses/Invalid' }
   /meta/validation:
     get:
-      summary: Merged validation pieces (data/processed/validation/*.json)
+      summary: Merged validation pieces (data/processed/validation/*.json); missing pieces are listed, never an error
       responses:
-        '200': { description: 'Pieces keyed by producer; each has schema_version, generated_at, metrics, limitations' }
+        '200':
+          description: Pieces keyed by producer
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ValidationResponse' }
   /export:
     post:
       summary: CSV export of the current view
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ExportRequest' }
       responses:
-        '200': { description: 'text/csv' }
+        '200':
+          description: >
+            CSV with a header row. summary: t, value, lo, hi, source, modeled_share, drift_flag, anomaly_flag;
+            cells: cell_id, lat_c, lon_c, value, modeled_share; critical_periods: the CriticalPeriod fields.
+          content:
+            text/csv:
+              schema: { type: string }
+        '422': { $ref: '#/components/responses/Invalid' }
 components:
+  responses:
+    Invalid:
+      description: AOI too large, malformed geometry, or start after end
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
   schemas:
-    AOIRequest:
+    Error:
       type: object
+      required: [detail]
       properties:
-        geometry: { type: object, description: GeoJSON Polygon }
-        bbox: { type: array, items: { type: number }, minItems: 4, maxItems: 4 }
-        start: { type: string, format: date }
-        end: { type: string, format: date }
-        res: { type: string, enum: [day, week, month] }
-    SummaryPoint:
+        detail:
+          description: Plain-language message the app can show (FastAPI may return a list of validation errors)
+    Envelope:
       type: object
-      properties:
-        t: { type: string, format: date }
-        value: { type: number }
-        lo: { type: number }
-        hi: { type: number }
-        source: { type: string, enum: [observed_viirs, modeled_from_modis, mixed] }
-        drift_flag: { type: boolean }
-        anomaly:
-          type: object
-          properties:
-            flag: { type: boolean }
-            score: { type: number }
-    SummaryResponse:
-      type: object
+      required: [schema_version, units, day_convention]
       properties:
         schema_version: { type: string }
-        units: { type: string }
-        day_convention: { type: string }
-        aoi:
-          type: object
-          properties:
-            n_cells: { type: integer }
-            area_km2: { type: number }
-        res: { type: string }
-        series:
-          type: array
-          items: { $ref: '#/components/schemas/SummaryPoint' }
+        units: { type: string, example: SNPP-equivalent detections per week }
+        day_convention: { type: string, enum: [local_solar_date] }
         notes: { type: array, items: { type: string } }
+    Region:
+      type: object
+      description: The admin1 region holding most of the AOI's cells (decision 20)
+      required: [region_id, region_name]
+      properties:
+        region_id: { type: string }
+        region_name: { type: string }
+    AOIRequest:
+      type: object
+      required: [start, end]
+      oneOf:
+        - required: [geometry]
+        - required: [bbox]
+      properties:
+        geometry: { type: object, description: GeoJSON Polygon (exactly one of geometry or bbox) }
+        bbox:
+          type: array
+          description: '[min_lon, min_lat, max_lon, max_lat]'
+          items: { type: number }
+          minItems: 4
+          maxItems: 4
+        start: { type: string, format: date }
+        end: { type: string, format: date }
+        res:
+          type: string
+          enum: [day, week, month]
+          default: week
+          description: Day points have lo and hi null (interval tables exist for week and month only)
+    Anomaly:
+      type: object
+      required: [flag, score]
+      properties:
+        flag: { type: boolean }
+        score: { type: number }
+        exceeds_lower_bound: { type: boolean }
+        depends_on_modeled_history: { type: boolean }
+    SummaryPoint:
+      type: object
+      required: [t, value, lo, hi, source, modeled_share, drift_flag]
+      properties:
+        t: { type: string, format: date }
+        value: { type: number, nullable: true, description: null when no sensor was operating }
+        lo: { type: number, nullable: true }
+        hi: { type: number, nullable: true }
+        source: { type: string, enum: [observed_viirs, adjusted_from_noaa20, modeled_from_modis, mixed] }
+        modeled_share: { type: number, minimum: 0, maximum: 1, description: Fraction of the value from modeled or adjusted rows }
+        drift_flag: { type: boolean }
+        anomaly: { $ref: '#/components/schemas/Anomaly' }
+    SummaryResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          required: [aoi, res, series]
+          properties:
+            aoi:
+              type: object
+              required: [n_cells, area_km2]
+              properties:
+                n_cells: { type: integer }
+                area_km2: { type: number }
+            res: { type: string, enum: [day, week, month] }
+            seams:
+              type: array
+              description: Dates where the source changes (2012-01-20, 2026-11-02)
+              items: { type: string, format: date }
+            series:
+              type: array
+              items: { $ref: '#/components/schemas/SummaryPoint' }
+    Cell:
+      type: object
+      required: [cell_id, lat_c, lon_c, value, modeled_share]
+      properties:
+        cell_id: { type: integer }
+        lat_c: { type: number }
+        lon_c: { type: number }
+        value: { type: number }
+        modeled_share: { type: number, minimum: 0, maximum: 1 }
+    CellsResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          required: [period, cells]
+          properties:
+            period:
+              type: object
+              required: [start, end]
+              properties:
+                start: { type: string, format: date }
+                end: { type: string, format: date }
+            cells:
+              type: array
+              items: { $ref: '#/components/schemas/Cell' }
+    CriticalPeriod:
+      type: object
+      required: [start, end, severity, rank, peak_value, agri_tag, agri_share, n_weeks, depends_on_modeled_history]
+      properties:
+        start: { type: string, format: date }
+        end: { type: string, format: date }
+        severity: { type: number }
+        rank: { type: integer, minimum: 1 }
+        peak_value: { type: number }
+        agri_tag: { type: boolean }
+        agri_share: { type: number, nullable: true, minimum: 0, maximum: 1, description: null when cropland_frac is unavailable }
+        n_weeks: { type: integer }
+        depends_on_modeled_history: { type: boolean }
+    CriticalPeriodsResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          required: [periods]
+          properties:
+            periods:
+              type: array
+              items: { $ref: '#/components/schemas/CriticalPeriod' }
+    DriverItem:
+      type: object
+      required: [driver, lag_weeks, direction, strength, ci, evidence]
+      properties:
+        driver: { type: string }
+        lag_weeks: { type: integer, minimum: 0, maximum: 8 }
+        direction: { type: string, enum: [positive, negative] }
+        strength: { type: number }
+        ci:
+          type: array
+          items: { type: number }
+          minItems: 2
+          maxItems: 2
+        evidence: { type: string, enum: [weak, moderate, strong] }
+    DriversResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          required: [region, status, items, caveats]
+          properties:
+            region: { $ref: '#/components/schemas/Region' }
+            status: { type: string, enum: [ok, insufficient_data] }
+            items:
+              type: array
+              maxItems: 3
+              items: { $ref: '#/components/schemas/DriverItem' }
+            caveats: { type: array, items: { type: string } }
+    AlertLevel:
+      type: string
+      enum: [none, watch, high]
+    CurrentStatus:
+      type: object
+      description: Core, never cut (decision 14). Computed live for the AOI from the near-real-time feed.
+      required: [week_percentile, level, data_through, message]
+      properties:
+        week_percentile: { type: number, minimum: 0, maximum: 100 }
+        level: { $ref: '#/components/schemas/AlertLevel' }
+        data_through: { type: string, format: date }
+        data_source: { type: string, enum: [VIIRS_NOAA20_NRT, VIIRS_NOAA21_NRT, harmonized] }
+        message: { type: string }
+    OutlookResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          required: [region, as_of, current_status, season_to_date_percentile, expected_range, skill, status, alert]
+          properties:
+            region: { $ref: '#/components/schemas/Region' }
+            as_of: { type: string, format: date }
+            current_status: { $ref: '#/components/schemas/CurrentStatus' }
+            season_to_date_percentile: { type: number }
+            expected_range:
+              type: object
+              required: [q10, q50, q90]
+              properties:
+                q10: { type: number }
+                q50: { type: number }
+                q90: { type: number }
+            skill:
+              type: object
+              properties:
+                vs_climatology: { type: number }
+                vs_persistence: { type: number }
+                ci:
+                  type: array
+                  items: { type: number }
+                  minItems: 2
+                  maxItems: 2
+                n_seasons: { type: integer }
+            status: { type: string, enum: [skill, no_demonstrated_skill] }
+            alert:
+              type: object
+              required: [level]
+              properties:
+                level: { $ref: '#/components/schemas/AlertLevel' }
+                rule: { type: string }
+    CompareRequest:
+      type: object
+      required: [a, b]
+      properties:
+        a: { $ref: '#/components/schemas/AOIRequest' }
+        b: { $ref: '#/components/schemas/AOIRequest' }
+    CompareResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          required: [a, b]
+          properties:
+            a: { $ref: '#/components/schemas/SummaryResponse' }
+            b: { $ref: '#/components/schemas/SummaryResponse' }
+    ValidationPiece:
+      type: object
+      required: [schema_version, generated_at, producer, metrics, limitations]
+      properties:
+        schema_version: { type: string }
+        generated_at: { type: string }
+        producer: { type: string }
+        metrics: { type: object }
+        limitations: { type: array, items: { type: string } }
+    ValidationResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          required: [pieces, missing]
+          properties:
+            pieces:
+              type: object
+              additionalProperties: { $ref: '#/components/schemas/ValidationPiece' }
+            missing:
+              type: array
+              description: Expected producers with no file yet
+              items: { type: string }
+    ExportRequest:
+      allOf:
+        - $ref: '#/components/schemas/AOIRequest'
+        - type: object
+          required: [view]
+          properties:
+            view: { type: string, enum: [summary, cells, critical_periods] }

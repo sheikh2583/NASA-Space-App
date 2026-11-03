@@ -1,5 +1,7 @@
 # MODIS + VIIRS Harmonization (NASA Space Apps 2026)
 
+> 3 Nov 2026: Suomi NPP stopped on 2 Nov 2026; read docs/DECISIONS.md decisions 17-23 before anything else.
+
 > Start with docs/GUIDE.md (the end-to-end guide). Read docs/KNOWN_GAPS.md: this kit was written without the official challenge text and without running any project code; several facts are unverified and have H0 checks (docs/H0_VERIFICATION.md).
 
 We build a web app that merges MODIS and VIIRS fire detections into one consistent burning-activity
@@ -21,8 +23,8 @@ Git commands and scripts (clone, branch, save, ship): docs/GIT_WORKFLOW.md. Do i
 ## Who owns what
 | Slot | Person | Folder | Workstream |
 |---|---|---|---|
-| 1 | Sheikh | ws1_harmonize/ | harmonization, repo, integration |
-| 2 | Sattyam | ws2_platform/, contracts/ | data platform and API |
+| 1 | Sheikh | ws1_harmonize/, contracts/parquet_schemas.json, contracts/json_schemas/ | harmonization, repo, integration |
+| 2 | Sattyam | ws2_platform/, contracts/openapi.yaml, contracts/fixtures/ | data platform and API |
 | 3 | Monazir | ws3_anomaly/ | ingestion, anomalies, drivers |
 | 4 | Samin | common/, ws4_outlook/ | shared library, conformal and drift, outlook |
 | 5 | Shammo | ws5_frontend/ | web app |

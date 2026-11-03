@@ -17,7 +17,7 @@ Everyone else reads. If you need a change, ask the owner (docs/WORKING_TOGETHER.
 | docs/method_en.md, method_bn.md, slides, demo script, QA and submission checklists | Samiul | everyone |
 | data/MANIFEST.md, docs/CONTRACT_CHANGES.md | append-only: each person adds their own line at the bottom | everyone |
 | data/processed/detections.parquet | Monazir | Sattyam, Samiul, Sheikh |
-| data/processed/grid_daily.parquet, cells.parquet | Sattyam | everyone |
+| data/processed/grid_daily.parquet, cells.parquet, sensor_days.parquet | Sattyam | everyone |
 | data/processed/harmonized.parquet, predictions_oof.parquet | Sheikh | Sattyam, Monazir, Samin |
 | data/processed/interval_table.json | Sheikh writes v0 (H14); Samin writes v1 (H30) | Sattyam |
 | data/processed/drift_flags.parquet | Samin | Sheikh, Sattyam |

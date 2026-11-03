@@ -4,10 +4,10 @@ Folders: common/ and ws4_outlook/
 ## P4.1 series.py (H0-6)  HANDOFF
 Prompt: "Write common/series.py: weekly_series(harmonized, cells, region_ids=None, bbox=None, res='week') aggregating cell values to AOI-week (Monday weeks) or month, returning week_start, value, lo, hi, modeled_share (fraction of the value from modeled rows). lo/hi come from common.intervals.apply_interval when a table is given, otherwise NaN. Docstrings and pytest tests on a tiny synthetic harmonized table."
 Output: series.py + tests. HANDOFF: to Sattyam, Monazir, Sheikh (H10 at the latest).
-Test: totals equal a direct sum; modeled_share is 0 for 2012 onward rows.
+Test: totals equal a direct sum; modeled_share is 0 on SNPP operating days; weeks are Monday-based on the local solar date.
 
 ## P4.2 climatology.py (H4-8)  HANDOFF
-Prompt: "Write common/climatology.py: same_week_quantiles(weekly_df, q, window=2) over years with a +/-2 week window; season helpers (season = Oct 1 to Sep 30, season_of(date), day_of_season); cumulative_by_season(weekly_df). Tests on a synthetic multi-year series."
+Prompt: "Write common/climatology.py: same_week_quantiles(weekly_df, q, window=2) over years with a +/-2 week window (ISO week 53 folded into 52; weeks with no operating sensor excluded); season helpers (season = Oct 1 to Sep 30, season_of(date), day_of_season); cumulative_by_season(weekly_df). Tests on a synthetic multi-year series."
 Output: climatology.py + tests. HANDOFF: to Monazir, Sheikh.
 Test: quantiles match a hand-computed example.
 
@@ -18,7 +18,7 @@ Output: intervals.py + tests. HANDOFF: to Sattyam, Monazir.
 Test: lo <= value <= hi for sane tables; fallbacks work.
 
 ## P4.4 splits.py and metrics.py (H8-12)  HANDOFF
-Prompt: "Write common/splits.py: 2x2 degree spatial blocks with a one-cell buffer, block_id derived deterministically from the block corner; labels block_id % 5 == 0 -> calib, == 1 -> test, else train; yearly temporal folds; backward holdout (train 2018-2024, test 2012-2017). Write common/metrics.py: signed relative bias, RMSE on log1p, Spearman, Lin's CCC, empirical coverage, interval (Winkler) score. Tests: the same call returns the same labels; no calib or test row appears in a training set."
+Prompt: "Write common/splits.py: 2x2 degree spatial blocks with a one-cell buffer, block_id derived deterministically from the block corner; labels block_id % 5 == 0 -> calib, == 1 -> test, else train; yearly temporal folds; backward holdout (train 2015-2020, test 2012-2014) and a drift-era fold (train 2015-2020, test 2021 onward). Write common/metrics.py: signed relative bias, RMSE on log1p, Spearman, Lin's CCC, empirical coverage, interval (Winkler) score. Tests: the same call returns the same labels; no calib or test row appears in a training set."
 Output: splits.py, metrics.py + tests. HANDOFF: to Sheikh, Samiul.
 Test: determinism and no-leakage tests pass.
 
@@ -35,7 +35,7 @@ Test: schema validates; a planted ratio shift is flagged.
 
 ## P4.7 Outlook floor (H12-24)
 Inputs: harmonized v0 (H14).
-Prompt: "Write ws4_outlook/outlook.py: outlook(weekly_df, bbox, as_of) returning season_to_date_percentile against previous seasons and expected_range q10/q50/q90 of cumulative activity at that week, using common.climatology. Use only data up to as_of. Status no_demonstrated_skill until the forecast is evaluated. Also return current_status {week_percentile, level none/watch/high, data_through, message}: the percentile of the latest complete week against same-week climatology (watch at the 80th percentile, high at the 90th), the date the data run through, and a one-line plain-language message. current_status is core and is never cut."
+Prompt: "Write ws4_outlook/outlook.py: outlook(weekly_df, bbox, as_of) returning season_to_date_percentile against previous seasons and expected_range q10/q50/q90 of cumulative activity at that week, using common.climatology. Use only data up to as_of. Status no_demonstrated_skill until the forecast is evaluated. Also return current_status {week_percentile, level none/watch/high, data_through, message}: the percentile of the latest complete week against same-week climatology (watch at the 80th percentile, high at the 90th), the date the data run through (from the NOAA-20 near-real-time feed), and a one-line plain-language message. current_status is core and is never cut."
 Output: outlook.py (floor level) + tests.
 Test: as_of never uses later data; schema validates.
 

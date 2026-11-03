@@ -2,6 +2,8 @@ name: pr-guard
 on:
   pull_request:
     branches: [main]
+permissions:
+  contents: read
 jobs:
   guard:
     runs-on: ubuntu-latest
@@ -10,4 +12,10 @@ jobs:
         with:
           fetch-depth: 0
       - name: Check changed files against ownership
-        run: python3 scripts/git/guard.py --range "origin/${{ github.base_ref }}...${{ github.event.pull_request.head.sha }}" --user "${{ github.event.pull_request.user.login }}" --branch "${{ github.head_ref }}"
+        # Values from the pull request go through env, never straight into the script (branch names are user input).
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_USER: ${{ github.event.pull_request.user.login }}
+          HEAD_REF: ${{ github.head_ref }}
+        run: python3 scripts/git/guard.py --range "origin/${BASE_REF}...${HEAD_SHA}" --user "$PR_USER" --branch "$HEAD_REF"

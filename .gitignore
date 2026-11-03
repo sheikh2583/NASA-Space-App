@@ -1,7 +1,18 @@
 data/*
 !data/README.md
 !data/MANIFEST.md
+# Data never goes into git, wherever it is saved (fixtures are small JSON and stay allowed).
+*.parquet
+*.hdf
+*.h5
+*.nc
+*.tif
+*.tiff
+*.zip
+firms_*.csv
 .env
+.env.*
+!.env.example
 .venv/
 __pycache__/
 *.pyc

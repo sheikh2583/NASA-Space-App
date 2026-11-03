@@ -8,7 +8,7 @@ Never edit a file you do not own, even for a one-line fix. Ask the owner (sectio
 Use the scripts in scripts/git/ (docs/GIT_WORKFLOW.md); they enforce the rules below with hooks and a pull-request check.
 - Branch from main with your prefix: `ws1/...` (Sheikh), `ws2/...` (Sattyam), `ws3/...`, `ws4/...`, `ws5/...`, `ws6/...`.
 - Commit small and often. Before you push: `git pull --rebase origin main`. Never force-push main.
-- Open a pull request into main. The owner of the changed folder merges it (CODEOWNERS). contracts/ and common/ also need Sheikh's review.
+- Open a pull request into main. The owner of the changed folder merges it once the guard check passes. contracts/ and common/ also need Sheikh's review before merging.
 - A pull request touches only your own folder. If it touches anything else, split it.
 - Never commit data files, keys or .env. Never commit notebook outputs.
 - After G2 main stays deployable: merge only work that has passed its tests.

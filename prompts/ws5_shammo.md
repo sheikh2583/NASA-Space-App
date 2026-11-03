@@ -3,7 +3,7 @@ Folder: ws5_frontend/ (React + Vite)
 
 ## P5.1 Scaffold and i18n (H3-8)  HANDOFF
 Inputs: openapi.yaml, fixtures, mock server URL (Sattyam, H3).
-Prompt: "Scaffold a React + Vite app in ws5_frontend/ with i18n from the first commit: src/i18n/en.json and bn.json, a language toggle, Noto Sans Bengali, all UI text from the dictionaries. API base URL from VITE_API_BASE_URL (default the mock). Deploy to the static host and give me a demo link. Export a flat list of all en.json keys."
+Prompt: "Scaffold a React + Vite app in ws5_frontend/ with i18n from the first commit: src/i18n/en.json and bn.json, a language toggle, Noto Sans Bengali, all UI text from the dictionaries. API base URL from VITE_API_BASE_URL (default the mock) and the static fallback from VITE_FALLBACK_BASE_URL, both in ws5_frontend/.env (template: ws5_frontend/.env.example). Deploy to the static host and give me a demo link. Export a flat list of all en.json keys."
 Output: running scaffold, demo link, en.json key list. HANDOFF: to Samiul (keys) and everyone (link) by H8.
 Test: toggling language changes every visible string; no hard-coded strings (grep).
 
@@ -13,12 +13,12 @@ Output: draw-to-data flow on the mock.
 Test: all four states appear correctly; fallback works with the API off.
 
 ## P5.3 Calendar heatmap (H10-16)
-Prompt: "Build a calendar heatmap component: years as rows, weeks as columns, colour = value, colour-blind-safe palette, markers on flagged weeks, a badge per point for source (observed, modeled, mixed) and a warning icon when drift_flag is true. Hover shows the week, value, interval and source. Build against the fixtures."
+Prompt: "Build a calendar heatmap component: years as rows, weeks as columns, colour = value, colour-blind-safe palette, markers on flagged weeks, a badge per point for source (observed, adjusted from NOAA-20, modeled, mixed), grey cells where no sensor was operating (value null) and a warning icon when drift_flag is true. Hover shows the week, value, interval and source. Build against the fixtures."
 Output: heatmap component.
 Test: the 2012 seam is visible; flagged weeks are marked; keyboard focusable.
 
 ## P5.4 Series chart with uncertainty band (H12-16)  HANDOFF at H16
-Prompt: "Add a line chart under the heatmap with a lo-hi band, modeled periods shaded differently from observed, and a tooltip with value, interval and source. Hovering a flagged week highlights its period in the list. Switch the base URL to the live API."
+Prompt: "Add a line chart under the heatmap with a lo-hi band, modeled and adjusted_from_noaa20 periods shaded differently from observed, both seams (2012 and 2 Nov 2026) marked, and a tooltip with value, interval and source. Hovering a flagged week highlights its period in the list. Switch the base URL to the live API."
 Output: floor UI on live data. HANDOFF: demo link to everyone at H16.
 Test: works on live data with only the base URL changed.
 
@@ -29,7 +29,7 @@ Test: sparse AOI shows an insufficient-data message; status no_demonstrated_skil
 
 ## P5.6 Comparison, validation page, method panel (H24-36)
 Inputs: /meta/validation (H34); docs/method_en.md (H38).
-Prompt: "Add AOI comparison (two areas on the same axes via /aoi/compare), a validation page that renders /meta/validation pieces (tables for baselines and coverage, drift notes, limitations), and a method panel that renders docs/method_en.md."
+Prompt: "Add AOI comparison (two areas on the same axes via /aoi/compare), a validation page that renders /meta/validation pieces (tables for baselines and coverage, drift notes, limitations), and a method panel that renders docs/method_en.md. That file lives outside ws5_frontend/ and belongs to Samiul: copy it into ws5_frontend/public/ in a prebuild npm script (never edit it), so the build always shows his latest text."
 Output: comparison, validation page, method panel. Feature freeze at H36.
 Test: pieces missing from the endpoint do not break the page.
 
