@@ -1,0 +1,23 @@
+# Glossary (plain words)
+
+- **MODIS / VIIRS**: two families of satellite instruments that detect fires. MODIS has flown since 2000 (about 1 km pixels); VIIRS since 2012 (375 m pixels).
+- **Hot spot / detection**: one satellite pixel flagged as a likely fire.
+- **FRP (fire radiative power)**: how intensely a detected fire is radiating; a measure of intensity.
+- **AOI**: area of interest; the area the user draws.
+- **Cell**: one 0.1 degree square of the map grid (about 11 km); every detection belongs to one cell.
+- **Harmonization**: making the two records read as one consistent series.
+- **Observed vs modeled**: observed values come from VIIRS directly (2012 onward); modeled values are estimated from MODIS (before 2012).
+- **Seam**: the visible change in the series at 2012 where observed replaces modeled.
+- **B0 / B1**: simple baselines: one global ratio (B0) and a ratio per region and month (B1).
+- **LightGBM**: a gradient-boosting library; our learned model.
+- **Interval / uncertainty band**: a range around a value that we expect to contain the truth most of the time (we aim for 90 percent).
+- **Conformal prediction**: a way to turn model errors on held-out data into intervals; coverage is the share of truths inside the interval.
+- **Drift**: the relationship between the two sensors changing over time.
+- **Anomaly / critical period**: a week (or run of weeks) that is unusually high compared with normal; critical periods are ranked.
+- **Driver**: a weather or land factor that is associated with burning; association, not proof of cause.
+- **Outlook**: how the current season compares with normal, with a skill score showing whether the forecast beats a simple baseline.
+- **Parquet / DuckDB**: a compact table file format and a tool to query it with SQL.
+- **Contract**: the agreed shape of a file or an API response; never change it without Sheikh.
+- **Hand-off**: sending a finished file to a teammate with a message and a check.
+- **Gate**: a checkpoint (G0 to G3, freeze, submit) where we confirm the promised artifact exists and passes its tests.
+- **Floor / core / scale-up**: the three tiers of ambition; the floor must work first.

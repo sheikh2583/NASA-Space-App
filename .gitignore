@@ -1,0 +1,11 @@
+data/*
+!data/README.md
+!data/MANIFEST.md
+.env
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+node_modules/
+dist/
+.DS_Store

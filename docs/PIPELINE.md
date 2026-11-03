@@ -1,0 +1,29 @@
+# The project in plain words
+
+Satellites detect fires, but two families see them differently. MODIS (since 2000) and VIIRS (since 2012)
+have different pixel sizes and overpass times, so their records cannot simply be stacked. We build one
+consistent history, in VIIRS terms, for any area a user draws. Where VIIRS exists (2012 onward) it is shown
+as observed; before that we show an estimate made from MODIS, labeled as modeled and shown with an
+uncertainty band. On top we flag unusual weeks and rank critical periods (including agricultural burns),
+show associated weather and land-cover factors (never causes), and compare the current season with normal.
+
+Limits we state in the app: pre-2012 values are modeled; drivers are associations; the outlook may show no skill.
+
+## The chain
+1. Ingest (Monazir): FIRMS downloads -> detections.parquet
+2. Grid and cells (Sattyam): -> grid_daily.parquet, cells.parquet
+3. Harmonize (Sheikh): -> harmonized.parquet, predictions_oof.parquet, interval_table v0
+4. Intervals and drift (Samin): -> interval_table v1, drift_flags.parquet
+5. Anomalies and drivers (Monazir): -> anomalies, critical periods, drivers
+6. Outlook (Samin): -> outlook_region.json
+7. API (Sattyam): serves everything, plus a static fallback
+8. Web app (Shammo): the product users see
+Across all (Samiul): QA, validation content, method text, slides, video
+
+## What each person contributes
+- Sheikh: science core and glue; builds the harmonized series, sets up the repo, keeps hand-offs and gates on time.
+- Sattyam: turns raw detections into a fast service: grid, API for any area, static fallback.
+- Monazir: gets raw data flowing, then finds and ranks unusual periods and reports accompanying factors.
+- Samin: shared yardstick and trust layer: common functions, calibrated bands, drift checks, outlook.
+- Shammo: makes it usable: map, calendar, bands, panels, Bangla/English.
+- Samiul: makes it believable: tests every stage, validation content, method text, slides and video.

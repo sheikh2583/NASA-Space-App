@@ -1,0 +1,120 @@
+openapi: 3.0.3
+info:
+  title: MODIS-VIIRS Harmonization API
+  version: 0.1.0-skeleton
+  description: >
+    Skeleton drafted by Sheikh at H1; Sattyam completes it and writes fixtures by H3.
+    Day convention is the UTC date; weeks start on Monday. Every response carries
+    schema_version, units, day_convention and a per-point source flag.
+paths:
+  /aoi/summary:
+    post:
+      summary: Harmonized series for a drawn area
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AOIRequest' }
+      responses:
+        '200':
+          description: Series with intervals, source flags and anomaly flags
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SummaryResponse' }
+        '422':
+          description: AOI too large or invalid
+  /aoi/cells:
+    post:
+      summary: Per-cell burning activity for a period (the where map layer)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AOIRequest' }
+      responses:
+        '200': { description: 'schema_version, units, day_convention, period{start,end}, cells[{cell_id, lat_c, lon_c, value, modeled_share}]' }
+  /aoi/critical-periods:
+    post:
+      summary: Ranked critical periods for an area
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AOIRequest' }
+      responses:
+        '200': { description: 'Periods: start, end, severity, rank, peak_value, agri_tag, agri_share, n_weeks, depends_on_modeled_history' }
+  /aoi/drivers:
+    post:
+      summary: Associated drivers (associations only, never causes)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AOIRequest' }
+      responses:
+        '200': { description: 'items[{driver, lag_weeks, direction, strength, ci, evidence}], caveats[]' }
+  /aoi/outlook:
+    post:
+      summary: Current season versus normal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AOIRequest' }
+      responses:
+        '200': { description: 'as_of, current_status{week_percentile, level, data_through, message}, season_to_date_percentile, expected_range, skill, status, alert' }
+  /aoi/compare:
+    post:
+      summary: Two areas on the same axes
+      responses:
+        '200': { description: 'Two SummaryResponse objects with aligned time axes' }
+  /meta/validation:
+    get:
+      summary: Merged validation pieces (data/processed/validation/*.json)
+      responses:
+        '200': { description: 'Pieces keyed by producer; each has schema_version, generated_at, metrics, limitations' }
+  /export:
+    post:
+      summary: CSV export of the current view
+      responses:
+        '200': { description: 'text/csv' }
+components:
+  schemas:
+    AOIRequest:
+      type: object
+      properties:
+        geometry: { type: object, description: GeoJSON Polygon }
+        bbox: { type: array, items: { type: number }, minItems: 4, maxItems: 4 }
+        start: { type: string, format: date }
+        end: { type: string, format: date }
+        res: { type: string, enum: [day, week, month] }
+    SummaryPoint:
+      type: object
+      properties:
+        t: { type: string, format: date }
+        value: { type: number }
+        lo: { type: number }
+        hi: { type: number }
+        source: { type: string, enum: [observed_viirs, modeled_from_modis, mixed] }
+        drift_flag: { type: boolean }
+        anomaly:
+          type: object
+          properties:
+            flag: { type: boolean }
+            score: { type: number }
+    SummaryResponse:
+      type: object
+      properties:
+        schema_version: { type: string }
+        units: { type: string }
+        day_convention: { type: string }
+        aoi:
+          type: object
+          properties:
+            n_cells: { type: integer }
+            area_km2: { type: number }
+        res: { type: string }
+        series:
+          type: array
+          items: { $ref: '#/components/schemas/SummaryPoint' }
+        notes: { type: array, items: { type: string } }

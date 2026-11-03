@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "drivers_region",
+  "type": "object",
+  "required": ["items", "caveats"],
+  "properties": {
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["driver", "lag_weeks", "direction", "strength", "ci", "evidence"],
+        "properties": {
+          "driver": {"type": "string"},
+          "lag_weeks": {"type": "integer"},
+          "direction": {"enum": ["positive", "negative"]},
+          "strength": {"type": "number"},
+          "ci": {"type": "array", "items": {"type": "number"}, "minItems": 2, "maxItems": 2},
+          "evidence": {"enum": ["weak", "moderate", "strong"]}
+        }
+      }
+    },
+    "caveats": {"type": "array", "items": {"type": "string"}}
+  }
+}

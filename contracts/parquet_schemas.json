@@ -1,0 +1,93 @@
+{
+  "_note": "Column: type. Files live in data/processed/. grid_daily is sparse (missing row = zero detections).",
+  "detections": {
+    "sensor": "string",
+    "sat": "string",
+    "acq_date": "date32",
+    "acq_time": "int32",
+    "lat": "float64",
+    "lon": "float64",
+    "frp": "float32",
+    "conf": "float32",
+    "daynight": "string",
+    "scan": "float32",
+    "track": "float32",
+    "source_type": "int32",
+    "product_version": "string"
+  },
+  "grid_daily": {
+    "cell_id": "int32",
+    "date": "date32",
+    "sensor": "string",
+    "n_det": "int32",
+    "n_hiconf": "int32",
+    "frp_sum": "float32",
+    "frp_max": "float32",
+    "n_day": "int32",
+    "n_night": "int32",
+    "mean_scan": "float32"
+  },
+  "cells": {
+    "cell_id": "int32",
+    "lat_c": "float32",
+    "lon_c": "float32",
+    "landcover_dom": "string",
+    "cropland_frac": "float32",
+    "forest_frac": "float32",
+    "admin1_id": "string",
+    "admin1_name": "string",
+    "country": "string"
+  },
+  "harmonized": {
+    "cell_id": "int32",
+    "date": "date32",
+    "value_count": "float32",
+    "value_frp": "float32",
+    "modeled_count": "float32",
+    "lo_count": "float32",
+    "hi_count": "float32",
+    "level": "float32",
+    "source": "string (observed_viirs | modeled_from_modis | mixed)",
+    "drift_flag": "bool",
+    "method_version": "string"
+  },
+  "predictions_oof": {
+    "cell_id": "int32",
+    "date": "date32",
+    "y_true_count": "float32",
+    "y_pred_count": "float32",
+    "y_true_frp": "float32",
+    "y_pred_frp": "float32",
+    "fold": "int32",
+    "block_id": "int32",
+    "split": "string (train | calib | test)"
+  },
+  "drift_flags": {
+    "region_id": "string",
+    "year": "int32",
+    "drift_flag": "bool",
+    "reason": "string"
+  },
+  "anomalies_region_week": {
+    "region_id": "string",
+    "week_start": "date32",
+    "value": "float32",
+    "baseline": "float32",
+    "score": "float32",
+    "flag": "bool",
+    "exceeds_lower_bound": "bool",
+    "severity": "float32"
+  },
+  "critical_periods": {
+    "region_id": "string",
+    "period_id": "int32",
+    "start": "date32",
+    "end": "date32",
+    "severity": "float32",
+    "rank": "int32",
+    "peak_value": "float32",
+    "agri_tag": "bool",
+    "n_weeks": "int32",
+    "agri_share": "float32"
+  }
+}

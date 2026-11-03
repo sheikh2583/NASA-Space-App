@@ -1,0 +1,13 @@
+name: pr-guard
+on:
+  pull_request:
+    branches: [main]
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check changed files against ownership
+        run: python3 scripts/git/guard.py --range "origin/${{ github.base_ref }}...${{ github.event.pull_request.head.sha }}" --user "${{ github.event.pull_request.user.login }}" --branch "${{ github.head_ref }}"

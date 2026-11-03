@@ -1,0 +1,14 @@
+# Handles come from the team list; confirm them at H0.
+/ws1_harmonize/ @sheikh2583
+/ws2_platform/ @sssatty
+/ws3_anomaly/ @Monajir
+/ws4_outlook/ @Samin2712
+/ws5_frontend/ @Zanasin
+/ws6_validation/ @samiulislam22
+/docs/ @samiulislam22 @sheikh2583
+# Shared code and contracts need Sheikh's review as well.
+/contracts/ @sssatty @sheikh2583
+/common/ @Samin2712 @sheikh2583
+/tools/ @sheikh2583
+/docs/method_en.md @samiulislam22
+/docs/method_bn.md @samiulislam22

@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "interval_table",
+  "type": "object",
+  "required": ["version", "level", "entries"],
+  "properties": {
+    "version": {"type": "string"},
+    "level": {"type": "number"},
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["res", "stratum", "lo_mult", "hi_mult", "hi_add"],
+        "properties": {
+          "res": {"enum": ["week", "month"]},
+          "stratum": {"type": "string", "description": "e.g. region:BD-13|month:11 (v0) or landcover:cropland|season:rabi (v1) or all"},
+          "max_value": {"type": ["number", "null"], "description": "upper edge of the magnitude bin; null = no upper limit"},
+          "lo_mult": {"type": "number"},
+          "hi_mult": {"type": "number"},
+          "hi_add": {"type": "number"}
+        }
+      }
+    }
+  }
+}
