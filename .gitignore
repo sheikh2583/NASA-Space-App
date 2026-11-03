@@ -20,3 +20,7 @@ __pycache__/
 node_modules/
 dist/
 .DS_Store
+# Generated outputs (rebuilt by scripts/run_pipeline.*; never committed)
+ws2_platform/static_fallback/
+ws5_frontend/public/method_*.md
+.pytest_cache/

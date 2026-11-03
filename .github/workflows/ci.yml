@@ -1,0 +1,39 @@
+name: ci
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements.lock.txt
+      - run: pip install -r requirements.lock.txt
+      # Unit tests and contract-file checks only: data/ is not in git, so data and API tests skip themselves.
+      - run: python -m pytest -q
+      - name: Contracts parse
+        run: python -c "import yaml,json,glob; from openapi_spec_validator import validate; validate(yaml.safe_load(open('contracts/openapi.yaml'))); [json.load(open(p)) for p in glob.glob('contracts/**/*.json', recursive=True)]"
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ws5_frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: ws5_frontend/package-lock.json
+      - run: npm ci
+      - run: npm run check:strings
+      - run: npm test
+      - run: npm run build

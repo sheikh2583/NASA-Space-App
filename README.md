@@ -1,6 +1,11 @@
 # MODIS + VIIRS Harmonization (NASA Space Apps 2026)
 
-> 3 Nov 2026: Suomi NPP stopped on 2 Nov 2026; read docs/DECISIONS.md decisions 17-23 before anything else.
+> **3 Nov 2026: the code for all six workstreams is built and tested on synthetic data. Start with docs/ONBOARDING.md;
+> Sheikh's copy-paste guide (datasets, ML training, deploy, push) is docs/SHEIKH_GUIDE.md.**
+> (status, how to run, what is still manual). Suomi NPP stopped on 2 Nov 2026: see docs/DECISIONS.md decisions 17-23.
+>
+> Quick start: `bash scripts/setup.sh --quick` (Linux/macOS) or `powershell -ExecutionPolicy Bypass -File scripts\setup.ps1 -Quick`
+> (Windows), then `scripts/start.sh` / `scripts\start.ps1` and open http://localhost:5173.
 
 > Start with docs/GUIDE.md (the end-to-end guide). Read docs/KNOWN_GAPS.md: this kit was written without the official challenge text and without running any project code; several facts are unverified and have H0 checks (docs/H0_VERIFICATION.md).
 
@@ -8,8 +13,8 @@ We build a web app that merges MODIS and VIIRS fire detections into one consiste
 calendar for any area a user draws: harmonized history with uncertainty bands, flagged unusual
 periods (including agricultural burns), associated drivers (never causes) and a current-season outlook.
 
-This starter contains structure, contracts, checklists and prompt packs only. It contains no project
-logic; the work starts at H0.
+The starter kit's plans, contracts and prompt packs are now implemented (see docs/ONBOARDING.md); real-data runs,
+hosting and the human checks are still to do.
 
 ## Start here
 Git commands and scripts (clone, branch, save, ship): docs/GIT_WORKFLOW.md. Do its section 0 first.
