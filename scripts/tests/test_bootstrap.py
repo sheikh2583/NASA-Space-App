@@ -1,4 +1,5 @@
 import subprocess
+from types import SimpleNamespace
 import pytest
 from scripts import bootstrap
 
@@ -81,3 +82,35 @@ def test_training_only_needs_no_node_and_preserves_environment(monkeypatch, tmp_
     assert not any('ci' in args or 'node' in args for args in calls)
     assert (tmp_path / '.env').read_text() == 'EXISTING=preserve\n'
     assert not (tmp_path / 'ws5_frontend').exists()
+
+
+@pytest.mark.parametrize('libc,version', [('musl', '1.2'), ('glibc', '2.27')])
+def test_linux_training_rejects_incompatible_libc_before_install(monkeypatch, libc, version):
+    monkeypatch.setattr(bootstrap, 'sys', SimpleNamespace(platform='linux'))
+    monkeypatch.setattr(bootstrap.platform, 'machine', lambda: 'x86_64')
+    monkeypatch.setattr(bootstrap.platform, 'libc_ver', lambda: (libc, version))
+    with pytest.raises(RuntimeError, match='glibc 2.28'):
+        bootstrap.check_linux_runtime()
+
+
+def test_linux_training_reports_missing_openmp_without_fitting(monkeypatch):
+    import ctypes
+    monkeypatch.setattr(bootstrap, 'sys', SimpleNamespace(platform='linux'))
+    monkeypatch.setattr(bootstrap.platform, 'machine', lambda: 'x86_64')
+    monkeypatch.setattr(bootstrap.platform, 'libc_ver', lambda: ('glibc', '2.36'))
+    def missing(name):
+        raise OSError('not installed')
+    monkeypatch.setattr(ctypes, 'CDLL', missing)
+    with pytest.raises(RuntimeError, match='sudo apt-get install libgomp1'):
+        bootstrap.check_linux_runtime()
+
+
+def test_linux_host_check_loads_only_openmp(monkeypatch):
+    import ctypes
+    monkeypatch.setattr(bootstrap, 'sys', SimpleNamespace(platform='linux'))
+    monkeypatch.setattr(bootstrap.platform, 'machine', lambda: 'x86_64')
+    monkeypatch.setattr(bootstrap.platform, 'libc_ver', lambda: ('glibc', '2.36'))
+    loaded = []
+    monkeypatch.setattr(ctypes, 'CDLL', loaded.append)
+    bootstrap.check_linux_runtime()
+    assert loaded == ['libgomp.so.1']

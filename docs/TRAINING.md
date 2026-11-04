@@ -4,6 +4,8 @@
 
 Current workflow: 4 November 2026. Start in the repository root. Training requires NVIDIA Windows/Linux, Python 3.11, the real inputs below, and a passing CUDA probe. The complete project setup also requires Node.js 22.12+; training-only setup does not. Setup installs dependencies only; training is always separate. For UI/API development without a GPU, use `-UiOnly` / `--ui-only` and the mock launch in [README](../README.md).
 
+For a complete teammate handoff with prerequisite installation, Windows/Linux initialization, input-copy commands, logged quick/full runs, and return-archive commands, use **[TEAM_TRAINING.md](TEAM_TRAINING.md)**. Linux supports an explicit interpreter via `--python "$(uv python find --system 3.11)"`; Windows supports `-PythonExecutable 'C:\full\path\to\python.exe'` when creating `.venv`. Linux training checks x86_64, glibc 2.28+, and OpenMP before installing packages. A fresh native Linux installation still requires human verification.
+
 ## Start here: run on your training machine
 
 Use the same procedure on the RTX 4070 Laptop 8 GB or RTX 3090 Desktop 24 GB. GPU 0 means the first CUDA-visible GPU **on that machine**. These examples use the project interpreter directly, so virtual-environment activation is optional. Run one block at a time and resolve any failure before continuing. The commands below use the required downloaded files; setup does not obtain those files for you.
@@ -263,12 +265,12 @@ Accept a final run only after checking:
 - Final outputs exist under `data/processed/`; learned comparison artifacts are under `data/interim/sheikh/`. CUDA models use `xgb_count.ubj`, `xgb_frp.ubj`, and `xgb_metadata.json`; `b1_params.pkl` supplies the baseline if selected.
 - Keep the execution report, CUDA fit log, console log, selected-method record, metrics table, and results summary with the run's Git revision. Preserve the pre-run backup until the new science has been reviewed.
 
-To publish the named-area demo after review:
+To package existing validated results for the combined Render deployment after review:
 
 ```sh
-python scripts/export_hosted_demo.py
+python scripts/runtime_bundle.py pack
 ```
 
-This exports supported administrative boundaries and saved responses for each named area. Review the public JSON, test/preview in snapshot mode, commit those artifacts, and push to the deployment branch. The export date remains fixed at 2026-11-02. [README deployment](../README.md#deploy-the-demo) and [hosting operations](HOSTING.md) cover GitHub Pages, revision checks, and full API hosting limits.
+Upload `share/firesense-runtime.zip` under a new GitHub Release version, update its URL and printed SHA256 in `deployment/runtime.json`, and push the manifest. Render rebuilds the frontend/API with those existing results; it never trains. The record remains fixed at 2026-11-02. `export_hosted_demo.py` is only needed when refreshing the optional legacy snapshot. See [Render deployment](RENDER.md) and [the teammate deliverables checklist](TEAM_TRAINING.md#acceptance-and-deliverables).
 
 Run real CUDA integration tests with `FIRESENSE_TEST_CUDA=1` as shown in the README. Manual FIRMS comparisons, fluent Bangla review, and phone/browser checks remain separate submission checks. Timing ranges for both requested GPUs are in [GPU_TRAINING_TIMES.md](GPU_TRAINING_TIMES.md).

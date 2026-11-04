@@ -18,6 +18,8 @@ The canonical `docs/TRAINING.md` now starts with copyable Windows/Linux fast pat
 
 ## Initialization and dependencies
 
+The complete human-operated [teammate handoff](TEAM_TRAINING.md) includes prerequisite installation, Windows/Linux setup, input-copy commands, quick/full logs, and deliverable archives. Setup accepts `-PythonExecutable` on Windows and `--python` on Linux for Python 3.11 outside PATH; Linux can discover an already-installed uv-managed interpreter and checks x86_64/glibc/OpenMP before package installation. These changes passed syntax checks and nine mocked setup tests without fitting; fresh target-machine installation remains human verification work.
+
 Windows `scripts/setup.ps1` and Linux `scripts/setup.sh` create/check the OS-specific Python 3.11 environment and call the shared `scripts/bootstrap.py`. Default setup installs the complete `requirements-cuda.txt` environment (locked base requirements + XGBoost 3.2.0), checks driver/imports/dependencies, runs an actual CUDA probe, installs npm dependencies, preserves `.env`, and creates input folders. Setup never starts a data pipeline.
 
 `-UiOnly` / `--ui-only` supports mock/UI development without NVIDIA, including macOS. Menu 1 is full CUDA setup, 11 is UI-only setup, 12 verifies CUDA, 4/5 run quick/full CUDA training. Workflow/pipeline CLIs now accept only CUDA; direct model/drift/outlook/readiness entrypoints select CUDA and reject inherited CPU overrides. Base reference implementations remain internal for tests and scientific comparison. Guard tests cover these boundaries without launching training.

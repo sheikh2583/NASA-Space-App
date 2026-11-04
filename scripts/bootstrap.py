@@ -18,6 +18,24 @@ def run(*args: str) -> None:
     subprocess.run(args, cwd=ROOT, check=True)
 
 
+def check_linux_runtime() -> None:
+    """Fail with actionable host errors before downloading training packages."""
+    if sys.platform != 'linux':
+        return
+    if platform.machine().lower() not in {'x86_64', 'amd64'}:
+        raise RuntimeError('The supported Linux training environment is x86_64. ARM/Jetson is not verified by this lockfile.')
+    libc, version = platform.libc_ver()
+    if libc != 'glibc' or not version:
+        raise RuntimeError('Linux training requires glibc 2.28+; musl/Alpine is not supported by this wheel-based setup.')
+    if tuple(map(int, version.split('.')[:2])) < (2, 28):
+        raise RuntimeError(f'Linux training requires glibc 2.28+; found {version}. Use a supported modern Linux distribution.')
+    import ctypes
+    try:
+        ctypes.CDLL('libgomp.so.1')
+    except OSError as error:
+        raise RuntimeError('Missing Linux OpenMP runtime. On Debian/Ubuntu: sudo apt-get install libgomp1. See docs/TEAM_TRAINING.md.') from error
+
+
 def main(argv=None) -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--ui-only', action='store_true', help='Install development/API dependencies without requiring NVIDIA CUDA')
@@ -49,6 +67,7 @@ def main(argv=None) -> None:
     if not args.ui_only:
         if sys.platform not in {'win32', 'linux'}:
             raise RuntimeError('CUDA training requires NVIDIA Windows/Linux. Use --ui-only for development on this OS.')
+        check_linux_runtime()
         if not shutil.which('nvidia-smi'):
             raise RuntimeError('NVIDIA driver/nvidia-smi is missing. Install the driver, or use --ui-only for UI development.')
         run('nvidia-smi', '--query-gpu=name,memory.total,driver_version', '--format=csv,noheader')

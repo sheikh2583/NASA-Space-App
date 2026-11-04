@@ -10,6 +10,8 @@ FireSense combines NASA FIRMS MODIS and VIIRS observations into a consistent fir
 
 [Initialize](#initialize-a-fresh-checkout) · [CUDA setup](#cuda-training-dependencies) · [Data and keys](#prepare-real-training-data) · [Train](#train-and-validate) · [Debug](#debug-and-test) · [Deploy](#deploy-the-demo) · [Project structure](#project-structure-and-contribution)
 
+**Sending work to a teammate?** [Copy the Windows/Linux training handoff](docs/TEAM_TRAINING.md): prerequisite installation, initialization scripts, input copying, logged runs, and deliverable packaging.
+
 ## Choose your starting point
 
 | Goal | What you need | Start here |

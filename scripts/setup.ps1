@@ -4,6 +4,7 @@ param(
   [switch]$UiOnly,
   [switch]$TrainingOnly,
   [switch]$AllowCompatible,
+  [string]$PythonExecutable,
   [ValidateRange(0, 64)][int]$GpuId = 0,
   [ValidateRange(1, 256)][int]$Threads = 8,
   [switch]$NoPipeline, # Compatibility: setup never starts a pipeline now.
@@ -21,7 +22,12 @@ try {
     if (Test-Path -LiteralPath '.venv') { throw '.venv exists but has no Windows Python. Rename it before creating a Windows environment.' }
     $pyCommand = $null
     $pyFlags = @()
-    if (Get-Command py -ErrorAction SilentlyContinue) {
+    if ($PythonExecutable) {
+      $pyCommand = (Get-Command $PythonExecutable -ErrorAction Stop).Source
+      & $pyCommand -c 'import struct,sys; sys.exit(0 if sys.version_info[:2] == (3, 11) and struct.calcsize("P") == 8 else 1)'
+      if ($LASTEXITCODE -ne 0) { throw '-PythonExecutable must select a working 64-bit Python 3.11 executable.' }
+    }
+    if (-not $pyCommand -and (Get-Command py -ErrorAction SilentlyContinue)) {
       try {
         & py -3.11 -c 'import sys' 2>$null
         if ($LASTEXITCODE -eq 0) { $pyCommand = 'py'; $pyFlags = @('-3.11') }
@@ -31,7 +37,7 @@ try {
       & python -c 'import sys; sys.exit(0 if sys.version_info[:2] == (3, 11) else 1)'
       if ($LASTEXITCODE -eq 0) { $pyCommand = 'python' }
     }
-    if (-not $pyCommand) { throw 'Install 64-bit Python 3.11 and reopen the terminal.' }
+    if (-not $pyCommand) { throw 'Install 64-bit Python 3.11 and reopen the terminal, or pass -PythonExecutable with its full path. See docs/TEAM_TRAINING.md.' }
     & $pyCommand @pyFlags -m venv .venv
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
   }
