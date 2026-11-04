@@ -116,6 +116,8 @@
             },
             "level": {
               "enum": [
+                "very_low",
+                "low",
                 "none",
                 "watch",
                 "high"
