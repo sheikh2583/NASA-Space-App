@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet-draw";
@@ -25,16 +25,22 @@ export default function MapView({ aoi, cells, period, onDraw }: Props) {
   const map = useRef<L.Map | null>(null);
   const aoiLayer = useRef<L.FeatureGroup | null>(null);
   const cellLayer = useRef<L.LayerGroup | null>(null);
+  const [tileError, setTileError] = useState(false);
   const drawRef = useRef(onDraw);
   drawRef.current = onDraw;
 
   useEffect(() => {
     if (!el.current || map.current) return;
     const m = L.map(el.current, { center: [26.5, 83], zoom: 5, worldCopyJump: true });
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a> | Fire data: NASA FIRMS',
-      subdomains: "abcd", maxZoom: 12,
-    }).addTo(m);
+    // OSM's standard raster endpoint supports normal interactive browser maps
+    // without a provider key. FIRMS credentials belong only on the data backend.
+    const tiles = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | Fire data: NASA FIRMS',
+      maxZoom: 12,
+    });
+    tiles.on("tileerror", () => setTileError(true));
+    tiles.on("tileload", () => setTileError(false));
+    tiles.addTo(m);
     const drawn = new L.FeatureGroup().addTo(m);
     cellLayer.current = L.layerGroup().addTo(m);
     aoiLayer.current = drawn;
@@ -52,6 +58,13 @@ export default function MapView({ aoi, cells, period, onDraw }: Props) {
       drawRef.current(gj);
     });
     map.current = m;
+    return () => {
+      tiles.off();
+      m.remove();
+      map.current = null;
+      aoiLayer.current = null;
+      cellLayer.current = null;
+    };
   }, []);
 
   useEffect(() => {
@@ -85,6 +98,7 @@ export default function MapView({ aoi, cells, period, onDraw }: Props) {
   return (
     <>
       <div ref={el} className="map" role="application" aria-label={t("map.draw_hint")} />
+      {tileError && <p className="warn" role="status">{t("map.tiles_unavailable")}</p>}
       {cells && period && (
         <div className="legend" aria-live="polite">
           <strong>{t("map.where_title")}</strong>

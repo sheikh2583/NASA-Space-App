@@ -10,6 +10,8 @@ The `Deploy live demo` GitHub Actions workflow (`.github/workflows/pages.yml`) r
 
 ## What is hosted
 
+The interactive basemap uses `https://tile.openstreetmap.org/{z}/{x}/{y}.png` with visible OpenStreetMap contributor attribution. It needs no CARTO key. The NASA FIRMS MAP_KEY is unrelated to basemap access and must remain backend-only. Respect the [OSM tile policy](https://operations.osmfoundation.org/policies/tiles/): normal viewport requests, browser caching and Referer, no bulk downloading or offline tile prefetch. For heavier traffic, provision a suitable tile service separately.
+
 The first deployment is a static real-data demo with exactly the Bangladesh and Punjab example areas. `ws5_frontend/public/demo/snapshot.json` is an explicitly published, approximately 645 KB export from the completed real-data run. It includes weekly summaries, periods, associated drivers, outlooks, and validation records. It contains no API keys, raw CSVs, local model files, or private account data.
 
 The app displays the snapshot date and limits. Custom drawing, alternate date/resolution queries, spatial cell layers, and CSV exports require a running backend and are disabled or omitted in snapshot mode. Calendar and series browsing, comparison, Validation, Method, English/Bangla, and printing remain available. A hosted UI update is separate from a data refresh: pushing code does not download NASA data or retrain a model.
