@@ -82,3 +82,24 @@ def test_sparse_area_is_insufficient():
     df["value"] = 0.0
     out = drivers.driver_associations(df, pd.DataFrame({"week_start": df["week_start"], "rain_anom": 0.0, "t2m_anom": 0.0, "soil_anom": 0.0}))
     assert out["status"] == "insufficient_data"
+
+
+def test_lag_search_p_value_keeps_false_positives_near_nominal(monkeypatch):
+    """Pure noise: picking the best of 9 lags must not inflate p<0.05 hits (decision 25).
+    Unadjusted per-lag p-values give roughly 25-35% here; the max-over-lags test gives about 5%."""
+    monkeypatch.setattr(drivers, "N_PERM", 99)
+    monkeypatch.setattr(drivers, "N_BOOT", 20)
+    rng = np.random.default_rng(11)
+    trials, hits = 40, 0
+    for _ in range(trials):
+        b = rng.normal(0, 1, 260)
+        d = rng.normal(0, 1, 260)
+        out = drivers._assoc_over_lags(b, d, rng)
+        hits += out is not None and out[2] < 0.05
+    assert hits / trials <= 0.15, hits
+
+
+def test_shift_matches_pandas():
+    x = np.arange(10, dtype=float)
+    for lag in (0, 1, 8):
+        np.testing.assert_array_equal(drivers._shift(x, lag), pd.Series(x).shift(lag).to_numpy())

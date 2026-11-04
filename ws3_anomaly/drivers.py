@@ -1,8 +1,11 @@
 """Driver associations (associations only, never causes): prompt P3.8, decision 20.
 
-For each weather driver and lag 0-8 weeks: Spearman correlation between deseasonalized burning and the
-driver anomaly, a block-permutation p-value (8-week blocks) and a block-bootstrap CI. Run in batch per
-admin1 region (too slow per request). Wording in every output string avoids causal verbs (lint test).
+For each weather driver, lags 0-8 weeks are searched for the strongest Spearman correlation between
+deseasonalized burning and the driver anomaly. Its p-value comes from a block permutation (8-week blocks)
+of the max-over-lags statistic: every permuted driver series is searched over the same 9 lags, so the
+p-value accounts for picking the best lag (decision 25). A block-bootstrap CI is given for the chosen lag.
+Run in batch per admin1 region (too slow per request). Wording in every output string avoids causal verbs
+(lint test).
 """
 from __future__ import annotations
 
@@ -39,19 +42,52 @@ def _block_perm(x, rng):
     return np.concatenate([x[s:s + BLOCK] for s in starts])[:n]
 
 
-def _assoc(b, d, rng):
+def _shift(x: np.ndarray, lag: int) -> np.ndarray:
+    """Same as pandas Series.shift(lag): value of week t - lag at week t, NaN for the first lag weeks."""
+    if lag == 0:
+        return x.copy()
+    out = np.full_like(x, np.nan)
+    out[lag:] = x[:-lag]
+    return out
+
+
+def _rho(b, d):
     ok = ~np.isnan(b) & ~np.isnan(d)
-    b, d = b[ok], d[ok]
-    if b.size < 2 * 52:
+    if ok.sum() < 2 * 52:
         return None
-    rho = stats.spearmanr(b, d).statistic
-    null = np.array([stats.spearmanr(b, _block_perm(d, rng)).statistic for _ in range(N_PERM)])
-    p = (1 + np.sum(np.abs(null) >= abs(rho))) / (N_PERM + 1)
-    n, boots = b.size, []
+    r = stats.spearmanr(b[ok], d[ok]).statistic
+    return None if np.isnan(r) else float(r)
+
+
+def _best_lag(b, d):
+    """(lag, rho) with the largest |rho| over lags 0..MAX_LAG, or None."""
+    best = None
+    for lag in range(MAX_LAG + 1):
+        r = _rho(b, _shift(d, lag))
+        if r is not None and (best is None or abs(r) > abs(best[1])):
+            best = (lag, r)
+    return best
+
+
+def _assoc_over_lags(b, d, rng):
+    """(lag, rho, p, ci) for the best lag; p is the max-over-lags block-permutation p-value."""
+    best = _best_lag(b, d)
+    if best is None:
+        return None
+    lag, rho = best
+    null = np.empty(N_PERM)
+    for i in range(N_PERM):
+        nb = _best_lag(b, _block_perm(d, rng))
+        null[i] = 0.0 if nb is None else abs(nb[1])
+    p = (1 + np.sum(null >= abs(rho))) / (N_PERM + 1)
+    ds = _shift(d, lag)
+    ok = ~np.isnan(b) & ~np.isnan(ds)
+    bb, dd = b[ok], ds[ok]
+    n, boots = bb.size, []
     for _ in range(N_BOOT):
         idx = np.concatenate([np.arange(s, min(s + BLOCK, n)) for s in rng.integers(0, n - BLOCK, n // BLOCK + 1)])[:n]
-        boots.append(stats.spearmanr(b[idx], d[idx]).statistic)
-    return float(rho), float(p), [float(np.quantile(boots, 0.025)), float(np.quantile(boots, 0.975))]
+        boots.append(stats.spearmanr(bb[idx], dd[idx]).statistic)
+    return lag, float(rho), float(p), [float(np.nanquantile(boots, 0.025)), float(np.nanquantile(boots, 0.975))]
 
 
 def evidence_label(p: float, rho: float) -> str:
@@ -79,14 +115,9 @@ def driver_associations(weekly_df: pd.DataFrame, weather: pd.DataFrame, region_n
     m = w.merge(wx, on="week_start", how="inner").sort_values("week_start")
     found = []
     for col, label in DRIVERS.items():
-        best = None
-        for lag in range(MAX_LAG + 1):
-            d = m[col].shift(lag).to_numpy(dtype=float)
-            r = _assoc(m["burn"].to_numpy(dtype=float), d, rng)
-            if r and (best is None or abs(r[0]) > abs(best[1][0])):
-                best = (lag, r)
-        if best and best[1][1] < 0.05:
-            lag, (rho, p, ci) = best
+        best = _assoc_over_lags(m["burn"].to_numpy(dtype=float), m[col].to_numpy(dtype=float), rng)
+        if best and best[2] < 0.05:
+            lag, rho, p, ci = best
             found.append({"driver": label, "lag_weeks": lag, "direction": "positive" if rho > 0 else "negative",
                           "strength": round(rho, 3), "ci": [round(ci[0], 3), round(ci[1], 3)], "evidence": evidence_label(p, rho),
                           "_p": p})
