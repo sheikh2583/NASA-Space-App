@@ -1,7 +1,7 @@
 github,name,slot,prefix,folder,allowed
-sheikh2583,Sheikh,1,ws1,ws1_harmonize,ws1_harmonize/:docs/:tools/:scripts/:prompts/:.github/:README.md:requirements.txt:requirements.lock.txt:.gitignore:.gitattributes:.env.example:contracts/parquet_schemas.json:contracts/json_schemas/:contracts/README.md:data/MANIFEST.md
-sssatty,Sattyam,2,ws2,ws2_platform,ws2_platform/:contracts/openapi.yaml:contracts/fixtures/:data/MANIFEST.md:docs/CONTRACT_CHANGES.md
+sheikh2583,Sheikh,1,ws1,ws1_harmonize,ws1_harmonize/:docs/:tools/:scripts/:.github/:README.md:CONTRIBUTING.md:AGENTS.md:CLAUDE.md:Dockerfile:render.yaml:deployment/:requirements.txt:requirements.lock.txt:requirements-api.txt:requirements-cuda.txt:.dockerignore:pytest.ini:.gitignore:.gitattributes:.env.example:contracts/parquet_schemas.json:contracts/json_schemas/:contracts/README.md:data/MANIFEST.md
+sssatty,Sattyam,2,ws2,ws2_platform,ws2_platform/:contracts/openapi.yaml:contracts/fixtures/:data/MANIFEST.md:docs/project/contract-changes.md
 Monajir,Monazir,3,ws3,ws3_anomaly,ws3_anomaly/:data/MANIFEST.md
 Samin2712,Samin,4,ws4,ws4_outlook,ws4_outlook/:common/:data/MANIFEST.md
 Zanasin,Shammo,5,ws5,ws5_frontend,ws5_frontend/:data/MANIFEST.md
-samiulislam22,Samiul,6,ws6,ws6_validation,ws6_validation/:docs/method_en.md:docs/method_bn.md:docs/slides/:docs/demo_script.md:docs/QA_CHECKLIST.md:docs/SUBMISSION_CHECKLIST.md:data/MANIFEST.md
+samiulislam22,Samiul,6,ws6,ws6_validation,ws6_validation/:docs/science/method_en.md:docs/science/method_bn.md:docs/project/slides/:docs/project/demo-script.md:docs/project/qa-checklist.md:docs/project/submission-checklist.md:data/MANIFEST.md

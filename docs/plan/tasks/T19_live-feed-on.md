@@ -9,7 +9,7 @@ size: S
 needs: [T39]
 requires: [secret:FIRMS_MAP_KEY, gh-auth]
 branch: ws1/T19-live-feed-on
-touches: [.github/workflows/pages.yml, docs/HOSTING.md]
+touches: [.github/workflows/pages.yml, docs/guides/deployment.md]
 creates: []
 checks: [CHECK-PLAN, CHECK-SNAP]
 ---
@@ -28,7 +28,7 @@ Turn the nightly near-real-time update on, and prove it works and leaks nothing.
    `gh workflow run pages.yml`, and follow it with `gh run watch`.
 4. In the run log, search for `api/area` and for the key's first 6 characters; both must have no match. Then open the
    live site: the status card shows "Data through <date>".
-5. Update `docs/HOSTING.md` with the date the feed was switched on and how to switch it off (`LIVE_FEED=off`).
+5. Update `docs/guides/deployment.md` with the date the feed was switched on and how to switch it off (`LIVE_FEED=off`).
 6. Run the checks, mark the card done, `split`, push and open the PR.
 
 ## Acceptance

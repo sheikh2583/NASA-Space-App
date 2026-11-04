@@ -9,7 +9,7 @@ size: M
 needs: [T07]
 requires: [real-data]
 branch: ws1/T21-recurrence-map
-touches: [ws2_platform/api/app.py, contracts/openapi.yaml, docs/CONTRACT_CHANGES.md, scripts/export_hosted_demo.py,
+touches: [ws2_platform/api/app.py, contracts/openapi.yaml, docs/project/contract-changes.md, scripts/export_hosted_demo.py,
           ws5_frontend/src/types.ts, ws5_frontend/src/components/MapView.tsx, ws5_frontend/src/App.tsx,
           ws5_frontend/src/snapshot.ts, ws5_frontend/src/i18n/en.json, ws5_frontend/src/i18n/bn.json]
 creates: [ws2_platform/recurrence.py, ws2_platform/tests/test_recurrence.py, ws5_frontend/public/demo/recurrence_bd.json,
@@ -42,7 +42,7 @@ inside that season's window.
    - `POST /aoi/recurrence` takes an AOIRequest plus `season` (a season name; it defaults to the area's last
      window).
    - It returns `{…envelope, season, years: "2012-2025", cells: [{cell_id, lat_c, lon_c, share, n_years, mean_detections}]}`.
-   - Add it to OpenAPI and `CONTRACT_CHANGES.md`.
+   - Add it to OpenAPI and `docs/project/contract-changes.md`.
    - Add a tiny-API test.
 4. **Snapshot**, in separate lazy files so the first page load stays small.
    - `export_hosted_demo.py` writes `ws5_frontend/public/demo/recurrence_<key>.json` as

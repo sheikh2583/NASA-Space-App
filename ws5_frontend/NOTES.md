@@ -4,7 +4,7 @@
 - React 19 + Vite 8 + TypeScript (6/7) + Leaflet/leaflet-draw + Recharts + custom SVG calendar. Plain CSS instead of
   Tailwind (one less build step). i18n with i18next; bn.json is an AI draft that needs a fluent review.
 - Static fallback: when the API fails, the app finds the region containing the AOI centre in VITE_FALLBACK_BASE_URL/index.json.
-- Method panel reads docs/method_*.md, copied into public/ by scripts/copy-method.mjs before dev and build.
+- Method panel reads docs/science/method_*.md, copied into public/ by scripts/copy-method.mjs before dev and build.
 - `npm run check:strings` fails on visible English outside t().
 
 ## Known issues

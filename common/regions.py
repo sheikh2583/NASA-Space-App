@@ -1,4 +1,4 @@
-"""Demo regions, satellites and their operating windows (docs/AI_PREAMBLE.md, decisions 17-19)."""
+"""Demo regions, satellites and their operating windows (docs/science/decisions.md, decisions 17-19)."""
 from __future__ import annotations
 
 import datetime as dt

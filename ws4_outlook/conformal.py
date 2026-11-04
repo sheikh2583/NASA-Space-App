@@ -8,7 +8,7 @@
    hi = (pred + 1) e^q - 1 = pred e^q + (e^q - 1)  -> hi_mult = e^q, hi_add = e^q - 1,
    lo = (pred + 1) e^-q - 1, bounded below by lo_mult x pred with lo_mult taken at the bin's lower edge.
 4. Coverage on the same sampling over test blocks, by land cover and season, next to the nominal 90%.
-Caveat: calibration uses 2012+ overlap rows; coverage before 2012 has no guarantee (KNOWN_GAPS 10).
+Caveat: calibration uses 2012+ overlap rows; coverage before 2012 has no guarantee (docs/project/known-gaps.md, item 10).
 """
 from __future__ import annotations
 

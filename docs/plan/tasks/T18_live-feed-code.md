@@ -11,7 +11,7 @@ requires: []
 branch: ws1/T18-live-feed-code
 touches: [ws3_anomaly/ingest/firms.py, ws3_anomaly/tests/test_ingest.py, scripts/export_hosted_demo.py,
           .github/workflows/pages.yml, ws5_frontend/src/App.tsx, ws5_frontend/src/components/Panels.tsx,
-          ws5_frontend/src/i18n/en.json, ws5_frontend/src/i18n/bn.json, docs/HOSTING.md]
+          ws5_frontend/src/i18n/en.json, ws5_frontend/src/i18n/bn.json, docs/guides/deployment.md]
 creates: [ws3_anomaly/ingest/live.py, ws3_anomaly/tests/test_live.py, ws5_frontend/src/live.ts,
           ws5_frontend/src/live.test.ts]
 checks: [CHECK-PLAN, CHECK-PY, CHECK-WEB, CHECK-SNAP]
@@ -102,7 +102,7 @@ off**; T39 adds the secret and T19 switches it on.
    - StatusCard and SeasonCard show `t("live.through", { date })`: "Data through {{date}} (near real time, NOAA-20
      scaled to the Suomi NPP standard)". When stale, add an amber note `t("live.stale")`.
    - Tests in `live.test.ts` for both helpers.
-6. **`docs/HOSTING.md`.** Add a "Nightly live feed" section: what it fetches, where the key lives, how to switch it
+6. **`docs/guides/deployment.md`.** Add a "Nightly live feed" section: what it fetches, where the key lives, how to switch it
    on (T19) and off (repository variable `LIVE_FEED`), and how to rotate the key.
 7. Run the checks, mark the card done, `split`, push and open the PR.
 

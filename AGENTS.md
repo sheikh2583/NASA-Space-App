@@ -55,13 +55,13 @@ Preserve unrelated user edits and the local `codex/` proposal folder. Keep crede
      merges.
    - All training, quick or full, is Sheikh's manual step (H02, H03). Afterwards you re-report the metrics on all
      six holdouts from the saved outputs.
-7. **Numbers.** Measured numbers come from data at runtime or from `docs/TRAINING_RESULTS.md`, with their source.
+7. **Numbers.** Measured numbers come from data at runtime or from `docs/results/training-results.md`, with their source.
    Never from memory.
 8. **Tests.**
    - API tests use `tiny_api` / `tiny_request` (`ws2_platform/tests/conftest.py`), so they run in CI without data.
    - UI component tests use `renderHtml` / `textOf` (`ws5_frontend/src/test/render.tsx`).
    - Don't add dependencies without the lead's OK.
 9. **Hosting.**
-   - Render serves the UI and the live API (`docs/RENDER.md`).
+   - Render serves the UI and the live API (`docs/guides/deployment.md`).
    - The basemap is OpenStreetMap; never restore CARTO URLs.
    - The FIRMS key never goes to the browser.

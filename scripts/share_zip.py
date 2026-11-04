@@ -7,7 +7,7 @@ import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
 DIRS = {".github", "common", "contracts", "deployment", "docs", "scripts", "tools", "ws1_harmonize", "ws2_platform", "ws3_anomaly", "ws4_outlook", "ws5_frontend", "ws6_validation"}
-FILES = {"README.md", "AGENTS.md", "Dockerfile", ".dockerignore", "render.yaml", "requirements-api.txt", "START_HERE.cmd", "start.command", ".gitignore", ".gitattributes", ".env.example", "requirements.txt", "requirements.lock.txt", "requirements-cuda.txt", "pytest.ini", "CLAUDE.md", "data/README.md", "data/MANIFEST.md", "results/README.md"}
+FILES = {"README.md", "AGENTS.md", "Dockerfile", ".dockerignore", "render.yaml", "requirements-api.txt", "CONTRIBUTING.md", ".gitignore", ".gitattributes", ".env.example", "requirements.txt", "requirements.lock.txt", "requirements-cuda.txt", "pytest.ini", "CLAUDE.md", "data/README.md", "data/MANIFEST.md", "results/README.md"}
 SKIP = {"node_modules", "dist", "__pycache__", ".pytest_cache", "static_fallback", ".venv"}
 SUFFIXES = {".py", ".md", ".json", ".yaml", ".yml", ".ts", ".tsx", ".css", ".html", ".svg", ".mjs", ".sh", ".ps1", ".cmd", ".txt"}
 
@@ -39,7 +39,7 @@ def main():
             package.write(path, "firesense/" + path.relative_to(ROOT).as_posix())
     with zipfile.ZipFile(archive) as package:
         assert package.testzip() is None
-        assert "firesense/START_HERE.cmd" in package.namelist()
+        assert "firesense/README.md" in package.namelist()
     print(f"SHARE ZIP: {archive}\nFiles: {len(set(paths))}; size: {archive.stat().st_size:,} bytes")
     print("SHA256:", hashlib.sha256(archive.read_bytes()).hexdigest())
 

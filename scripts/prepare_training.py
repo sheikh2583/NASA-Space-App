@@ -28,7 +28,7 @@ def main() -> int:
         except ImportError:
             check(module, False, "Run setup.")
     firms = [p for p in (ROOT / "data/raw/firms").glob("*.csv*") if "synthetic_" not in p.name]
-    check(f"Real FIRMS inputs ({len(firms)} files)", bool(firms), "See docs/TRAINING.md for downloads and folder names.")
+    check(f"Real FIRMS inputs ({len(firms)} files)", bool(firms), "See docs/guides/data.md for downloads and folder names.")
     for name in ("BGD_ADM1.geojson", "IND_ADM1.geojson"):
         check(name, (ROOT / "data/raw/boundaries" / name).is_file(), "Save the ADM1 GeoJSON in data/raw/boundaries/.")
     check("MCD12C1 land cover", any((ROOT / "data/raw/landcover").glob("MCD12C1*.hdf")), "Save the original HDF in data/raw/landcover/.")

@@ -25,7 +25,7 @@ PY = sys.executable
 
 
 def cells_args(real: bool):
-    """Real boundaries and land cover when present in data/raw (see docs/SHEIKH_GUIDE.md section 3)."""
+    """Real boundaries and land cover when present in data/raw (see docs/guides/data.md section 3)."""
     args = []
     admin = sorted(glob.glob(os.path.join(ROOT, "data", "raw", "boundaries", "*.geojson")))
     if admin:

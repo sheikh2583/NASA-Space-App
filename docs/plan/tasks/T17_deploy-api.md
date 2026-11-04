@@ -9,7 +9,7 @@ size: M
 needs: [H01]
 requires: [real-data, hf-token]
 branch: ws1/T17-deploy-api
-touches: [.github/workflows/pages.yml, docs/HOSTING.md]
+touches: [.github/workflows/pages.yml, docs/guides/deployment.md]
 creates: [ws2_platform/space/README.md, ws2_platform/space/Dockerfile]
 checks: [CHECK-PLAN, CHECK-SNAP]
 ---
@@ -49,7 +49,7 @@ isn't.
    may be slow).
 7. **Pages.** In `.github/workflows/pages.yml`, set the build env to `VITE_DEMO_MODE: hybrid` and
    `VITE_API_BASE_URL: https://<account>-firesense-api.hf.space`. The URL is public, not a secret.
-8. Update `docs/HOSTING.md` with the real Space id, the release tag and the rollback steps.
+8. Update `docs/guides/deployment.md` with the real Space id, the release tag and the rollback steps.
 9. Run the checks, mark the card done, `split`, push and open the PR. After merge, check on the live site:
    - drawing a box in Punjab returns a calendar;
    - pausing the Space in its settings shows the "Live service unavailable" banner and the snapshot.

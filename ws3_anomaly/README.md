@@ -8,5 +8,4 @@
 **You deliver.**
 - H4/H6 detections.parquet; H8 score_series stub; H18 anomalies + critical periods v0; H26 robust v1; H36 drivers
 
-Prompt pack: prompts/ws3_monazir.md   (paste docs/AI_PREAMBLE.md first)
 Keep decisions and known issues in NOTES.md.

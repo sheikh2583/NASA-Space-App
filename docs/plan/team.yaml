@@ -1,5 +1,5 @@
 # Team, commit authors and path ownership for the plan tools (scripts/plan.py).
-# Ownership follows docs/FILE_OWNERSHIP.md: the longest matching path prefix wins.
+# Ownership follows docs/project/file-ownership.md: the longest matching path prefix wins.
 # Append-only shared files go into the commit of the card's owner (see `shared`).
 
 lead: Sheikh
@@ -11,10 +11,11 @@ people:
     github: sheikh2583
     slot: ws1
     author: "Sheikh Mosheul Akbar <172627940+sheikh2583@users.noreply.github.com>"
-    owns: [ws1_harmonize/, docs/, tools/, scripts/, prompts/, .github/, config/, contracts/parquet_schemas.json,
+    owns: [ws1_harmonize/, docs/, tools/, scripts/, .github/, config/, contracts/parquet_schemas.json,
            contracts/json_schemas/, contracts/README.md, README.md, CLAUDE.md, AGENTS.md, LICENSE, pytest.ini,
-           requirements.txt, requirements.lock.txt, .gitignore, .gitattributes, .env.example, START_HERE.cmd,
-           start.command, results/README.md, data/README.md]
+           requirements.txt, requirements.lock.txt, .gitignore, .gitattributes, .env.example, CONTRIBUTING.md,
+           Dockerfile, .dockerignore, render.yaml, deployment/, requirements-api.txt, requirements-cuda.txt,
+           results/README.md, data/README.md]
   Sattyam:
     github: sssatty
     slot: ws2
@@ -39,7 +40,7 @@ people:
     github: samiulislam22
     slot: ws6
     author: "Samiul <181465932+samiulislam22@users.noreply.github.com>"
-    owns: [ws6_validation/, docs/method_en.md, docs/method_bn.md, docs/slides/, docs/demo_script.md,
-           docs/QA_CHECKLIST.md, docs/SUBMISSION_CHECKLIST.md, docs/submission/]
+    owns: [ws6_validation/, docs/science/method_en.md, docs/science/method_bn.md, docs/project/slides/, docs/project/demo-script.md,
+           docs/project/qa-checklist.md, docs/project/submission-checklist.md, docs/submission/]
 
-shared: [docs/CONTRACT_CHANGES.md, data/MANIFEST.md, docs/plan/STATUS.md]
+shared: [docs/project/contract-changes.md, data/MANIFEST.md, docs/plan/STATUS.md]

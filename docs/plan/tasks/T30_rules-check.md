@@ -9,7 +9,7 @@ size: S
 needs: [T00]
 requires: [network]
 branch: ws1/T30-rules-check
-touches: [docs/SUBMISSION_CHECKLIST.md]
+touches: [docs/project/submission-checklist.md]
 creates: [docs/RULES_CHECK.md]
 checks: [CHECK-PLAN]
 ---
@@ -37,7 +37,7 @@ and AI use. A rules problem would undo everything else.
    Submission Guide are published on 13 Nov, and that card T35 re-checks them.
 3. If any quote says pre-event work isn't allowed, put that in bold at the top, then **stop and ask Sheikh** before
    any other card.
-4. Add a link to `docs/RULES_CHECK.md` at the top of `docs/SUBMISSION_CHECKLIST.md`.
+4. Add a link to `docs/RULES_CHECK.md` at the top of `docs/project/submission-checklist.md`.
 5. Run the checks, mark the card done, `split`, push and open the PR.
 
 ## Acceptance

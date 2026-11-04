@@ -10,7 +10,7 @@ needs: [T33]
 requires: [real-data, earthdata-files]
 branch: ws1/T24-burned-area-check
 touches: [ws5_frontend/src/components/Pages.tsx, ws5_frontend/src/i18n/en.json, ws5_frontend/src/i18n/bn.json,
-          ws5_frontend/public/demo/snapshot.json, docs/method_en.md]
+          ws5_frontend/public/demo/snapshot.json, docs/science/method_en.md]
 creates: [ws6_validation/mcd64.py, ws6_validation/tests/test_mcd64.py]
 checks: [CHECK-PLAN, CHECK-PY, CHECK-QA, CHECK-FILES, CHECK-WEB, CHECK-SNAP]
 ---
@@ -51,7 +51,7 @@ change, a different algorithm) is **independent** evidence for both amount and t
    missed; compare variation and timing, not totals").
 4. **UI.** On the Validation page, add a scatter of our season total against burned km², per year, and the sentence
    `t("burned.result", { rho, days })`. Show the values exactly as measured, even if the agreement is weak.
-5. **Method page** (`docs/method_en.md`). Add one bullet under "How we checked" (from T10) with the measured ρ and
+5. **Method page** (`docs/science/method_en.md`). Add one bullet under "How we checked" (from T10) with the measured ρ and
    timing difference, using only supported Markdown.
 6. Republish. Run the checks, mark the card done, `split`, push and open the PR.
 

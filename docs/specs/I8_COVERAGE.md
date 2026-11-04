@@ -2,7 +2,7 @@
 
 Status: **proposal**. The registry (`common/outages.yaml`) and the read-only audit (`ws2_platform/coverage.py`, 13
 tests) are in the code. Nothing in the pipeline reads them yet, so `data/processed/` and the hosted snapshot are unchanged. Sections 4
-and 5 need Sheikh's sign-off and an entry in `docs/CONTRACT_CHANGES.md` before anything changes scientific outputs.
+and 5 need Sheikh's sign-off and an entry in `docs/project/contract-changes.md` before anything changes scientific outputs.
 
 ## 1. The problem, measured against the current code
 
@@ -12,7 +12,7 @@ and 5 need Sheikh's sign-off and an entry in `docs/CONTRACT_CHANGES.md` before a
 - NASA MODAPS lists many Suomi NPP outages
   ([table](https://modaps.modaps.eosdis.nasa.gov/services/production/outages_suomi_npp.html), from 14 Nov 2011, last
   updated 15 Aug 2026). One is the GPS anomaly of **2 Nov 22:12 to 6 Nov 17:30 UTC 2024**, at the peak of Punjab's
-  burning season. Our archive has SNPP detections again on 7-9 Nov (CLAUDE_REVIEW.md).
+  burning season. Our archive has SNPP detections again on 7-9 Nov (docs/agents/claude-review.md).
 - The current pipeline treats those outage days as operating. As a result:
   - SNPP shows observed zeros or undercounts.
   - Weeks that contain outage days count as full SNPP+MODIS overlap weeks, so they are in the B1 ratio fit and the
@@ -44,7 +44,7 @@ One entry per UTC interval. Each entry has these fields:
 
 | Value | Meaning |
 |---|---|
-| `documented` | In a NASA notice already cited in DECISIONS.md |
+| `documented` | In a NASA notice already cited in docs/science/decisions.md |
 | `table_and_data` | In the source table and consistent with our archive |
 | `transcribed` | Copied, but a person has not checked it against the source page |
 | `rejected` | Kept for the record, but ignored by the audit |
@@ -123,7 +123,7 @@ Pick the final threshold from the real-data audit (`would_flip_*.csv`), not from
 audit until a person checks them.
 
 **Versioning.** Bump `method_version` (for example `v1-b1-cov1`) and record the registry's git hash in
-`method.json`. Keep the 4 Nov 2026 run (`docs/TRAINING_RESULTS.md`) as the comparison baseline.
+`method.json`. Keep the 4 Nov 2026 run (`docs/results/training-results.md`) as the comparison baseline.
 
 ## 5. Acceptance criteria
 
@@ -147,7 +147,7 @@ Each criterion is marked measured (M) or person-checked (H). Expected-failure te
 2. **T05, agent, on the laptop with data:**
    - run the audit and review the candidate gaps for the burning months (A4);
    - write `docs/specs/I8_AUDIT_RESULTS.md` with the counts, the lost overlap weeks and the recommended threshold (A5);
-   - record the decision in `docs/DECISIONS.md`. Sheikh's merge of that PR is the sign-off.
+   - record the decision in `docs/science/decisions.md`. Sheikh's merge of that PR is the sign-off.
 3. **T06, agent:**
    - `sensors.py` applies verified outages, through `coverage.py`, and writes `coverage_days.parquet`;
    - `day_sources` gains the NOAA-20 fill;

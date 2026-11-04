@@ -10,5 +10,4 @@
 **You deliver.**
 - H1 repo; H14 harmonized v0 + interval_table v0; H24 predictions_oof.parquet; H30 harmonized v1; H34 validation/harmonization.json + method notes
 
-Prompt pack: prompts/ws1_sheikh.md   (paste docs/AI_PREAMBLE.md first)
 Keep decisions and known issues in NOTES.md.

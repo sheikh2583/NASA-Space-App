@@ -8,5 +8,4 @@
 **You deliver.**
 - H4 QA checklist + test scaffolds; H10 data QA; H24/H30/H36/H42 end-to-end reports; H34 qa.json; H38 method text; H40 slides; H44 video; H46 submission
 
-Prompt pack: prompts/ws6_samiul.md   (paste docs/AI_PREAMBLE.md first)
 Keep decisions and known issues in NOTES.md.

@@ -9,7 +9,7 @@ size: M
 needs: [T29, T30]
 requires: [network]
 branch: ws1/T35-submission-assets
-touches: [docs/RULES_CHECK.md, docs/SUBMISSION_CHECKLIST.md]
+touches: [docs/RULES_CHECK.md, docs/project/submission-checklist.md]
 creates: [docs/submission/slides.html, scripts/record_story.mjs]
 checks: [CHECK-PLAN]
 ---
@@ -19,7 +19,7 @@ screen recording of story mode.
 
 ## Steps
 1. **Rules re-check.** On or after 13 Nov, read the 2026 Participant Guide and the Project Submission Guide (linked
-   from https://www.spaceappschallenge.org/2026/). Update `docs/RULES_CHECK.md` and `docs/SUBMISSION_CHECKLIST.md`
+   from https://www.spaceappschallenge.org/2026/). Update `docs/RULES_CHECK.md` and `docs/project/submission-checklist.md`
    with the exact fields and limits: video length, slide count, deadline. If they differ from T29's assumptions, adapt
    steps 2-3.
 2. **`docs/submission/slides.html`.** A self-contained page (inline CSS, no external scripts). Each slide from

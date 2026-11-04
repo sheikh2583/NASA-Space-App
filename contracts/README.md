@@ -1,4 +1,4 @@
-# contracts/ (openapi.yaml and fixtures/: Sattyam; parquet_schemas.json and json_schemas/: Sheikh; see docs/FILE_OWNERSHIP.md)
+# contracts/ (openapi.yaml and fixtures/: Sattyam; parquet_schemas.json and json_schemas/: Sheikh; see docs/project/file-ownership.md)
 The agreements between workstreams.
 
 - openapi.yaml            API contract: request and response schemas for every endpoint (draft 0.2.0); Sattyam finalizes at H3
@@ -8,5 +8,5 @@ The agreements between workstreams.
 
 Rules
 1. After G0 (H3) never rename or remove a field. Adding a field is fine.
-2. Every change: log it in docs/CONTRACT_CHANGES.md (old shape, new shape, who is affected), post in the channel, wait for GOT IT from each consumer.
+2. Every change: log it in docs/project/contract-changes.md (old shape, new shape, who is affected), post in the channel, wait for GOT IT from each consumer.
 3. Samiul's contract tests read these files; keep them valid.

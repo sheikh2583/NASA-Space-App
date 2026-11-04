@@ -33,7 +33,7 @@ def check_linux_runtime() -> None:
     try:
         ctypes.CDLL('libgomp.so.1')
     except OSError as error:
-        raise RuntimeError('Missing Linux OpenMP runtime. On Debian/Ubuntu: sudo apt-get install libgomp1. See docs/TEAM_TRAINING.md.') from error
+        raise RuntimeError('Missing Linux OpenMP runtime. On Debian/Ubuntu: sudo apt-get install libgomp1. See docs/guides/setup.md.') from error
 
 
 def main(argv=None) -> None:
@@ -86,7 +86,7 @@ def main(argv=None) -> None:
     try:
         run(sys.executable, '-c', 'import pandas, pyarrow, duckdb, lightgbm, geopandas, fastapi, pyhdf, rasterio; print("Scientific/API imports OK")')
     except subprocess.CalledProcessError:
-        raise RuntimeError('Scientific imports failed. Windows DLL errors may need Microsoft Visual C++ x64 Redistributable; Linux libgomp errors may need libgomp1. See docs/TRAINING.md and the import error above.') from None
+        raise RuntimeError('Scientific imports failed. Windows DLL errors may need Microsoft Visual C++ x64 Redistributable; Linux libgomp errors may need libgomp1. See docs/guides/training.md and the import error above.') from None
     if not args.ui_only:
         run(sys.executable, 'scripts/workflow.py', 'gpu-check', '--gpu-id', str(args.gpu_id), '--threads', str(args.threads))
     for name in (('.env',) if args.training_only else ('.env', 'ws5_frontend/.env')):

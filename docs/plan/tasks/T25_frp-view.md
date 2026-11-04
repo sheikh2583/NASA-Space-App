@@ -9,7 +9,7 @@ size: S
 needs: [T07]
 requires: [real-data]
 branch: ws1/T25-frp-view
-touches: [ws2_platform/api/app.py, contracts/openapi.yaml, docs/CONTRACT_CHANGES.md, scripts/export_hosted_demo.py,
+touches: [ws2_platform/api/app.py, contracts/openapi.yaml, docs/project/contract-changes.md, scripts/export_hosted_demo.py,
           ws5_frontend/src/types.ts, ws5_frontend/src/snapshot.ts, ws5_frontend/src/App.tsx,
           ws5_frontend/src/components/AnalysisControls.tsx, ws5_frontend/src/components/SeriesChart.tsx,
           ws5_frontend/src/i18n/en.json, ws5_frontend/src/i18n/bn.json]
@@ -35,7 +35,7 @@ uncalibrated, and is never called energy.
      `frp_history(sel)`, cached like `full_history`.
    - Set `lo = hi = null` on every point and `units = "Sum of sampled fire radiative power, MW per week (uncalibrated)"`.
    - Skip anomaly flags for FRP.
-   - Add the field to OpenAPI and a line to `CONTRACT_CHANGES.md`.
+   - Add the field to OpenAPI and a line to `docs/project/contract-changes.md`.
 2. **Tests** (`test_api_frp.py`, `tiny_api`). The tiny `value_frp` is 8 × the count, so:
    - FRP totals are 8 × the count totals;
    - the bands are null;

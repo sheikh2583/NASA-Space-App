@@ -12,7 +12,7 @@ branch: ws1/T26-third-region
 touches: [common/regions.py, ws2_platform/cells.py, ws2_platform/api/make_fixtures.py, ws3_anomaly/periods.py,
           ws4_outlook/season_profile.py, ws5_frontend/src/config.ts, ws5_frontend/src/snapshot.ts, ws5_frontend/src/App.tsx,
           ws5_frontend/src/i18n/en.json, ws5_frontend/src/i18n/bn.json, ws5_frontend/public/demo/snapshot.json,
-          scripts/export_hosted_demo.py, README.md, docs/TRAINING_RESULTS.md]
+          scripts/export_hosted_demo.py, README.md, docs/results/training-results.md]
 creates: []
 checks: [CHECK-PLAN, CHECK-PY, CHECK-QA, CHECK-FILES, CHECK-SMOKE, CHECK-SNAP]
 ---
@@ -45,12 +45,12 @@ Show that the method transfers by adding one more region end to end, without har
    it's invoked in `scripts/run_pipeline.py` first.
 4. **Run.** `python scripts/workflow.py prepare`. Then **stop and ask Sheikh to run the full training**
    (`python scripts/workflow.py train`; it is his manual step). Afterwards run `python scripts/workflow.py validate`.
-5. **Compare** with the latest `TRAINING_RESULTS.md` section: the existing regions' held-out CCC and coverage must not
+5. **Compare** with the latest `docs/results/training-results.md` section: the existing regions' held-out CCC and coverage must not
    get worse by more than 0.005 CCC or 1 coverage point. Explain any change.
 6. **Demo wiring.** Add a demo AOI (a 1.8° × 1.4° box inside the region, like Punjab's) to `AOIS` and to
    `config.ts` `DEMOS`. Add the i18n names (`map.demo_<code>`) and the button in `App.tsx`'s map bar. Re-export the
    snapshot.
-7. **Docs.** Add a section to `docs/TRAINING_RESULTS.md` and a line to `README.md` scope.
+7. **Docs.** Add a section to `docs/results/training-results.md` and a line to `README.md` scope.
 8. Run the checks, mark the card done, `split`, push and open the PR.
 
 ## Acceptance

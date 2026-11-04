@@ -1,4 +1,4 @@
-"""Grid convention (docs/DECISIONS.md decision 22) and local solar date (decision 23).
+"""Grid convention (docs/science/decisions.md decision 22) and local solar date (decision 23).
 
 Every workstream uses these functions instead of re-deriving the formulas.
 """

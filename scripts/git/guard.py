@@ -6,7 +6,7 @@ Set GUARD_OVERRIDE=1 locally to bypass (never in CI). Stdlib only."""
 import argparse, csv, os, subprocess, sys
 
 ROOT = subprocess.check_output(["git", "rev-parse", "--show-toplevel"], text=True).strip()
-APPEND_ONLY = {"data/MANIFEST.md", "docs/CONTRACT_CHANGES.md"}
+APPEND_ONLY = {"data/MANIFEST.md", "docs/project/contract-changes.md"}
 SHARED_OK = APPEND_ONLY
 DATA_OK = {"data/MANIFEST.md", "data/README.md", "data/.gitkeep"}
 BLOCKED_PREFIXES = ("data/", "node_modules/", ".venv/")
@@ -80,7 +80,7 @@ def main():
     if errors:
         print("guard: blocked")
         for e in errors: print("  - " + e)
-        print("Fix: unstage with  git restore --staged <path>  and, if you need a change in someone else's file, ask the owner (docs/WORKING_TOGETHER.md).")
+        print("Fix: unstage with  git restore --staged <path>  and, if you need a change in someone else's file, ask the owner (CONTRIBUTING.md).")
         return 1
     print("guard: ok"); return 0
 

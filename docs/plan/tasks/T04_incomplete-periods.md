@@ -9,7 +9,7 @@ size: S
 needs: [T00]
 requires: [real-data]
 branch: ws1/T04-incomplete-periods
-touches: [ws2_platform/api/app.py, contracts/openapi.yaml, docs/CONTRACT_CHANGES.md, ws5_frontend/src/types.ts,
+touches: [ws2_platform/api/app.py, contracts/openapi.yaml, docs/project/contract-changes.md, ws5_frontend/src/types.ts,
           ws5_frontend/src/components/SeriesChart.tsx, ws5_frontend/src/components/Calendar.tsx,
           ws5_frontend/src/i18n/en.json, ws5_frontend/src/i18n/bn.json, ws5_frontend/public/demo/snapshot.json]
 creates: [ws2_platform/tests/test_api_complete.py, ws5_frontend/src/components/Calendar.test.tsx]
@@ -33,7 +33,7 @@ looks like a collapse. Mark periods that run past the end of the data, and draw 
    - `SummaryPoint` in `contracts/openapi.yaml` gains two optional properties:
      - `complete`: boolean, "false when the period extends past the last day with data";
      - `n_days`: integer, minimum 0, "days of the period that have data".
-   - Append a line to `docs/CONTRACT_CHANGES.md`.
+   - Append a line to `docs/project/contract-changes.md`.
 2. **API.** In `build_summary`, for each point with period start `t`, set:
 
    | `req.res` | `period_end` | `complete` | `n_days` |

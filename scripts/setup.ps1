@@ -1,4 +1,8 @@
-# Install the complete CUDA environment; -UiOnly prepares the mock/UI workflow.
+# Create .venv and install dependencies. Never trains.
+#   powershell -NoProfile -ExecutionPolicy Bypass -File scripts\setup.ps1 -UiOnly        UI/API development, no GPU needed
+#   powershell -NoProfile -ExecutionPolicy Bypass -File scripts\setup.ps1 -TrainingOnly  CUDA training only, no Node needed (HUMAN ONLY: runs GPU probes)
+#   powershell -NoProfile -ExecutionPolicy Bypass -File scripts\setup.ps1               everything (HUMAN ONLY: runs GPU probes)
+# Guide: docs/guides/setup.md
 [CmdletBinding()]
 param(
   [switch]$UiOnly,
@@ -6,17 +10,12 @@ param(
   [switch]$AllowCompatible,
   [string]$PythonExecutable,
   [ValidateRange(0, 64)][int]$GpuId = 0,
-  [ValidateRange(1, 256)][int]$Threads = 8,
-  [switch]$NoPipeline, # Compatibility: setup never starts a pipeline now.
-  [switch]$Cuda,
-  [switch]$Quick
+  [ValidateRange(1, 256)][int]$Threads = 8
 )
 $ErrorActionPreference = 'Stop'
 Set-Location (Join-Path $PSScriptRoot '..')
 try {
-  if ($UiOnly -and $Cuda) { throw 'Choose -UiOnly or CUDA setup, not both.' }
   if ($UiOnly -and $TrainingOnly) { throw 'Choose -UiOnly or -TrainingOnly, not both.' }
-  if ($Quick) { Write-Host 'Setup no longer trains. Run workflow.py train --quick after readiness passes.' }
   $vpy = Join-Path (Get-Location) '.venv\Scripts\python.exe'
   if (-not (Test-Path -LiteralPath $vpy)) {
     if (Test-Path -LiteralPath '.venv') { throw '.venv exists but has no Windows Python. Rename it before creating a Windows environment.' }
@@ -37,7 +36,7 @@ try {
       & python -c 'import sys; sys.exit(0 if sys.version_info[:2] == (3, 11) else 1)'
       if ($LASTEXITCODE -eq 0) { $pyCommand = 'python' }
     }
-    if (-not $pyCommand) { throw 'Install 64-bit Python 3.11 and reopen the terminal, or pass -PythonExecutable with its full path. See docs/TEAM_TRAINING.md.' }
+    if (-not $pyCommand) { throw 'Install 64-bit Python 3.11 and reopen the terminal, or pass -PythonExecutable with its full path. See docs/guides/setup.md.' }
     & $pyCommand @pyFlags -m venv .venv
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
   }

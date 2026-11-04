@@ -6,7 +6,7 @@
 # interval is used and the note says so.
 #
 # verification:
-#   documented        written in a NASA notice already cited in docs/DECISIONS.md
+#   documented        written in a NASA notice already cited in docs/science/decisions.md
 #   table_and_data    listed in the source table AND consistent with our archive (detections resume after it)
 #   transcribed       copied from the source table on 4 Nov 2026 via a page summary; a person must check it against
 #                     the page before the registry is used to change outputs
@@ -20,7 +20,7 @@ events:
     sat: Terra
     start_utc: "2026-03-26T20:00:00Z"
     end_utc: "2026-03-27T19:23:00Z"
-    source: NASA Earthdata alert, March 2026 (DECISIONS.md decision 18)
+    source: NASA Earthdata alert, March 2026 (docs/science/decisions.md, decision 18)
     source_url: ""
     products: MODIS C6.1 active fire
     verification: documented
@@ -34,7 +34,7 @@ events:
     source_url: https://modaps.modaps.eosdis.nasa.gov/services/production/outages_suomi_npp.html
     products: unspecified
     verification: table_and_data
-    note: "GPS anomaly outage (11/2/24 22:12 - 11/6/24 17:30, inclusive). Archive has SNPP detections on 7-9 Nov (CLAUDE_REVIEW.md)."
+    note: "GPS anomaly outage (11/2/24 22:12 - 11/6/24 17:30, inclusive). Archive has SNPP detections on 7-9 Nov (docs/agents/claude-review.md)."
 
   # ---- transcribed, not yet checked by a person ----
   - {id: snpp-2024-01-30-smd, sat: SNPP, start_utc: "2024-01-30T23:21:00Z", end_utc: "2024-01-31T16:00:00Z", source: MODAPS table 2024-030, source_url: https://modaps.modaps.eosdis.nasa.gov/services/production/outages_suomi_npp.html, products: unspecified, verification: transcribed, note: "SMD outage; table start 23:24, comment 23:21 (wider used)"}

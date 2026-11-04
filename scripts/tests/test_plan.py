@@ -155,10 +155,10 @@ def test_split_groups_changes_by_owner(tmp_path):
     root = make_plan(tmp_path, [{"id": "T00", "authors": "Sheikh, Sattyam, Shammo", "touches": "docs/a.md"}], {})
     p = plan_mod.load(root)
     card = p.cards["T00"]
-    groups = plan_mod.split_commits(p, card, ["ws2_platform/api/app.py", "docs/CONTRACT_CHANGES.md",
+    groups = plan_mod.split_commits(p, card, ["ws2_platform/api/app.py", "docs/project/contract-changes.md",
                                               "ws5_frontend/src/App.tsx", "contracts/openapi.yaml", "docs/plan/STATUS.md"])
     assert [(g[0], g[2]) for g in groups] == [
-        ("Sheikh", ["docs/CONTRACT_CHANGES.md", "docs/plan/STATUS.md"]),
+        ("Sheikh", ["docs/plan/STATUS.md", "docs/project/contract-changes.md"]),
         ("Sattyam", ["contracts/openapi.yaml", "ws2_platform/api/app.py"]),
         ("Shammo", ["ws5_frontend/src/App.tsx"])]
     with pytest.raises(SystemExit, match="belong to"):

@@ -14,7 +14,7 @@
 - ingest/firms.py refuses VIIRS_SNPP_NRT (ended 2 Nov 2026).
 
 ## Known issues
-- FIRMS key, archive requests and real downloads are manual (docs/MANUAL_TASKS.md). Weather loaders for NASA POWER and
+- FIRMS key, archive requests and real downloads are manual (docs/plan/README.md). Weather loaders for NASA POWER and
   CHIRPS are written but untested against the real services (H0-05).
 
 ## AI assistance log (where AI tools helped)

@@ -10,7 +10,7 @@ needs: [T00]
 requires: [real-data]
 branch: ws1/T07-season-api
 touches: [ws2_platform/api/app.py, ws2_platform/api/mock_server.py, ws2_platform/api/make_fixtures.py,
-          contracts/openapi.yaml, docs/CONTRACT_CHANGES.md, scripts/export_hosted_demo.py, tools/verify_files.py,
+          contracts/openapi.yaml, docs/project/contract-changes.md, scripts/export_hosted_demo.py, tools/verify_files.py,
           ws5_frontend/src/snapshot.test.ts, ws5_frontend/public/demo/snapshot.json]
 creates: [ws2_platform/tests/test_api_season.py, contracts/fixtures/punjab_season.json,
           contracts/fixtures/bangladesh_season.json]
@@ -38,7 +38,7 @@ local API, mock API and the hosted snapshot. The library is done and tested (`ws
    - Add `POST /aoi/season`. The request body is `AOIRequest`. The 200 response is `SeasonProfileResponse`:
      `allOf: [Envelope, {type: object, required: [area, as_of, data_through, definition, seasons], properties: {area: {type: string, nullable: true}, as_of: {type: string, format: date}, data_through: {type: string, nullable: true}, definition: {type: string}, seasons: {type: array, items: {type: object}}}}]`.
    - The full shape of `seasons` stays in the JSON Schema file; reference it in a `description`.
-   - Append a line to `docs/CONTRACT_CHANGES.md`.
+   - Append a line to `docs/project/contract-changes.md`.
 2. **Endpoint** (`ws2_platform/api/app.py`). Add next to `aoi_outlook`:
    ```python
    from ws4_outlook import season_profile as season_mod

@@ -9,7 +9,7 @@ size: S
 needs: [T31]
 requires: []
 branch: ws1/T10-caveats
-touches: [docs/method_en.md, docs/method_bn.md]
+touches: [docs/science/method_en.md, docs/science/method_bn.md]
 creates: []
 checks: [CHECK-PLAN, CHECK-WEB, CHECK-SNAP]
 ---
@@ -18,14 +18,14 @@ Say plainly what the numbers can and can't tell you, and how we checked them. Va
 honest limits read as strength.
 
 ## Context
-- The Method page renders `docs/method_<lang>.md` (copied into `public/` by `ws5_frontend/scripts/copy-method.mjs`)
+- The Method page renders `docs/science/method_<lang>.md` (copied into `public/` by `ws5_frontend/scripts/copy-method.mjs`)
   with a tiny renderer (`renderMd` in `src/components/Pages.tsx`).
 - It supports **only**: `# ` and `## ` headings, `- ` list items, `**bold**` and plain paragraphs. No links, tables,
   `###` or numbered lists, so write URLs as plain text.
 - T31 has produced `ws6_validation/truth_checks.md`.
 
 ## Steps
-1. Append to `docs/method_en.md` a section `## What these numbers can and can't tell you`, with these list items
+1. Append to `docs/science/method_en.md` a section `## What these numbers can and can't tell you`, with these list items
    (keep them short, in plain words):
    - Detections are not area burned. Small, short, cloud-covered or under-canopy fires are missed; a quiet week isn't
      proof that nothing burned.
@@ -44,8 +44,8 @@ honest limits read as strength.
    the form "check: FIRMS value, our value, verdict". Then add one item each for:
    - held-out agreement: "Lin's CCC 0.9417 for the chosen method on six held-out tests (4 Nov 2026 run)";
    - band coverage: "91.6% weekly, 93.7% monthly for nominal 90% bands".
-   Copy the numbers exactly from `docs/TRAINING_RESULTS.md`; if T40 has added a newer section, use that one.
-3. Translate both sections into Bangla at the end of `docs/method_bn.md`, in the same structure. Add a first line
+   Copy the numbers exactly from `docs/results/training-results.md`; if T40 has added a newer section, use that one.
+3. Translate both sections into Bangla at the end of `docs/science/method_bn.md`, in the same structure. Add a first line
    inside the section, in Bangla: "**Translation drafted with AI assistance.**" Keep it there unless a fluent
    reviewer checks the text.
 4. Run the checks. Open the Method page in the snapshot build (`npm run preview`) in both languages and check every
@@ -54,7 +54,7 @@ honest limits read as strength.
 
 ## Acceptance
 - [ ] Both sections appear on the Method page in en and bn, using only supported Markdown.
-- [ ] Every number matches `docs/TRAINING_RESULTS.md` and `ws6_validation/truth_checks.md`.
+- [ ] Every number matches `docs/results/training-results.md` and `ws6_validation/truth_checks.md`.
 
 ## Stop and ask if
 - `ws6_validation/truth_checks.md` is missing (T31 not merged).

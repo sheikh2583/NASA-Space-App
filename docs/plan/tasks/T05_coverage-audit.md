@@ -9,7 +9,7 @@ size: M
 needs: [T32]
 requires: [real-data]
 branch: ws1/T05-coverage-audit
-touches: [docs/DECISIONS.md, docs/CONTRACT_CHANGES.md]
+touches: [docs/science/decisions.md, docs/project/contract-changes.md]
 creates: [docs/specs/I8_AUDIT_RESULTS.md, ws6_validation/coverage_review.md]
 checks: [CHECK-PLAN, CHECK-PY]
 ---
@@ -46,12 +46,12 @@ defaults. Sheikh's merge of this PR is the sign-off. This card writes reports on
      (or SNPP and NOAA-20) all operated for 7 days, as in `ws1_harmonize/model.py`. Write a short script inline,
      using `pandas` only.
    - **one recommended threshold** (the spec suggests 0.25), with one paragraph of reasons.
-6. **Record the decision** as a new numbered entry at the end of `docs/DECISIONS.md`, titled "Outage handling (I8)":
+6. **Record the decision** as a new numbered entry at the end of `docs/science/decisions.md`, titled "Outage handling (I8)":
    - Option A from the spec;
    - the threshold recommended in step 5;
    - filling excluded Suomi NPP days from NOAA-20 from 1 Apr 2018.
 
-   Add one sentence of reasons per choice. Change the I8 row in `docs/CONTRACT_CHANGES.md` from "proposed" to
+   Add one sentence of reasons per choice. Change the I8 row in `docs/project/contract-changes.md` from "proposed" to
    "approved on merge of T05 (<date>)".
 7. Run the checks, mark the card done, then `split` (Sheikh: the spec, decisions and contract files; Samiul: the review
    file), push and open the PR. The PR title starts with "T05 (decision)", so Sheikh sees he is signing off.

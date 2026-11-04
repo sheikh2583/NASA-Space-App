@@ -4,7 +4,7 @@ WORKDIR /build/ws5_frontend
 COPY ws5_frontend/package*.json ./
 RUN npm ci --no-audit --no-fund
 COPY ws5_frontend/ ./
-COPY docs/method_en.md docs/method_bn.md /build/docs/
+COPY docs/science/method_en.md docs/science/method_bn.md /build/docs/science/
 # Override local .env settings: browser requests use this service's own origin.
 ENV VITE_API_BASE_URL=/ VITE_DEMO_MODE=live VITE_DATA_MODE=real VITE_FALLBACK_BASE_URL=
 RUN npm test && npm run check:strings && npm run build

@@ -10,7 +10,7 @@ needs: [T07]
 requires: [real-data]
 branch: ws1/T11-region-picker
 touches: [ws2_platform/api/app.py, ws2_platform/api/query.py, ws2_platform/api/static_export.py,
-          contracts/openapi.yaml, docs/CONTRACT_CHANGES.md, ws5_frontend/src/types.ts, ws5_frontend/src/snapshot.ts,
+          contracts/openapi.yaml, docs/project/contract-changes.md, ws5_frontend/src/types.ts, ws5_frontend/src/snapshot.ts,
           ws5_frontend/src/snapshot.test.ts, ws5_frontend/src/App.tsx, ws5_frontend/src/components/MapView.tsx,
           ws5_frontend/src/i18n/en.json, ws5_frontend/src/i18n/bn.json]
 creates: [ws2_platform/tests/test_api_regions.py, ws5_frontend/src/components/RegionPicker.tsx,
@@ -44,7 +44,7 @@ in the local app and on the hosted site, with totals for **exactly** that region
      given. In OpenAPI, describe it in the schema's `description`; the server validates it.
    - New `GET /meta/regions` returns `{schema_version, data_through, regions: [{region_id, region_name, country, level, n_cells, bbox}]}`,
      where `level` is `division`, `state` or `union_territory`.
-   - Append to `docs/CONTRACT_CHANGES.md`.
+   - Append to `docs/project/contract-changes.md`.
 2. **API.**
    - `AOIRequest`: add `region_id: Optional[str] = None`, and make `_one_area` count the three fields.
    - `Store.select(geometry=None, bbox=None, region_id=None)`: when `region_id` is given, return

@@ -1,0 +1,27 @@
+# Glossary (plain words)
+
+- **MODIS / VIIRS**: two families of satellite instruments that detect fires. MODIS (about 1 km pixels) flies on Terra (fire data from Nov 2000) and Aqua (from Jul 2002); both shut down in late 2026 / early 2027. VIIRS (375 m pixels) flew on Suomi NPP from 2012 until FIRMS stopped new SNPP data on 2 Nov 2026, and flies on NOAA-20 and NOAA-21.
+- **Reference sensor**: SNPP VIIRS; all values are expressed as "SNPP-equivalent detections".
+- **Sensor days**: the table of which satellite was operating on which day; a day without its sensor is missing, not zero.
+- **Hot spot / detection**: one satellite pixel flagged as a likely fire.
+- **FRP (fire radiative power)**: how intensely a detected fire is radiating; a measure of intensity.
+- **AOI**: area of interest; a named administrative boundary selected in the explorer, or a geometry supplied to the API.
+- **Cell**: one 0.1 degree square of the map grid (about 11 km); every detection belongs to one cell (formula: docs/science/decisions.md decision 22).
+- **Local solar date**: the day as the sun sees it at that longitude (UTC + lon/15 hours); used for grid_daily so night fires count on the right day.
+- **Harmonization**: making the two records read as one consistent series.
+- **Observed, adjusted, modeled**: observed values come from SNPP VIIRS directly (2012 to 2 Nov 2026); adjusted values come from NOAA-20 VIIRS scaled to SNPP terms (after 2 Nov 2026); modeled values are estimated from MODIS (before 2012).
+- **Seam**: a visible change in the series where the source changes: at 2012 (modeled to observed) and at 2 Nov 2026 (observed to adjusted).
+- **B0 / B1**: simple baselines: one global ratio (B0) and a ratio per region and month (B1).
+- **XGBoost CUDA**: the project's GPU-trained tree-model candidate for harmonization, drift classification, and quantile forecasts.
+- **LightGBM**: retained internally for reference/unit tests and reading historical experiments; not the production training entrypoint.
+- **Interval / uncertainty band**: a range around a value that we expect to contain the truth most of the time (we aim for 90 percent).
+- **Conformal prediction**: a way to turn model errors on held-out data into intervals; coverage is the share of truths inside the interval.
+- **Drift**: the relationship between the two sensors changing over time.
+- **Anomaly / critical period**: a week (or run of weeks) that is unusually high compared with normal; critical periods are ranked.
+- **Driver**: a weather or land factor that is associated with burning; association, not proof of cause.
+- **Outlook**: how the current season compares with normal, with a skill score showing whether the forecast beats a simple baseline.
+- **Parquet / DuckDB**: a compact table file format and a tool to query it with SQL.
+- **Contract**: the agreed shape of a file or an API response; never change it without Sheikh.
+- **Hand-off**: sending a finished file to a teammate with a message and a check.
+- **Gate**: a checkpoint (G0 to G3, freeze, submit) where we confirm the promised artifact exists and passes its tests.
+- **Floor / core / scale-up**: the three tiers of ambition; the floor must work first.

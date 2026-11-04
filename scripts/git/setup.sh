@@ -16,4 +16,4 @@ chmod +x scripts/git/*.sh scripts/git/hooks/* 2>/dev/null || true
 echo "Ready: $(my_name), branch prefix '$(my_prefix)/', your folder '$(my_folder)/'."
 git config user.name  >/dev/null || echo "Next: git config --global user.name 'Your Name'"
 git config user.email >/dev/null || echo "Next: git config --global user.email 'the email on your GitHub account'"
-echo "Daily loop: start.sh <topic> -> (work) -> save.sh \"message\" -> ship.sh   (docs/GIT_WORKFLOW.md)"
+echo "Daily loop: start.sh <topic> -> (work) -> save.sh \"message\" -> ship.sh   (docs/guides/git-workflow.md)"

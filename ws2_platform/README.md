@@ -10,5 +10,4 @@
 **You deliver.**
 - H3 openapi + fixtures + mock; H4 hosting hello-world; H8 grid_daily + cells; H16 live /aoi/summary + fallback; H30 all endpoints; H34 /meta/validation; H44 final deploy
 
-Prompt pack: prompts/ws2_sattyam.md   (paste docs/AI_PREAMBLE.md first)
 Keep decisions and known issues in NOTES.md.

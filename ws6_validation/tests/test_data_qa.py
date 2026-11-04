@@ -1,4 +1,4 @@
-"""Data QA on data/processed (prompt P6.3; docs/QA_CHECKLIST.md). Skips when the data is not present."""
+"""Data QA on data/processed (prompt P6.3; docs/project/qa-checklist.md). Skips when the data is not present."""
 import datetime as dt
 import os
 import subprocess

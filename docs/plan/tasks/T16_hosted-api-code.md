@@ -10,7 +10,7 @@ needs: [T07]
 requires: []
 branch: ws1/T16-hosted-api-code
 touches: [ws2_platform/Dockerfile, ws2_platform/api/app.py, ws5_frontend/src/api.ts, ws5_frontend/src/snapshot.ts,
-          ws5_frontend/src/App.tsx, ws5_frontend/src/i18n/en.json, ws5_frontend/src/i18n/bn.json, docs/HOSTING.md]
+          ws5_frontend/src/App.tsx, ws5_frontend/src/i18n/en.json, ws5_frontend/src/i18n/bn.json, docs/guides/deployment.md]
 creates: [scripts/release_data.py, scripts/tests/test_release_data.py, ws2_platform/fetch_data.py,
           ws2_platform/tests/test_fetch_data.py, ws5_frontend/src/mode.ts, ws5_frontend/src/mode.test.ts]
 checks: [CHECK-PLAN, CHECK-PY, CHECK-WEB, CHECK-SNAP]
@@ -85,7 +85,7 @@ automatic fallback. This card writes and tests the code; Sheikh creates the acco
      - hybrid with a probe that rejects → snapshot;
      - hybrid with a probe that never resolves → snapshot after the timeout (use fake timers:
        `vi.useFakeTimers()`).
-6. **`docs/HOSTING.md`.** Add a "Hosted API (Hugging Face Space)" section covering: cutting a data release
+6. **`docs/guides/deployment.md`.** Add a "Hosted API (Hugging Face Space)" section covering: cutting a data release
    (`release_data.py`), building with `DATA_URL` and `DATA_SHA256`, the Space README header, rollback (point
    `DATA_URL` at the previous release and restart), and `/health`.
 7. Run the checks, mark the card done, `split` (Sattyam, Sheikh, Shammo), push and open the PR.

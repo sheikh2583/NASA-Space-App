@@ -41,7 +41,7 @@ Awards in reach: Best Use of Data, Best Use of Science, Local Impact, Best Story
 
 ## 2. Measured facts this plan builds on (4 Nov 2026)
 
-**Training run** (`docs/TRAINING_RESULTS.md`):
+**Training run** (`docs/results/training-results.md`):
 - B1 selected, with mean held-out CCC 0.9417 against 0.9351 for LightGBM.
 - Nominal 90% bands cover 91.6% weekly and 93.7% monthly.
 
@@ -130,7 +130,7 @@ anyone repeats it (T31).
   - Don't add test libraries or other dependencies without Sheikh's OK in the PR.
 - **Text.** All UI text goes in `src/i18n/en.json` and `bn.json`, and `npm run check:strings` must pass. Bangla
   drafts are marked for review (H05).
-- **Measured numbers** come from data at runtime, or are copied from `docs/TRAINING_RESULTS.md` with their source.
+- **Measured numbers** come from data at runtime, or are copied from `docs/results/training-results.md` with their source.
   Never type or round them by memory.
 - **Basemap.** OpenStreetMap only. Never restore unauthenticated CARTO URLs.
 - **Git.**

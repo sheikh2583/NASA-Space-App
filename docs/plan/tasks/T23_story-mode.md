@@ -10,7 +10,7 @@ needs: [T08, T12, T20]
 requires: []
 branch: ws1/T23-story-mode
 touches: [ws5_frontend/src/App.tsx, ws5_frontend/src/styles.css, ws5_frontend/src/i18n/en.json,
-          ws5_frontend/src/i18n/bn.json, docs/demo_script.md]
+          ws5_frontend/src/i18n/bn.json, docs/project/demo-script.md]
 creates: [ws5_frontend/src/components/Story.tsx, ws5_frontend/src/lib/story.ts, ws5_frontend/src/lib/story.test.ts]
 checks: [CHECK-PLAN, CHECK-WEB, CHECK-SNAP]
 ---
@@ -54,7 +54,7 @@ the claim.
 3. **Start.**
    - A top-bar button "Take the 90-second tour" (`t("story.start")`).
    - `#s=1` in the URL opens it (T12's `s` field).
-4. **`docs/demo_script.md`** (Samiul). Rewrite the live demo to follow the 7 steps, with what to say at each one, in
+4. **`docs/project/demo-script.md`** (Samiul). Rewrite the live demo to follow the 7 steps, with what to say at each one, in
    under 3 minutes.
 5. Run the checks. Walk through the tour in the snapshot build at 390 px and on desktop, in both languages, and time
    it. Paste the time into the PR.

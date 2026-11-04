@@ -9,7 +9,7 @@ size: S
 needs: [T18]
 requires: [secret:FIRMS_MAP_KEY, gh-auth]
 branch: ws1/T39-firms-secret
-touches: [docs/HOSTING.md]
+touches: [docs/guides/deployment.md]
 creates: []
 checks: [CHECK-PLAN]
 ---
@@ -25,7 +25,7 @@ store; it never appears on screen, in a file or in a log.
    **Don't echo the value, and don't pass it as a command-line argument.**
 3. Create the variable that keeps the feed off until T19: `gh variable set LIVE_FEED --body off --repo sheikh2583/NASA-Space-App`.
 4. Check: `gh secret list` shows `FIRMS_MAP_KEY` (names only), and `gh variable list` shows `LIVE_FEED off`.
-5. In `docs/HOSTING.md` ("Nightly live feed"), add how the secret was set and how to rotate it: run the same command
+5. In `docs/guides/deployment.md` ("Nightly live feed"), add how the secret was set and how to rotate it: run the same command
    after changing `.env`.
 6. Run the checks, mark the card done, `split`, push and open the PR.
 

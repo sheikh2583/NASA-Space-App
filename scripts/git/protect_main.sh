@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# SHEIKH ONLY. Needs gh signed in. Not tested against GitHub. CODEOWNERS still auto-requests reviewers; the guard check enforces ownership. Branch protection on private repos may need a paid plan; if this fails, rely on the hooks, the PR guard and the rules in docs/WORKING_TOGETHER.md.
+# SHEIKH ONLY. Needs gh signed in. Not tested against GitHub. CODEOWNERS still auto-requests reviewers; the guard check enforces ownership. Branch protection on private repos may need a paid plan; if this fails, rely on the hooks, the PR guard and the rules in CONTRIBUTING.md.
 set -euo pipefail
-cd "$(git rev-parse --show-toplevel)"; source scripts/config.sh
+cd "$(git rev-parse --show-toplevel)"; source scripts/git/config.sh
 path="${REPO_URL#https://github.com/}"; path="${path%.git}"
 gh api -X PUT "repos/$path/branches/main/protection" --input - <<'JSON'
 {

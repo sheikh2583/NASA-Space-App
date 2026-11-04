@@ -10,7 +10,7 @@
 - Harmonized table is sparse; days with no operating sensor never appear (common.series turns them into NaN).
 
 ## Known issues
-- Use [GPU estimates](../docs/GPU_TRAINING_TIMES.md) for measured evidence and planning ranges. `--quick` runs spatial/backward holdouts; full runs add temporal/drift-era checks. Internal metric reuse is valid only with unchanged input and fitting settings.
+- Use [GPU estimates](../docs/results/gpu-training-times.md) for measured evidence and planning ranges. `--quick` runs spatial/backward holdouts; full runs add temporal/drift-era checks. Internal metric reuse is valid only with unchanged input and fitting settings.
 
 ## AI assistance log (where AI tools helped)
 - 2026-11-03: everything in this folder was written with Claude (AI assistant) at Sheikh's direction before the event, on synthetic data, and assigned to this workstream's owner. Review it before relying on it; rerun on real data.

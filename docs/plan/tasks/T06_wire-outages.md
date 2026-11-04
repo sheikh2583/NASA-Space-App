@@ -11,7 +11,7 @@ requires: [real-data]
 branch: ws1/T06-wire-outages
 touches: [ws2_platform/sensors.py, ws2_platform/tests/test_platform.py, common/series.py, common/tests/test_common.py,
           ws1_harmonize/run.py, ws1_harmonize/tests/test_harmonize.py, contracts/parquet_schemas.json,
-          docs/CONTRACT_CHANGES.md]
+          docs/project/contract-changes.md]
 creates: [ws2_platform/tests/test_sensors_outages.py]
 checks: [CHECK-PLAN, CHECK-PY, CHECK-SMOKE]
 ---
@@ -45,7 +45,7 @@ is the most important validity fix (`docs/specs/I8_COVERAGE.md`, sections 4-5, a
    - In `contracts/parquet_schemas.json`, add `coverage_days` with columns `sat` (string), `region` (string),
      `date` (date32), `overlap_D` (float32), `overlap_N` (float32), `event_ids` (string) and `verification`
      (string), and key (`sat`, `region`, `date`).
-   - Append to `docs/CONTRACT_CHANGES.md`: "approved (T05 decision): coverage_days added; sensor_days meaning extended;
+   - Append to `docs/project/contract-changes.md`: "approved (T05 decision): coverage_days added; sensor_days meaning extended;
      adjusted_from_noaa20 may appear before 2 Nov 2026".
 3. **`ws2_platform/sensors.py`:**
    - New signature: `sensor_days(grid, end=None, coverage_days=None, threshold=0.25)`.

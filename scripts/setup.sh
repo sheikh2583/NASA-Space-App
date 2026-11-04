@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
-# CUDA-first Windows/Linux parity; --ui-only also supports macOS development.
+# Create .venv and install dependencies. Never trains.
+#   bash scripts/setup.sh --ui-only        UI/API development, no GPU needed (Linux or macOS)
+#   bash scripts/setup.sh --training-only  CUDA training only, no Node needed (HUMAN ONLY: runs GPU probes)
+#   bash scripts/setup.sh                  everything (HUMAN ONLY: runs GPU probes)
+# Guide: docs/guides/setup.md
 set -euo pipefail
 cd "$(dirname "$0")/.."
 args=()
@@ -9,8 +13,6 @@ while [ "$#" -gt 0 ]; do
     --ui-only|--training-only|--allow-compatible) args+=("$1"); shift ;;
     --gpu-id|--threads) [ "$#" -ge 2 ] || { echo "Missing value for $1" >&2; exit 2; }; args+=("$1" "$2"); shift 2 ;;
     --python) [ "$#" -ge 2 ] && [ -n "$2" ] || { echo 'Missing interpreter path for --python' >&2; exit 2; }; task_python="$2"; shift 2 ;;
-    --no-pipeline|--cuda) shift ;; # Compatibility: CUDA is default, setup never trains.
-    --quick) echo 'Setup no longer trains; use workflow.py train --quick.'; shift ;;
     --help|-h) echo 'Usage: bash scripts/setup.sh [--ui-only | --training-only] [--python PATH] [--allow-compatible] [--gpu-id N] [--threads N]'; exit 0 ;;
     *) echo "Unknown setup option: $1" >&2; exit 2 ;;
   esac
@@ -29,7 +31,7 @@ if [ ! -x .venv/bin/python ]; then
       task_python="$(uv python find --system 3.11 2>/dev/null || true)"
     fi
   fi
-  [ -n "$task_python" ] || { echo 'Install 64-bit Python 3.11. With uv: uv python install 3.11; bash scripts/setup.sh --training-only --python "$(uv python find --system 3.11)". See docs/TEAM_TRAINING.md.' >&2; exit 1; }
+  [ -n "$task_python" ] || { echo 'Install 64-bit Python 3.11. With uv: uv python install 3.11; bash scripts/setup.sh --training-only --python "$(uv python find --system 3.11)". See docs/guides/setup.md.' >&2; exit 1; }
   "$task_python" -c 'import struct,sys; sys.exit(0 if sys.version_info[:2] == (3, 11) and struct.calcsize("P") == 8 else 1)' || { echo '--python must select a working 64-bit Python 3.11 executable.' >&2; exit 1; }
   "$task_python" -m venv .venv || { echo 'Could not create .venv. Install the matching venv package (for distro Python) or use uv-managed Python 3.11.' >&2; exit 1; }
 fi

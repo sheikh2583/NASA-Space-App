@@ -9,7 +9,7 @@ size: M
 needs: [H02]
 requires: [real-data]
 branch: ws1/T40-report-outage-run
-touches: [docs/TRAINING_RESULTS.md, ws5_frontend/public/demo/snapshot.json]
+touches: [docs/results/training-results.md, ws5_frontend/public/demo/snapshot.json]
 creates: []
 checks: [CHECK-PLAN, CHECK-PY, CHECK-QA, CHECK-FILES, CHECK-SNAP]
 ---
@@ -29,7 +29,7 @@ acceptance criteria, and put the corrected record on the site.
    - the number of SNPP+MODIS overlap weeks.
 3. **Spec criterion A7.** In the Punjab demo area, show the weekly values for the weeks of 28 Oct and 4 Nov 2024,
    before and after, and the sources. The days 3-6 Nov should now be `adjusted_from_noaa20` (or the week `mixed`).
-4. Add the section "Coverage correction (<date>)" to `docs/TRAINING_RESULTS.md`, with the tables from steps 2-3.
+4. Add the section "Coverage correction (<date>)" to `docs/results/training-results.md`, with the tables from steps 2-3.
    Mark every number "measured, <command>, <date>". Keep the 4 Nov section unchanged.
 5. Republish with `python scripts/export_hosted_demo.py`. The pipeline's fixtures stage also rewrote
    `contracts/fixtures/`; keep those changes only if they are the expected new values, otherwise
@@ -37,7 +37,7 @@ acceptance criteria, and put the corrected record on the site.
 6. Run the checks, mark the card done, `split`, push and open the PR. Paste both tables into the PR.
 
 ## Acceptance
-- [ ] The before → after tables are in `TRAINING_RESULTS.md` and in the PR, all measured.
+- [ ] The before → after tables are in `docs/results/training-results.md` and in the PR, all measured.
 - [ ] The corrected 2024 Punjab weeks are in the snapshot.
 
 ## Stop and ask if

@@ -1,16 +1,16 @@
-# Start the API (port 8000) and the web app (port 5173) on Windows.
-#   powershell -ExecutionPolicy Bypass -File scripts\start.ps1 [-Mock]
+# Start the API (port 8000) and the web app (port 5173), then open the browser. Ctrl+C stops both.
+#   powershell -NoProfile -ExecutionPolicy Bypass -File scripts\start.ps1          trained data from data\processed\
+#   powershell -NoProfile -ExecutionPolicy Bypass -File scripts\start.ps1 -Mock    bundled fixtures; no data or GPU needed
+[CmdletBinding()]
 param([switch]$Mock)
-Set-Location (Join-Path $PSScriptRoot "..")
-$env:PYTHONPATH = (Get-Location).Path
-$vpy = Join-Path ".venv" "Scripts\python.exe"
-if ($Mock) {
-  Write-Host "Mock API (contracts/fixtures) on http://localhost:8000"
-  $api = Start-Process -FilePath $vpy -ArgumentList "-m", "uvicorn", "ws2_platform.api.mock_server:app", "--port", "8000" -PassThru -NoNewWindow
-} else {
-  if (-not (Test-Path data\processed\harmonized.parquet)) { Write-Host "No data\processed yet: run scripts\setup.ps1 (or start with -Mock)."; exit 1 }
-  $env:DATA_DIR = "data/processed"
-  Write-Host "API on http://localhost:8000  (docs: http://localhost:8000/docs)"
-  $api = Start-Process -FilePath $vpy -ArgumentList "-m", "uvicorn", "ws2_platform.api.app:app", "--port", "8000" -PassThru -NoNewWindow
+$ErrorActionPreference = 'Stop'
+Set-Location (Join-Path $PSScriptRoot '..')
+$vpy = Join-Path (Get-Location) '.venv\Scripts\python.exe'
+if (-not (Test-Path -LiteralPath $vpy)) {
+  Write-Host 'No .venv yet. Run first: powershell -NoProfile -ExecutionPolicy Bypass -File scripts\setup.ps1 -UiOnly' -ForegroundColor Red
+  exit 1
 }
-try { Push-Location ws5_frontend; npm run dev } finally { Pop-Location; Stop-Process -Id $api.Id -ErrorAction SilentlyContinue }
+$workflowArgs = @('scripts\workflow.py', 'dev', '--open')
+if ($Mock) { $workflowArgs += '--mock' }
+& $vpy @workflowArgs
+exit $LASTEXITCODE

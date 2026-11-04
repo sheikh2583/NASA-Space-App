@@ -12,7 +12,7 @@ def test_share_allowlist_excludes_sensitive_and_generated_paths(monkeypatch, tmp
                  "data/raw/firms/FIRMS.csv", "ws2_platform/static_fallback/meta.json",
                  "ws5_frontend/tsconfig.tsbuildinfo", "codex/private.md"):
         assert not module.included(tmp_path / path), path
-    for path in (".env.example", "ws5_frontend/.env.example", "scripts/launch.ps1",
+    for path in (".env.example", "ws5_frontend/.env.example", "scripts/train.ps1",
                  "ws5_frontend/src/App.tsx", "CLAUDE.md", "AGENTS.md",
                  "docs/plan/team.yaml", "docs/plan/tasks/T00_install.md", "scripts/plan.py"):
         assert module.included(tmp_path / path), path

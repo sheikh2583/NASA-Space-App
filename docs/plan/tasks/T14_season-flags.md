@@ -9,7 +9,7 @@ size: M
 needs: [T07]
 requires: []
 branch: ws1/T14-season-flags
-touches: [docs/specs/I1_SEASON_PROFILE.md, docs/CONTRACT_CHANGES.md]
+touches: [docs/specs/I1_SEASON_PROFILE.md, docs/project/contract-changes.md]
 creates: [ws3_anomaly/season_flags.py, ws3_anomaly/tests/test_season_flags.py]
 checks: [CHECK-PLAN, CHECK-PY]
 ---
@@ -57,7 +57,7 @@ sign-off. T15 then puts the flags in the API and UI.
    - the UI shows the `last10` basis, with `all` in the tooltip;
    - `uncertain` flags are shown greyed out, with a note.
 
-   Append a line to `docs/CONTRACT_CHANGES.md` approving `years[].flag` in the season response.
+   Append a line to `docs/project/contract-changes.md` approving `years[].flag` in the season response.
 5. Run the checks, mark the card done, `split` (Monazir: `ws3_anomaly/`; Sheikh: the spec and contract files), push and
    open the PR. Its title starts with "T14 (decision)".
 

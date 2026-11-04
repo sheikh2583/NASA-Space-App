@@ -8,5 +8,4 @@
 **You deliver.**
 - H10 common series/climatology/intervals; H12 splits/metrics; H30 conformal, drift, interval_table v1; H34 outlook + validation pieces
 
-Prompt pack: prompts/ws4_samin.md   (paste docs/AI_PREAMBLE.md first)
 Keep decisions and known issues in NOTES.md.

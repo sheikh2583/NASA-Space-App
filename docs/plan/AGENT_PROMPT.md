@@ -44,7 +44,7 @@ Never:
   - change scientific outputs without the card's spec and contract line; never run the full training
     (python scripts/workflow.py train without --quick) yourself: that is my manual step (cards H02, H03);
   - call weather a cause, or call the season window the physical start or end of burning;
-  - type or round a measured number from memory; numbers come from data or from docs/TRAINING_RESULTS.md;
+  - type or round a measured number from memory; numbers come from data or from docs/results/training-results.md;
   - add dependencies or test libraries without my OK.
 If anything in a card doesn't match the code you find, stop and tell me what differs. Don't guess.
 ```

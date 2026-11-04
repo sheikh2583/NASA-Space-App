@@ -1,7 +1,7 @@
 """Holdout evaluation of B0, B1 and the learned candidate on region-week sums.
 
 select_method() picks B1 or the CUDA candidate using both satellite-input configurations; the OOF file,
-the conformal intervals and harmonized v1 all use the chosen method (RISKS.md: "ship B1 with honest wording").
+the conformal intervals and harmonized v1 all use the chosen method ("ship B1 with honest wording").
 
 Holdouts: (a) spatial blocks (train blocks -> test blocks), (b) rolling temporal folds, (c) backward
 (train 2015-2020, test 2012-2014), plus the drift-era check (train 2015-2020, test 2021 on).

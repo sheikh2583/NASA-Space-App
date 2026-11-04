@@ -10,7 +10,7 @@ needs: [T00]
 requires: [real-data]
 branch: ws1/T03-status-levels
 touches: [ws4_outlook/outlook.py, ws4_outlook/tests/test_outlook.py, contracts/openapi.yaml,
-          contracts/json_schemas/outlook_region.schema.json, docs/CONTRACT_CHANGES.md, ws5_frontend/src/types.ts,
+          contracts/json_schemas/outlook_region.schema.json, docs/project/contract-changes.md, ws5_frontend/src/types.ts,
           ws5_frontend/src/components/Panels.tsx, ws5_frontend/src/styles.css, ws5_frontend/src/i18n/en.json,
           ws5_frontend/src/i18n/bn.json, ws5_frontend/public/demo/snapshot.json]
 creates: [ws5_frontend/src/components/Panels.test.tsx]
@@ -42,7 +42,7 @@ plainly.
      `high`) and point `CurrentStatus.level` at it. Leave `AlertLevel` and `alert.level` unchanged.
    - In `outlook_region.schema.json`, add `very_low` and `low` to `current_status.level`'s enum only.
    - Don't change `SCHEMA_VERSION`; additive enum values follow the "adding is fine" rule.
-   - Append a dated line to `docs/CONTRACT_CHANGES.md` ("CurrentStatus.level gains very_low and low; AlertLevel
+   - Append a dated line to `docs/project/contract-changes.md` ("CurrentStatus.level gains very_low and low; AlertLevel
      unchanged").
 2. **Logic** (`ws4_outlook/outlook.py`). Add the constants `LOW, VERY_LOW, MIN_CHANGE = 25.0, 10.0, 10.0`. Then:
    - `hi_pct` = the percentile of the week's upper bound `hi`, or of the value if `hi` is missing. This mirrors

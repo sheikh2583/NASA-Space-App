@@ -9,7 +9,7 @@ size: S
 needs: [T28]
 requires: []
 branch: ws1/T29-submission-draft
-touches: [docs/SUBMISSION_CHECKLIST.md, docs/demo_script.md]
+touches: [docs/project/submission-checklist.md, docs/project/demo-script.md]
 creates: [docs/submission/project_page.md, docs/submission/slides.md, docs/submission/video_script.md]
 checks: [CHECK-PLAN]
 ---
@@ -19,7 +19,7 @@ into assets (T35), and Sheikh submits (H04).
 
 ## Steps
 1. Read:
-   - `docs/TRAINING_RESULTS.md` (the "Release v1.0-event" section);
+   - `docs/results/training-results.md` (the "Release v1.0-event" section);
    - `docs/REFERENCES.md`, `docs/AI_USE.md` and `docs/RULES_CHECK.md`;
    - the Validation page pieces in `ws5_frontend/public/demo/snapshot.json`.
 2. **`docs/submission/project_page.md`:**
@@ -48,7 +48,7 @@ into assets (T35), and Sheikh submits (H04).
 
 5. **Numbers.** Every number in the three files is copied from the release section, with the source in a trailing
    HTML comment, for example `<!-- TRAINING_RESULTS v1.0-event, CCC -->`.
-6. Add the three files to `docs/SUBMISSION_CHECKLIST.md`, and make sure `docs/demo_script.md` matches story mode.
+6. Add the three files to `docs/project/submission-checklist.md`, and make sure `docs/project/demo-script.md` matches story mode.
 7. Run the checks, mark the card done, `split`, push and open the PR.
 
 ## Acceptance
