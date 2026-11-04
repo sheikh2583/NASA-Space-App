@@ -4,6 +4,7 @@ import { AOIError, api } from "./api";
 import Calendar from "./components/Calendar";
 import { DriversPanel, OutlookPanel, PeriodsPanel, StatusCard } from "./components/Panels";
 import ErrorBoundary from "./components/ErrorBoundary";
+import LoadingNote from "./components/LoadingNote";
 import AnalysisControls from "./components/AnalysisControls";
 import AreaFilters from "./components/AreaFilters";
 import { areaLabel, defaultArea, loadAreaCatalog, type AreaOption } from "./areas";
@@ -149,7 +150,7 @@ export default function App() {
               onRefresh={() => req && void load(req)} onReset={reset}
               summary={summary && status === "ok" ? t("aoi.summary", { cells: num(summary.aoi.n_cells), area: num(summary.aoi.area_km2) }) : undefined} />
             {status === "idle" && !catalogLoading && !catalogUnavailable && <p className="note">{t(STATIC_DEMO ? "hosting.pick_area" : "map.select_hint")}</p>}
-            {status === "loading" && <p className="note" aria-live="polite">{t("state.loading")}</p>}
+            {status === "loading" && <LoadingNote onRetry={() => req && void load(req)} />}
             {status === "empty" && <p className="warn">{t("state.empty")}</p>}
             {status === "oversized" && <p className="warn">{t("state.oversized")}</p>}
             {status === "error" && <p className="warn">{t("state.error")}</p>}

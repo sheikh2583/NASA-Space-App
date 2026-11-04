@@ -118,3 +118,10 @@ table.t td.n { text-align: right; font-variant-numeric: tabular-nums; }
   .mapcol { height: 320px; }
   .card { break-inside: avoid; border: 0; padding: 4px 0; }
 }
+
+/* Cold-start note (W1): Render's free service can take about a minute to wake. */
+.waking { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid currentColor; border-right-color: transparent;
+           border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }

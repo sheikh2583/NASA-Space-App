@@ -1,0 +1,19 @@
+name: keep-warm
+# Pings the Render service so judges never hit a cold start (Render's free service sleeps after 15 idle minutes).
+# Runs only while the repository variable KEEP_WARM is "on" and RENDER_URL is set. Switch off: KEEP_WARM=off.
+# One always-on free service uses at most 744 of the workspace's 750 free hours a month (docs/guides/deployment.md).
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+permissions: {}
+jobs:
+  ping:
+    if: ${{ vars.KEEP_WARM == 'on' && vars.RENDER_URL != '' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Ping /health
+        env:
+          RENDER_URL: ${{ vars.RENDER_URL }}
+        run: curl -fsS --max-time 120 --retry 2 --retry-delay 10 "${RENDER_URL%/}/health" -o /dev/null -w "HTTP %{http_code} in %{time_total}s\n"

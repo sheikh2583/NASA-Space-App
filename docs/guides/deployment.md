@@ -67,6 +67,24 @@ This packages existing outputs only. Upload `share/firesense-runtime.zip` to a *
 
 Free Render web services sleep after 15 minutes without requests and can take about a minute to wake. The UI and API wake together. This deployment requests Free compute explicitly; workspace bandwidth/build allowances and free instance hours still apply. Read [Render's current limits](https://render.com/docs/free).
 
+While a sleeping service wakes, the web app says "Waking the server, this can take up to a minute…" after 3 seconds and offers **Try again** after 90 seconds, so a cold start never looks like a broken page.
+
+### Keep-warm switch (optional)
+
+`.github/workflows/keep-warm.yml` calls `<RENDER_URL>/health` every 10 minutes, so judges never meet a cold start. It runs only while two repository variables are set: `KEEP_WARM` is `on`, and `RENDER_URL` is the service URL. Run these once, with the [GitHub CLI](https://cli.github.com/) signed in (`gh auth login`):
+
+```bash
+gh variable set RENDER_URL --body "https://<service>.onrender.com" --repo sheikh2583/NASA-Space-App
+```
+
+```bash
+gh variable set KEEP_WARM --body "on" --repo sheikh2583/NASA-Space-App
+```
+
+**Switch it off** with `gh variable set KEEP_WARM --body "off" --repo sheikh2583/NASA-Space-App`, or in GitHub under Settings → Secrets and variables → Actions → Variables.
+
+Cost: Render grants each workspace 750 free instance hours a month, and one service awake all month uses at most 744 (31 × 24). So keep it on only if this is the workspace's **only** always-on free service; otherwise the hours run out and Render suspends the free services until the next month. Scheduled GitHub Actions can be delayed by a few minutes, and the ping is a tiny inbound request. GitHub disables scheduled workflows in a public repository after 60 days without activity.
+
 The free instance provides 512 MB RAM. The local Windows serving check reached approximately 430 MiB peak for the sampled Dhaka requests; this is not a Linux/container capacity benchmark. One worker and single-threaded numeric libraries reduce resource use. Monitor Render's memory and logs for out-of-memory restarts, especially with simultaneous users or broad areas. No paid upgrade is selected automatically.
 
 ## Troubleshooting
