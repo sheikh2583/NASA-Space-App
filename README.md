@@ -97,6 +97,16 @@ bash scripts/setup.sh
 
 Both installers use `scripts/bootstrap.py`, preserve `.env`, create input folders, run `pip check`, and stop on failure. Setup never starts training or changes scientific outputs. Stop Vite before setup to release Windows npm locks. Pinned installation does not silently switch to unpinned packages; see [setup options](docs/TRAINING.md).
 
+For a GPU training server or to leave the running frontend untouched, install **training dependencies only**. This mode needs no Node/npm:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\setup.ps1 -TrainingOnly
+```
+
+```bash
+bash scripts/setup.sh --training-only
+```
+
 For an existing environment, the complete dependency manifest and standalone probe are:
 
 ```sh
@@ -104,7 +114,7 @@ python -m pip install -r requirements-cuda.txt
 python scripts/workflow.py gpu-check --gpu-id 0 --threads 8
 ```
 
-The check trains and predicts a real model, then verifies its CUDA device. A missing/unusable GPU raises an error; a CUDA request cannot silently switch to CPU. `nvidia-smi` alone is not sufficient verification.
+The check fits and predicts with all four pipeline objectives (Poisson, Tweedie, binary classification, and quantile regression), then verifies the CUDA device for each. It reports the wheel's CUDA build version and keeps probe fits out of training audit logs. A missing/unusable GPU raises an error; a CUDA request cannot silently switch to CPU.
 
 `workflow.py prepare`, `train`, and `all`, and `scripts/run_pipeline.py` default to CUDA with eight CPU helper threads. Scientific baselines and CPU test paths remain internal for comparison and CI. The supported training instructions use CUDA throughout; data preparation still uses the host CPU.
 

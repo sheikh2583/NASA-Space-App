@@ -1,6 +1,6 @@
 # CUDA training guide
 
-Current workflow: 4 November 2026. Start in the repository root. Training requires NVIDIA Windows/Linux, Python 3.11, Node.js 22.12+, the real inputs below, and a passing CUDA probe. The setup scripts install dependencies only; training is always a separate command. For UI/API development without a GPU, use `-UiOnly` / `--ui-only` and the mock launch in [README](../README.md).
+Current workflow: 4 November 2026. Start in the repository root. Training requires NVIDIA Windows/Linux, Python 3.11, the real inputs below, and a passing CUDA probe. The complete project setup also requires Node.js 22.12+; training-only setup does not. Setup installs dependencies only; training is always separate. For UI/API development without a GPU, use `-UiOnly` / `--ui-only` and the mock launch in [README](../README.md).
 
 ## 1. Install the full training environment
 
@@ -18,17 +18,21 @@ bash scripts/setup.sh
 .venv/bin/python scripts/workflow.py gpu-check --gpu-id 0 --threads 8
 ```
 
+For a headless GPU server, or when the local frontend should keep running, use `scripts\setup.ps1 -TrainingOnly` on Windows or `bash scripts/setup.sh --training-only` on Linux. This installs the same complete Python/CUDA dependencies and verifies all four pipeline objectives, but skips Node/npm, frontend environment files, and frontend changes. UI build/test workflows require the complete setup later. `-UiOnly` and `-TrainingOnly` are mutually exclusive.
+
 `requirements-cuda.txt` includes the entire pinned `requirements.lock.txt` environment plus XGBoost 3.2.0. Pip installs its declared dependencies, including platform-specific runtime packages. No PyTorch, TensorFlow, CuPy, RAPIDS, or LightGBM GPU compilation is required by this pipeline. The standard XGBoost wheel provides the CUDA learner; do not install `xgboost-cpu`. A separately installed CUDA toolkit is not part of the normal wheel-based setup. The actual fit/predict probe establishes whether the installed wheel and NVIDIA driver work together. See the [official XGBoost installation guide](https://xgboost.readthedocs.io/en/release_3.2.0/install.html).
 
 System prerequisites cannot be supplied by pip:
 
 | Platform | Prerequisite / failure recovery |
 |---|---|
-| Windows x64 | NVIDIA driver (`nvidia-smi`), 64-bit Python 3.11, Node.js 22.12+, and [Microsoft Visual C++ x64 Redistributable](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist). Missing runtime DLLs require the redistributable. |
-| Linux | NVIDIA driver, Python 3.11 with venv, Node.js 22.12+, modern glibc (2.28+ for the full wheel). On Debian/Ubuntu, missing OpenMP libraries commonly require `libgomp1`; missing venv may require `python3.11-venv`. |
+| Windows x64 | NVIDIA driver (`nvidia-smi`), 64-bit Python 3.11, and [Microsoft Visual C++ x64 Redistributable](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist). Node.js 22.12+ is needed for frontend setup only. |
+| Linux | NVIDIA driver, Python 3.11 with venv, modern glibc (2.28+ for the full wheel). Node.js 22.12+ is needed for frontend setup only. On Debian/Ubuntu, missing OpenMP libraries commonly require `libgomp1`; missing venv may require `python3.11-venv`. |
 | macOS | UI/API development only; this CUDA training path is unavailable. |
 
-Setup validates Python/Node, checks the NVIDIA driver, installs pinned dependencies with visible pip progress, checks dependency consistency/imports, verifies a GPU fit, preserves existing environment files, and installs locked npm packages. Stop this project's Vite/test/preview processes before reinstalling npm packages on Windows. An occupied port 5173 is detected before installation starts.
+Setup validates Python/Node as applicable, checks the NVIDIA driver, installs pinned dependencies with visible pip progress, checks dependency consistency/imports, verifies GPU training/prediction, and preserves existing environment files. Full setup also installs locked npm packages and checks development/preview ports 5173 and 4173 before changing packages. Stop this project's Vite/test/preview processes before full setup on Windows, or use training-only setup.
+
+The CUDA probe checks `count:poisson`, `reg:tweedie`, `binary:logistic`, and `reg:quantileerror`, which cover harmonization, drift, and outlook fitting. Each tiny fit verifies the selected device and finite predictions. The result includes `cuda_build_version` and `verified_objectives`. Probe fits never append to a configured pipeline audit log; the prior log setting is restored even if verification fails.
 
 An existing `.venv` must belong to the current OS and Python 3.11. Rename an incompatible environment before rerunning setup; do not copy it between Windows and Linux. No automatic system-driver installation or silent unpinned fallback occurs. If a platform cannot install the lockfile, inspect the error first. Explicitly accept compatible base requirements only with:
 

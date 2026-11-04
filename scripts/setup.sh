@@ -5,11 +5,11 @@ cd "$(dirname "$0")/.."
 args=()
 while [ "$#" -gt 0 ]; do
   case "$1" in
-    --ui-only|--allow-compatible) args+=("$1"); shift ;;
+    --ui-only|--training-only|--allow-compatible) args+=("$1"); shift ;;
     --gpu-id|--threads) [ "$#" -ge 2 ] || { echo "Missing value for $1" >&2; exit 2; }; args+=("$1" "$2"); shift 2 ;;
     --no-pipeline|--cuda) shift ;; # Compatibility: CUDA is default, setup never trains.
     --quick) echo 'Setup no longer trains; use workflow.py train --quick.'; shift ;;
-    --help|-h) echo 'Usage: bash scripts/setup.sh [--ui-only] [--allow-compatible] [--gpu-id N] [--threads N]'; exit 0 ;;
+    --help|-h) echo 'Usage: bash scripts/setup.sh [--ui-only | --training-only] [--allow-compatible] [--gpu-id N] [--threads N]'; exit 0 ;;
     *) echo "Unknown setup option: $1" >&2; exit 2 ;;
   esac
 done

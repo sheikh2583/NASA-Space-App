@@ -79,13 +79,31 @@ def predict_cuda(booster, X):
 
 
 def probe_cuda() -> dict:
-    """Actually train on CUDA; nvidia-smi or an installed wheel alone is insufficient."""
+    """Verify every pipeline objective on CUDA without altering model audit logs."""
     import xgboost as xgb
+    build = xgb.build_info()
+    if not build.get('USE_CUDA'):
+        raise RuntimeError('This XGBoost library has no CUDA support. Install requirements-cuda.txt, not xgboost-cpu.')
     rng = np.random.default_rng(11)
     X = rng.random((512, 6), dtype=np.float32)
-    booster = train_cuda(X, rng.poisson(2, 512), objective="count:poisson", rounds=3, purpose="probe")
-    assert np.isfinite(predict_cuda(booster, X)).all()
+    objectives = [
+        ('count:poisson', rng.poisson(2, 512), {}),
+        ('reg:tweedie', rng.gamma(2, 2, 512), {'tweedie_variance_power': 1.3}),
+        ('binary:logistic', (X[:, 0] > 0.5).astype(int), {}),
+        ('reg:quantileerror', rng.normal(size=512), {'quantile_alpha': 0.5}),
+    ]
+    previous_log = os.environ.pop('FIRESENSE_COMPUTE_LOG', None)
+    try:
+        for objective, y, extra in objectives:
+            booster = train_cuda(X, y, objective=objective, rounds=3, purpose='probe', **extra)
+            if not np.isfinite(predict_cuda(booster, X)).all():
+                raise RuntimeError(f'CUDA probe produced nonfinite predictions for {objective}')
+    finally:
+        if previous_log is not None:
+            os.environ['FIRESENSE_COMPUTE_LOG'] = previous_log
     result = subprocess.run(["nvidia-smi", "--query-gpu=index,name,memory.total,driver_version", "--format=csv,noheader"],
                             capture_output=True, text=True, check=True)
     return {"backend": "cuda", "device": device(), "xgboost": xgb.__version__,
+            "cuda_build_version": build.get('CUDA_VERSION'),
+            "verified_objectives": [objective for objective, _, _ in objectives],
             "threads": threads(), "gpus": result.stdout.strip().splitlines(), "verified": True}

@@ -32,7 +32,9 @@ Use the full Windows/Linux installer in [TRAINING.md](TRAINING.md), or install t
 
 Alternatively double-click `START_HERE.cmd`: option 1 installs the complete CUDA environment; option 12 verifies it; options 4 and 5 run quick/full CUDA training. Option 11 initializes UI development without requiring NVIDIA. Linux menu names match; macOS supports UI development only. The old CPU training action is removed.
 
-The probe fits and predicts a real tiny model and checks the saved booster configuration for the requested CUDA device. GPU detection or a successful package import alone does not pass. A CUDA request that becomes CPU raises an error rather than silently succeeding. No automatic dependency installation occurs during training.
+The probe fits/predicts tiny models for all four pipeline objectives and checks every booster configuration for the requested CUDA device. Its result includes the compiled CUDA version and verified objectives. GPU detection or a successful import alone does not pass. A request that becomes CPU raises an error. Probe fits are excluded from pipeline audit logs, including direct probes run in a shell with an existing log setting. No automatic dependency installation occurs during training.
+
+For Python/CUDA dependencies without frontend installation or a Node/npm requirement, use `scripts\setup.ps1 -TrainingOnly` or `bash scripts/setup.sh --training-only`. Full setup also checks Vite's standard development/preview ports before npm installation to avoid Windows native-module locks.
 
 ## Commands
 

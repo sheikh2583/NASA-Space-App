@@ -18,6 +18,8 @@ Windows `scripts/setup.ps1` and Linux `scripts/setup.sh` create/check the OS-spe
 
 Unpinned fallback requires explicit `-AllowCompatible` / `--allow-compatible`. Do not silently bypass installation errors or CUDA failures. Stop the project's Vite/test/preview processes before setup on Windows; native npm file locks can otherwise cause EPERM. Init wrappers bootstrap only when needed rather than reinstalling dependencies on each command. Read [TRAINING.md](TRAINING.md) for all options and runtime prerequisites.
 
+Dependency hardening: `-TrainingOnly` / `--training-only` installs/verifies the full Python/CUDA environment without Node/npm or frontend changes, suitable for a headless GPU server or a running local frontend. Full setup checks ports 5173 and 4173. The actual CUDA probe now tests all four pipeline objectives, reports the compiled CUDA version, and restores an inherited audit-log setting without writing probe events into it. GPU numeric fitting settings and scientific outputs are unchanged by this setup update.
+
 ## Current science
 
 Local real inputs contain 4,336,082 detections and produce 778,256 harmonized rows. SNPP identity/confidence normalization and retained administrative-cell filtering are implemented. Land cover and POWER weather are present locally but excluded from Git/ZIP.

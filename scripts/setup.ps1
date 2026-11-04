@@ -2,6 +2,7 @@
 [CmdletBinding()]
 param(
   [switch]$UiOnly,
+  [switch]$TrainingOnly,
   [switch]$AllowCompatible,
   [ValidateRange(0, 64)][int]$GpuId = 0,
   [ValidateRange(1, 256)][int]$Threads = 8,
@@ -13,6 +14,7 @@ $ErrorActionPreference = 'Stop'
 Set-Location (Join-Path $PSScriptRoot '..')
 try {
   if ($UiOnly -and $Cuda) { throw 'Choose -UiOnly or CUDA setup, not both.' }
+  if ($UiOnly -and $TrainingOnly) { throw 'Choose -UiOnly or -TrainingOnly, not both.' }
   if ($Quick) { Write-Host 'Setup no longer trains. Run workflow.py train --quick after readiness passes.' }
   $vpy = Join-Path (Get-Location) '.venv\Scripts\python.exe'
   if (-not (Test-Path -LiteralPath $vpy)) {
@@ -35,6 +37,7 @@ try {
   }
   $setupArgs = @('scripts/bootstrap.py', '--gpu-id', "$GpuId", '--threads', "$Threads")
   if ($UiOnly) { $setupArgs += '--ui-only' }
+  if ($TrainingOnly) { $setupArgs += '--training-only' }
   if ($AllowCompatible) { $setupArgs += '--allow-compatible' }
   & $vpy @setupArgs
   exit $LASTEXITCODE
