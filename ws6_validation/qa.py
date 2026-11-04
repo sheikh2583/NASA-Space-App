@@ -97,6 +97,8 @@ def main(argv=None):
         print(f"{c['result']:4}  {c['check']}: {c['detail']}")
     print("planted:", pl)
     print("\n".join(summary))
+    if n_pass != len(checks):
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":

@@ -1,6 +1,8 @@
 {
   "_review": "Draft by an AI assistant. A fluent Bangla reviewer must check every line before H42 (docs/TIMELINE.md).",
   "app.title": "অগ্নি কার্যক্রম ক্যালেন্ডার",
+  "hosting.snapshot": "হোস্ট করা ডেমো: ২ নভেম্বর ২০২৬ পর্যন্ত আসল ডেটার সংরক্ষিত ফলাফল। সাপ্তাহিক সময়সীমা নির্দিষ্ট। নিজস্ব এলাকা, সেল স্তর ও CSV রপ্তানির জন্য সরাসরি API প্রয়োজন।",
+  "hosting.pick_area": "সংরক্ষিত ফলাফল দেখতে বাংলাদেশ বা পাঞ্জাব বেছে নিন।",
   "app.subtitle": "MODIS ও VIIRS সক্রিয় অগ্নি রেকর্ড একটি সামঞ্জস্যপূর্ণ ইতিহাসে",
   "app.scope": "ডেমো ডেটায় বাংলাদেশ এবং পাঞ্জাব–হরিয়ানা–দিল্লি আছে। পদ্ধতিটি যেকোনো জায়গায় কাজ করে।",
   "app.data_real": "NASA-এর আসল ডেটা",

@@ -11,7 +11,6 @@ say() { printf '\n== %s\n' "$*"; }
 need() { command -v "$1" >/dev/null 2>&1 || { echo "Missing $1. $2"; exit 1; }; }
 
 say "Checking tools"
-need git "Install git first."
 PY=""
 for c in python3.11 python3 python; do
   if command -v "$c" >/dev/null 2>&1 && "$c" -c 'import sys; sys.exit(0 if sys.version_info[:2] == (3, 11) else 1)' 2>/dev/null; then PY="$c"; break; fi
@@ -19,7 +18,7 @@ done
 [ -n "$PY" ] || { echo "Python 3.11 not found. Install it (python.org, pyenv, or your package manager) and rerun."; exit 1; }
 need node "Install Node.js LTS (https://nodejs.org) and rerun."
 need npm "Install Node.js LTS (it includes npm)."
-echo "git $(git --version | cut -d' ' -f3), $($PY --version), node $(node --version)"
+echo "$($PY --version), node $(node --version)"
 
 say "Python environment (.venv)"
 [ -d .venv ] || "$PY" -m venv .venv

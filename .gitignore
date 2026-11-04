@@ -28,3 +28,5 @@ ws5_frontend/public/method_*.md
 # Generated human/machine-readable run summaries.
 results/latest.json
 results/latest.md
+results/logs/
+share/

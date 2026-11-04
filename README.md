@@ -8,6 +8,10 @@ The full real-data training run completed on 4 November 2026 with all five QA gr
 
 ## Quick start
 
+For hosting and automatic demo updates on pushes to `main`, see [GitHub Pages hosting](docs/HOSTING.md). The hosted build uses a labeled real-data snapshot; local development retains the full FastAPI query workflow.
+
+**Windows: double-click `START_HERE.cmd`.** Choose Setup, then Smoke or Mock UI. Use Prepare before Quick/Full Training. Linux/macOS users can run `bash start.command` for the same menu. Read the [training and launcher guide](docs/TRAINING.md) for all workflows and [Claude handoff](docs/CLAUDE_HANDOFF.md) for agent continuation.
+
 Requirements: Python 3.11, Node.js LTS, npm, and Git.
 
 ### Windows
@@ -34,6 +38,9 @@ After setup, the same Python command works on every operating system:
 
 ```bash
 python scripts/workflow.py train --quick   # real-data smoke training
+python scripts/workflow.py prepare         # check real training inputs
+python scripts/workflow.py smoke           # fast integration checks; no retraining
+python scripts/workflow.py share           # minimal source ZIP in share/
 python scripts/workflow.py train           # full training
 python scripts/workflow.py validate        # QA and contract checks
 python scripts/workflow.py results         # results/latest.{md,json}

@@ -1,4 +1,5 @@
 import type { AOIRequest, Envelope } from "./types";
+import { STATIC_DEMO, snapshotCall } from "./snapshot";
 
 const BASE = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, "") || "http://localhost:8000";
 const FALLBACK = (import.meta.env.VITE_FALLBACK_BASE_URL as string | undefined)?.replace(/\/$/, "") || "";
@@ -36,6 +37,7 @@ async function fromFallback<T extends Envelope>(path: string, req?: AOIRequest):
 }
 
 async function call<T extends Envelope>(path: string, body?: unknown): Promise<T> {
+  if (STATIC_DEMO) return snapshotCall<T>(path, body);
   const ctl = new AbortController();
   const timer = setTimeout(() => ctl.abort(), TIMEOUT_MS);
   try {
@@ -63,6 +65,7 @@ export const api = {
   post: <T extends Envelope>(path: string, req: unknown) => call<T>(path, req),
   get: <T extends Envelope>(path: string) => call<T>(path),
   async exportCsv(req: AOIRequest, view: "summary" | "cells" | "critical_periods") {
+    if (STATIC_DEMO) throw new ApiError("CSV exports require the live backend.");
     const r = await fetch(`${BASE}/export`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...req, view }) });
     if (!r.ok) throw new ApiError(`HTTP ${r.status}`);
     const blob = await r.blob();

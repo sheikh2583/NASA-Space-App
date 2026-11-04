@@ -6,6 +6,7 @@ import { DriversPanel, OutlookPanel, PeriodsPanel, StatusCard } from "./componen
 import ErrorBoundary from "./components/ErrorBoundary";
 import AnalysisControls from "./components/AnalysisControls";
 import { DATA_MODE, DEMOS, RECORD_END, RECORD_START } from "./config";
+import { STATIC_DEMO } from "./snapshot";
 import { addDays, num } from "./lib/format";
 import type {
   AOIRequest, CellsResponse, CompareResponse, CriticalPeriodsResponse, DriversResponse, OutlookResponse, Res, SummaryResponse,
@@ -105,24 +106,25 @@ export default function App() {
       <div className={`banner ${DATA_MODE}`}>
         <span className="data-badge">{t(`app.data_${DATA_MODE}`)}</span> {t("app.scope")}
       </div>
+      {STATIC_DEMO && <div className="banner">{t("hosting.snapshot")}</div>}
       {view === "validation" && <ErrorBoundary><ValidationPage /></ErrorBoundary>}
       {view === "method" && <ErrorBoundary><MethodPage /></ErrorBoundary>}
       {view === "explore" && (
         <main className="layout">
           <div className="mapcol">
             <div className="mapbar">
-              <span className="hint">{t("map.draw_hint")}</span>
+              <span className="hint">{t(STATIC_DEMO ? "hosting.pick_area" : "map.draw_hint")}</span>
               <button className={"chip" + (demo === "bd" ? " on" : "")} onClick={() => pickDemo("bd")}>{t("map.demo_bd")}</button>
               <button className={"chip" + (demo === "pb" ? " on" : "")} onClick={() => pickDemo("pb")}>{t("map.demo_pb")}</button>
             </div>
             <MapView aoi={req} cells={cells?.cells ?? null} period={period} onDraw={onDraw} />
           </div>
           <div className="panels">
-            <AnalysisControls start={start} end={end} res={res} canRun={Boolean(req)}
+            <AnalysisControls fixed={STATIC_DEMO} start={start} end={end} res={res} canRun={Boolean(req)}
               onStart={setStart} onEnd={setEnd} onRes={setRes}
               onRefresh={() => req && void load(req)} onReset={reset}
               summary={summary && status === "ok" ? t("aoi.summary", { cells: num(summary.aoi.n_cells), area: num(summary.aoi.area_km2) }) : undefined} />
-            {status === "idle" && <p className="note">{t("map.draw_hint")}</p>}
+            {status === "idle" && <p className="note">{t(STATIC_DEMO ? "hosting.pick_area" : "map.draw_hint")}</p>}
             {status === "loading" && <p className="note" aria-live="polite">{t("state.loading")}</p>}
             {status === "empty" && <p className="warn">{t("state.empty")}</p>}
             {status === "oversized" && <p className="warn">{t("state.oversized")}</p>}
@@ -166,9 +168,9 @@ export default function App() {
                 <section className="card">
                   <h2>{t("export.title")}</h2>
                   <div className="exportrow">
-                    <button onClick={() => req && api.exportCsv(req, "summary")}>{t("export.summary")}</button>
-                    <button onClick={() => req && period && api.exportCsv({ ...req, start: period.start, end: period.end }, "cells")}>{t("export.cells")}</button>
-                    <button onClick={() => req && api.exportCsv(req, "critical_periods")}>{t("export.periods")}</button>
+                    <button disabled={STATIC_DEMO} onClick={() => req && api.exportCsv(req, "summary")}>{t("export.summary")}</button>
+                    <button disabled={STATIC_DEMO} onClick={() => req && period && api.exportCsv({ ...req, start: period.start, end: period.end }, "cells")}>{t("export.cells")}</button>
+                    <button disabled={STATIC_DEMO} onClick={() => req && api.exportCsv(req, "critical_periods")}>{t("export.periods")}</button>
                     <button onClick={() => window.print()}>{t("export.print")}</button>
                   </div>
                 </section>

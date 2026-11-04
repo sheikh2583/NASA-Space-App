@@ -1,5 +1,7 @@
 {
   "app.title": "Burning Activity Calendar",
+  "hosting.snapshot": "Hosted demo: saved real-data results through 2 November 2026. Weekly dates are fixed. Custom areas, cell layers, and CSV exports require the live API.",
+  "hosting.pick_area": "Choose Bangladesh or Punjab to explore the saved results.",
   "app.subtitle": "MODIS and VIIRS active-fire records as one consistent history",
   "app.scope": "Demo data covers Bangladesh and Punjab–Haryana–Delhi. The pipeline works anywhere.",
   "app.data_real": "Real NASA data",

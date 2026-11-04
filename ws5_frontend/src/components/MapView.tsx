@@ -7,6 +7,7 @@ import { RAMP_CSS, burnScale } from "../lib/colour";
 import { useTranslation } from "react-i18next";
 import type { AOIRequest, Cell } from "../types";
 import { date } from "../lib/format";
+import { STATIC_DEMO } from "../snapshot";
 
 interface Props {
   aoi: AOIRequest | null;
@@ -44,7 +45,7 @@ export default function MapView({ aoi, cells, period, onDraw }: Props) {
               polygon: { allowIntersection: false, shapeOptions: { color: "#1f1a17", weight: 2, fill: false } } },
       edit: { featureGroup: drawn, edit: false, remove: false },
     });
-    m.addControl(ctl);
+    if (!STATIC_DEMO) m.addControl(ctl);
     m.on(L.Draw.Event.CREATED, (e) => {
       const layer = (e as L.DrawEvents.Created).layer as L.Polygon;
       const gj = layer.toGeoJSON().geometry as GeoJSON.Polygon;
