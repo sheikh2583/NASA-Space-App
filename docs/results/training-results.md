@@ -47,6 +47,24 @@ identical samples. ⚠ marks a drop of more than 0.01.
 | temporal 2025-2026 (terra_only inputs) | B1 | 0.7778 | 0.7849 | +0.0071 | 1,034 → 869 |
 | temporal 2025-2026 (terra_only inputs) | XGBoost CUDA | 0.7769 | 0.7901 | +0.0132 | 1,034 → 869 |
 
+**Why B1 "spatial blocks (terra_only inputs)" fell 0.0146 (⚠).** Measured 2026-11-04 by a human-run diagnostic that
+refits B1 on the spatial training blocks for the pre- and post-correction panels and scores both on the same test
+region-weeks (Sheikh ran it; agents don't fit):
+
+| Step | CCC | Change |
+|---|---:|---:|
+| Before, own sample (2,310 region-weeks) | 0.8482 | |
+| Before, on the 2,148 weeks both runs score | 0.8385 | −0.0097 (scoring sample) |
+| After, same 2,148 weeks | 0.8336 | −0.0049 (refitted ratios) |
+
+- Two-thirds of the drop is the scoring sample: the 162 region-weeks that left are SNPP outage weeks, led by Chattogram
+  19 and 26 Mar 2012 (3,025 and 4,365 detections) when SNPP was down on 25-26 Mar. They had been scored against an
+  undercounted SNPP truth.
+- The rest is one region: leaving Chattogram (32408957B94023193097291) out turns the refit gap into +0.0039. Its
+  March Terra-only predictions moved about 1.5-2 % (e.g. 5,192 → 5,097 for an observed 4,402).
+- This holdout only bears on the Terra-only years (Nov 2000 - Jul 2002). The other five Terra-only holdouts improved
+  (+0.002 to +0.027), and the selection score rose. Conclusion: no loss of skill; the stop rule's trigger is explained.
+
 **Coverage of the 90% bands** (`data/processed/validation/intervals.json`, all landcovers and seasons): weekly 0.916 → 0.934;
 monthly 0.937 → 0.924. Both inside 0.85-0.97.
 
