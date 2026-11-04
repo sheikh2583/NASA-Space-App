@@ -72,4 +72,8 @@ Everything is indexed in **[docs/README.md](docs/README.md)**. Most-used pages: 
 
 ## Credits
 
-NASA FIRMS (MODIS C6.1, VIIRS 375 m) · geoBoundaries ADM1 · MODIS MCD12C1 (LP DAAC) · NASA POWER · OpenStreetMap basemap.
+NASA FIRMS (MODIS C6.1, VIIRS 375 m) · geoBoundaries ADM1 · MODIS MCD12C1 (LP DAAC) · NASA POWER · OpenStreetMap basemap. Full list with links: [references](docs/REFERENCES.md).
+
+## Licence
+
+Apache-2.0, see [LICENSE](LICENSE). Data products remain under their providers' terms (see [docs/REFERENCES.md](docs/REFERENCES.md)).
