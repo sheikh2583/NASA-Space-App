@@ -22,7 +22,7 @@ Regenerate the other columns from the cards with `python scripts/plan.py board -
 | H02 | human | Sheikh: full training run with the outage handling | Sheikh | T06 | done | full run 21:12-21:35 (~23 min); QA 5/5, pytest 211 passed 2 skipped, smoke passed; runtime ZIP 97165177 |
 | T40 | agent | Report the outage-corrected training run and publish it to Render | Sheikh | H02, T16 | doing | results measured and recorded; publish paused: B1 spatial terra_only CCC -0.015 (card stop rule); gh not installed |
 | T17 | agent | Render deploy check: a script that verifies the live service, run once and recorded | Sheikh | H01 | blocked | script + 6 offline tests committed; the one recorded run waits for RENDER_URL (H01) |
-| T07 | agent | Season profile in the API, mock server, fixtures and snapshot | Sattyam | T00 | doing | part 1 committed: endpoint, contract, mock, tests (25 pass); fixtures + snapshot after H02 |
+| T07 | agent | Season profile in the API, mock server, fixtures and snapshot | Sattyam | T00 | done | season in API, mock, fixtures and snapshot (13 areas, +2%); PB paddy 21 Oct-12 Nov, BD p50 16 Mar; verify_files validates bd/pb |
 | T08 | agent | Season card and typical-window strip on the calendar (en/bn) | Shammo | T07 | todo |  |
 | T09 | agent | Plain-language help, month labels and a phone-first layout | Shammo | T00 | todo |  |
 | T10 | agent | Caveats and "how we checked" on the method page (en, bn draft) | Samiul | T31 | todo |  |
