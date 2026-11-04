@@ -134,9 +134,9 @@ Measured (command, date, numbers) · Unit-tested (test names) · Estimated · Ne
 
 Recomputes anomalies, critical periods and drivers from the saved outputs (no model fitting), re-runs QA, repacks
 the runtime, and publishes it only if every step passes. `--data-through` must equal `data_through` in
-`deployment/runtime.json` (2026-11-03 unless new data was added). Backups go in `results\`, never in
+`deployment/runtime.json` (2026-11-03 unless new data was added). Backups go in `results\runs\` (ignored by Git), never in
 `data\processed\` (a QA test checks every file there).
 
 ```powershell
-git pull --ff-only; Copy-Item data\processed\drivers_region.json results\drivers_region.before.json -Force; .venv\Scripts\python -m ws3_anomaly.batch; if ($?) { .venv\Scripts\python scripts\workflow.py validate }; if ($?) { .venv\Scripts\python scriptsuntime_bundle.py pack }; if ($?) { .venv\Scripts\python scriptselease_runtime.py --data-through 2026-11-03 --publish }; if ($?) { git add deployment/runtime.json; git commit -m "Publish runtime with recomputed drivers"; git push }
+git pull --ff-only; Copy-Item data\processed\drivers_region.json results\runs\drivers_region.before.json -Force; .venv\Scripts\python -m ws3_anomaly.batch; if ($?) { .venv\Scripts\python scripts\workflow.py validate }; if ($?) { .venv\Scripts\python scripts\runtime_bundle.py pack }; if ($?) { .venv\Scripts\python scripts\release_runtime.py --data-through 2026-11-03 --publish }; if ($?) { git add deployment/runtime.json; git commit -m "Publish runtime with recomputed drivers"; git push }
 ```
