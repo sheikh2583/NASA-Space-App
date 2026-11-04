@@ -47,7 +47,7 @@ def _aoi(kind):
     return handler
 
 
-for kind in ("summary", "cells", "critical-periods", "drivers", "outlook"):
+for kind in ("summary", "cells", "critical-periods", "drivers", "outlook", "season"):
     app.post(f"/aoi/{kind}")(_aoi(kind))
 
 

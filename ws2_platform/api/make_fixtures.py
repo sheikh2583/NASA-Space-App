@@ -33,7 +33,7 @@ def main():
     for name, req in AOIS.items():
         req = {**req, "end": end}
         dump(f"{name}_request.json", req)
-        for path in ("summary", "critical-periods", "drivers", "outlook"):
+        for path in ("summary", "critical-periods", "drivers", "outlook", "season"):
             dump(f"{name}_{path}.json", c.post(f"/aoi/{path}", json=req).json())
         recent = {**req, "start": "2025-10-01"}
         dump(f"{name}_cells_request.json", recent)

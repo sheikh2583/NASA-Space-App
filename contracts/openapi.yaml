@@ -85,6 +85,21 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/OutlookResponse' }
         '422': { $ref: '#/components/responses/Invalid' }
+  /aoi/season:
+    post:
+      summary: Season profile for the area (typical central activity window, timing and amount trends, this season)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AOIRequest' }
+      responses:
+        '200':
+          description: Season profile. The same for any start/end; it always uses the whole record.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SeasonProfileResponse' }
+
   /aoi/compare:
     post:
       summary: Two areas on the same axes
@@ -198,6 +213,21 @@ components:
         anomaly: { $ref: '#/components/schemas/Anomaly' }
         complete: { type: boolean, description: false when the period extends past the last day with data }
         n_days: { type: integer, minimum: 0, description: days of the period that have data }
+    SeasonProfileResponse:
+      description: >-
+        Season profile. The full shape of each entry in seasons is contracts/json_schemas/season_profile.schema.json
+        (spec docs/specs/I1_SEASON_PROFILE.md); profile_version is that schema's version.
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          required: [area, as_of, data_through, definition, seasons]
+          properties:
+            area: { type: string, nullable: true }
+            as_of: { type: string, format: date }
+            data_through: { type: string, nullable: true }
+            definition: { type: string }
+            profile_version: { type: string }
+            seasons: { type: array, items: { type: object } }
     SummaryResponse:
       allOf:
         - $ref: '#/components/schemas/Envelope'

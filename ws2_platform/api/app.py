@@ -24,6 +24,7 @@ from ws2_platform.api.query import AOIError, Store
 from ws3_anomaly.anomaly import score_series
 from ws3_anomaly.periods import find_periods
 from ws4_outlook import outlook as outlook_mod
+from ws4_outlook import season_profile as season_mod
 
 SCHEMA_VERSION = "0.2.0"
 DAY_CONVENTION = "local_solar_date"
@@ -229,6 +230,26 @@ def aoi_outlook(req: AOIRequest):
                 "skill": ro.get("skill", {"n_seasons": 0}), "status": ro.get("status", "no_demonstrated_skill"),
                 "alert": ro.get("alert", {"level": "none", "rule": "Forecast alerts are off."})}
     return _cached(_key("outlook", req), run)
+
+
+@app.post("/aoi/season")
+def aoi_season(req: AOIRequest):
+    def run():
+        s = store()
+        sel = s.select(req.geometry, req.bbox)
+        reg = s.region_of(sel)
+        area = reg["country"].lower() if reg else None
+        as_of = s.data_end + pd.Timedelta(days=1)
+        if sel.empty or area not in season_mod.SEASON_WINDOWS:
+            prof = {"schema_version": season_mod.SCHEMA_VERSION, "area": area, "as_of": as_of.date().isoformat(),
+                    "data_through": s.data_end.date().isoformat(), "units": "", "definition": season_mod.DEFINITION,
+                    "seasons": []}
+            notes = ["No season windows are configured for this area."]
+        else:
+            prof = season_mod.season_profile(s.full_history(sel), as_of=as_of, area=area)
+            notes = [season_mod.DEFINITION]
+        return {**prof, **envelope("season", notes), "profile_version": prof["schema_version"]}
+    return _cached(_key("season", req), run)
 
 
 @app.post("/aoi/compare")
