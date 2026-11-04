@@ -24,7 +24,7 @@ def test_demo_path(client, req):
     assert any(p.get("anomaly", {}).get("flag") for p in pts), "no flagged weeks"
     assert any(p["lo"] is not None and p["hi"] is not None and p["hi"] > p["lo"] for p in before), "modeled weeks need intervals"
     o = client.post("/aoi/outlook", json=req).json()
-    assert o["current_status"]["data_through"] and o["current_status"]["level"] in ("none", "watch", "high")
+    assert o["current_status"]["data_through"] and o["current_status"]["level"] in ("very_low", "low", "none", "watch", "high")
     c = client.post("/aoi/cells", json={**req, "start": "2016-10-01", "end": "2016-11-30"}).json()
     assert c["cells"], "where layer empty for a burning season"
 

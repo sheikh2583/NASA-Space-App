@@ -48,15 +48,23 @@ def test_rows_on_non_operating_days_are_documented():
     assert not snpp.loc[dt.date(2026, 11, 2), "operating"]
 
 
-@need_data("harmonized.parquet")
+@need_data("harmonized.parquet", "sensor_days.parquet")
 def test_harmonized_bounds_sources_and_seams():
     h = rd("harmonized.parquet")
     assert (h["lo_count"] <= h["value_count"] + 1e-4).all() and (h["value_count"] <= h["hi_count"] + 1e-4).all()
     assert (h["value_count"] >= 0).all() and h["source"].notna().all()
     h["date"] = pd.to_datetime(h["date"])
     assert (h.loc[h["date"] < "2012-01-19", "source"] == "modeled_from_modis").all()
-    assert (h.loc[(h["date"] >= "2012-01-21") & (h["date"] < "2026-11-02") & (h["source"] == "modeled_from_modis")].empty
-            or h.loc[(h["date"] >= "2012-01-21") & (h["date"] < "2026-11-02"), "source"].eq("observed_viirs").mean() > 0.99)
+    # SNPP era: a row may be other than observed SNPP only on a day SNPP was not operating (decision 24: outage days
+    # are filled from NOAA-20 from 1 Apr 2018, modeled from MODIS before that).
+    era = h[(h["date"] >= "2012-01-21") & (h["date"] < "2026-11-02")]
+    other = era[era["source"] != "observed_viirs"]
+    if len(other):
+        sd = rd("sensor_days.parquet")
+        snpp_off = set(pd.to_datetime(sd.loc[(sd["sat"] == "SNPP") & ~sd["operating"].astype(bool), "date"]))
+        assert other["date"].isin(snpp_off).all(), "SNPP-era rows that are not observed fall on days SNPP operated"
+        n20_era = other[other["date"] >= "2018-04-01"]
+        assert (n20_era["source"] != "modeled_from_modis").mean() > 0.95, "NOAA-20 should fill SNPP outages from 2018"
     assert (h.loc[h["date"] >= "2026-11-02", "source"] == "adjusted_from_noaa20").all()
     obs = h[h["source"] == "observed_viirs"]
     assert (obs["lo_count"] == obs["value_count"]).all() and (obs["hi_count"] == obs["value_count"]).all()
