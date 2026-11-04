@@ -168,6 +168,8 @@
   "export.cells": "Cells CSV",
   "export.periods": "Periods CSV",
   "export.print": "Print summary",
+  "export.copy_link": "Copy link",
+  "export.copied": "Link copied",
   "validation.title": "How well does it hold up?",
   "validation.missing": "Not yet available: {{list}}",
   "validation.limitations": "Limitations",

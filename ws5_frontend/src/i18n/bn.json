@@ -169,6 +169,8 @@
   "export.cells": "ঘর CSV",
   "export.periods": "সময়কাল CSV",
   "export.print": "সারাংশ প্রিন্ট",
+  "export.copy_link": "লিংক কপি করুন",
+  "export.copied": "লিংক কপি হয়েছে",
   "validation.title": "ফলাফল কতটা নির্ভরযোগ্য?",
   "validation.missing": "এখনো পাওয়া যায়নি: {{list}}",
   "validation.limitations": "সীমাবদ্ধতা",

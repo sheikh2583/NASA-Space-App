@@ -13,6 +13,7 @@ import { areaLabel, defaultArea, loadAreaCatalog, type AreaOption } from "./area
 import { DATA_MODE, RECORD_END, RECORD_START } from "./config";
 import { STATIC_DEMO } from "./snapshot";
 import { addDays, num } from "./lib/format";
+import { format, parse } from "./lib/urlState";
 import type {
   AOIRequest, CellsResponse, CompareResponse, CriticalPeriodsResponse, DriversResponse, OutlookResponse, Res,
   SeasonProfileResponse, SummaryResponse,
@@ -65,7 +66,10 @@ function CompareCard({ compact, areas, selectedId, value, onChange, onCompare }:
 
 export default function App() {
   const { t, i18n } = useTranslation();
-  const [view, setView] = useState<View>("explore");
+  const initialUrlState = useRef(parse(typeof window === "undefined" ? "" : window.location.hash)).current;
+  const initialPeriod = useRef(initialUrlState.p);
+  const [view, setView] = useState<View>(initialUrlState.v ?? "explore");
+  const [languageReady, setLanguageReady] = useState(false);
   const [area, setArea] = useState<Pick<AOIRequest, "geometry" | "bbox"> | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [areas, setAreas] = useState<AreaOption[]>([]);
@@ -73,17 +77,20 @@ export default function App() {
   const [catalogVersion, setCatalogVersion] = useState(0);
   const [catalogUnavailable, setCatalogUnavailable] = useState(false);
   const generation = useRef(0);
+  const pickArea = useCallback((option: AreaOption) => {
+    setSelectedId(option.id); setArea(option.request); setCompareWith("");
+  }, []);
   useEffect(() => { let active = true;
     setCatalogLoading(true); setCatalogUnavailable(false);
     loadAreaCatalog().then((options) => {
       if (!active) return;
       setAreas(options);
-      const initial = defaultArea(options);
-      if (initial) { setSelectedId(initial.id); setArea(initial.request); }
+      const initial = options.find((option) => option.id === initialUrlState.a) ?? defaultArea(options);
+      if (initial) pickArea(initial);
     }).catch(() => { if (active) setCatalogUnavailable(true); })
       .finally(() => { if (active) setCatalogLoading(false); });
     return () => { active = false; };
-  }, [catalogVersion]);
+  }, [catalogVersion, initialUrlState.a, pickArea]);
   const [start, setStart] = useState(RECORD_START);
   const [end, setEnd] = useState(RECORD_END);
   const [res, setRes] = useState<Res>("week");
@@ -98,7 +105,23 @@ export default function App() {
   const [compareWith, setCompareWith] = useState<string>("");
   const [compare, setCompare] = useState<CompareResponse | null>(null);
   const [fallbackNote, setFallbackNote] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [copyFallback, setCopyFallback] = useState(false);
+  const copyTimer = useRef<number | null>(null);
+  const fallbackInput = useRef<HTMLInputElement | null>(null);
   const phone = useMediaQuery("(max-width: 640px)");
+
+  useEffect(() => {
+    let active = true;
+    const apply = async () => {
+      if (initialUrlState.l && !i18n.language.startsWith(initialUrlState.l)) {
+        await i18n.changeLanguage(initialUrlState.l);
+      }
+      if (active) setLanguageReady(true);
+    };
+    void apply();
+    return () => { active = false; };
+  }, [i18n, initialUrlState.l]);
 
   const req: AOIRequest | null = useMemo(() => area ? { ...area, start, end, res } : null, [area, start, end, res]);
 
@@ -125,16 +148,31 @@ export default function App() {
       setDrivers(d.status === "fulfilled" ? d.value : null);
       setOutlook(o.status === "fulfilled" ? o.value : null);
       setSeason(seasonProfile.status === "fulfilled" ? seasonProfile.value : null);
+      const linkedWeek = initialPeriod.current;
+      initialPeriod.current = undefined;
       const lastWeek = s.series[s.series.length - 1]?.t;
-      if (lastWeek) setPeriod({ start: addDays(lastWeek, -7 * 7), end: addDays(lastWeek, 6), key: "recent" });
+      if (linkedWeek) setPeriod({ start: linkedWeek, end: addDays(linkedWeek, 6), key: linkedWeek });
+      else if (lastWeek) setPeriod({ start: addDays(lastWeek, -7 * 7), end: addDays(lastWeek, 6), key: "recent" });
     } catch (e) {
       if (current !== generation.current) return;
+      initialPeriod.current = undefined;
       setSummary(null);
       setStatus(e instanceof AOIError ? "oversized" : "error");
     }
   }, []);
 
   useEffect(() => { if (req) void load(req); }, [area, start, end, res]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!languageReady || catalogLoading) return;
+    const catalogId = selectedId && areas.some((option) => option.id === selectedId) ? selectedId : undefined;
+    history.replaceState(null, "", format({
+      v: view,
+      a: catalogId,
+      p: period?.start ?? initialPeriod.current,
+      l: i18n.language.startsWith("bn") ? "bn" : "en",
+    }));
+  }, [areas, catalogLoading, i18n.language, languageReady, period, selectedId, view]);
 
   useEffect(() => {
     if (STATIC_DEMO || !area || !period) return;
@@ -144,7 +182,6 @@ export default function App() {
     return () => { active = false; };
   }, [area, period]);
 
-  const pickArea = (option: AreaOption) => { setSelectedId(option.id); setArea(option.request); setCompareWith(""); };
   const runCompare = async () => {
     if (!req || !compareWith) return;
     const other = areas.find((candidate) => candidate.id === compareWith && candidate.id !== selectedId);
@@ -154,6 +191,25 @@ export default function App() {
     if (current === generation.current) setCompare(result);
   };
   const toggleLang = () => void i18n.changeLanguage(i18n.language === "bn" ? "en" : "bn");
+  const copyLink = async () => {
+    setCopyFallback(false);
+    try {
+      if (!navigator.clipboard?.writeText) throw new Error("Clipboard unavailable");
+      await navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      if (copyTimer.current !== null) window.clearTimeout(copyTimer.current);
+      copyTimer.current = window.setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setCopied(false);
+      setCopyFallback(true);
+    }
+  };
+  useEffect(() => {
+    if (copyFallback) fallbackInput.current?.select();
+  }, [copyFallback]);
+  useEffect(() => () => {
+    if (copyTimer.current !== null) window.clearTimeout(copyTimer.current);
+  }, []);
   const reset = () => {
     generation.current++; setArea(null); setSelectedId(null); setStatus("idle"); setSummary(null); setPeriods(null);
     setDrivers(null); setOutlook(null); setSeason(null); setCells(null); setPeriod(null); setCompare(null);
@@ -238,7 +294,11 @@ export default function App() {
                     <button disabled={STATIC_DEMO} onClick={() => req && period && api.exportCsv({ ...req, start: period.start, end: period.end }, "cells")}>{t("export.cells")}</button>
                     <button disabled={STATIC_DEMO} onClick={() => req && api.exportCsv(req, "critical_periods")}>{t("export.periods")}</button>
                     <button onClick={() => window.print()}>{t("export.print")}</button>
+                    <button onClick={() => void copyLink()}>{t("export.copy_link")}</button>
                   </div>
+                  {copied && <p className="meta" role="status">{t("export.copied")}</p>}
+                  {copyFallback && <input ref={fallbackInput} readOnly value={window.location.href}
+                    aria-label={t("export.copy_link")} onFocus={(event) => event.currentTarget.select()} />}
                 </section>
               </>
             )}
