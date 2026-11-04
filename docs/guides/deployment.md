@@ -55,13 +55,27 @@ The API uses existing processed observations/reconstructions. Serving a live API
 
 Normal code pushes automatically rebuild the same service with the same pinned scientific data. They never train or refresh NASA data. The API runtime requirements exclude CUDA and learner packages; the reference forecast learner is imported only by its human-run fitting path.
 
-To publish a new data version after **human-run** scientific validation:
+To publish a new data version after **human-run** scientific validation, use `scripts/release_runtime.py`. It packages and uploads existing outputs only; it trains nothing. The zip is `share/firesense-runtime.zip`: `train.ps1 -Pack` / `train.sh --pack` makes it at the end of a full run, and the script packs it with `runtime_bundle.py pack` if it's missing.
 
-```sh
-python scripts/runtime_bundle.py pack
-```
+1. **Dry run.** It prints the new manifest and the exact `gh` commands, and changes nothing:
 
-This packages existing outputs only. Upload `share/firesense-runtime.zip` to a **new versioned GitHub Release**, update its URL and printed SHA256 in `deployment/runtime.json`, then commit/push the manifest. Do not replace an asset under an existing pinned URL. Keep raw/processed data out of Git. The download helper refuses a bad checksum, synthetic/failed saved QA, unexpected files, or overwriting a populated data directory.
+   ```sh
+   python scripts/release_runtime.py --data-through 2026-11-02
+   ```
+
+2. **Publish.** This needs the GitHub CLI signed in (`gh auth login`):
+
+   ```sh
+   python scripts/release_runtime.py --data-through 2026-11-02 --publish
+   ```
+
+   It stops if the tag already exists, creates the release, downloads the asset back, and checks its SHA256 against the local zip. Only then does it write `deployment/runtime.json`. The default tag is `runtime-YYYYMMDD-render-vN` with the lowest free `N`; `--tag` overrides it.
+
+3. **Commit and push `deployment/runtime.json`.** Render rebuilds with the new data.
+
+Rules: every release gets a **new tag**; never replace an asset under a pinned URL; keep raw and processed data out of Git. The Docker build's download helper refuses a bad checksum, synthetic or failed saved QA, unexpected files, or overwriting a populated data directory.
+
+**Rollback:** put the previous `url` and `sha256` back in `deployment/runtime.json` (both are in its Git history: `git log -p deployment/runtime.json`), then commit and push. Render rebuilds with the old data; the newer release stays on GitHub, untouched.
 
 ## Free-tier behavior
 

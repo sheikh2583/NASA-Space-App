@@ -18,7 +18,7 @@ Regenerate the other columns from the cards with `python scripts/plan.py board -
 | T32 | agent | Verify and complete the outage registry from NASA's MODAPS table | Sheikh | T00 | done | 22 confirmed, 2 corrected, 0 rejected, 39 added 2012-2023, 15 missing 2024-2026 added |
 | T05 | agent | Run the coverage audit and record the outage decision | Sheikh | T32 | done | threshold 0.25: 105 sensor-days flip; 54/770 SNPP+MODIS and 36/448 SNPP+NOAA20 weeks lost; 1 explained contradiction |
 | T06 | agent | Wire verified outages into sensor_days and fill from NOAA-20 (code and tests) | Sheikh | T05 | done | code+tests; dry compute on real data: 105 SNPP sensor-days non-operating (= audit); H02 next |
-| T16 | agent | Render data releases: publish a new runtime data version with one command | Sheikh | T00 | todo |  |
+| T16 | agent | Render data releases: publish a new runtime data version with one command | Sheikh | T00 | done | release_runtime.py + 8 offline tests; dry run proposes runtime-20261104-render-v2; runtime.json unchanged |
 | H02 | human | Sheikh: full training run with the outage handling | Sheikh | T06 | todo |  |
 | T40 | agent | Report the outage-corrected training run and publish it to Render | Sheikh | H02, T16 | todo |  |
 | T17 | agent | Render deploy check: a script that verifies the live service, run once and recorded | Sheikh | H01 | todo |  |
