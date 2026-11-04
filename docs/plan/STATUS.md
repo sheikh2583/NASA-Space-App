@@ -12,7 +12,7 @@ Regenerate the other columns from the cards with `python scripts/plan.py board -
 | T30 | agent | Check the Space Apps rules and record them with quotes | Sheikh | T00 | done | rules recorded 4 Nov; FAQ forbids pre-event work on challenges - Sheikh to decide |
 | T01 | agent | Licence, references and AI-use statement | Sheikh | T30 | todo |  |
 | T31 | agent | Truth checks against FIRMS itself (area API, no viewer) | Samiul | T00 | todo |  |
-| T02 | agent | Confirm that no validation piece still says "synthetic data" (read-only check) | Samin | T00 | todo |  |
+| T02 | agent | Confirm that no validation piece still says "synthetic data" (read-only check) | Samin | T00 | done | labels verified clean (validation [], snapshot clean); Render check waits for H01/T17 |
 | T03 | agent | Lower-than-usual status levels and honest status wording | Samin | T00 | done | Punjab very_low (pct 0), Bangladesh none; snapshot re-exported |
 | T04 | agent | Mark incomplete weeks and months | Sattyam | T00 | done | last week 2026-11-02 partial (2 of 7 days: data runs to 3 Nov) in all 13 areas only |
 | T32 | agent | Verify and complete the outage registry from NASA's MODAPS table | Sheikh | T00 | todo |  |
