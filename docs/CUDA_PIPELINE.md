@@ -2,7 +2,7 @@
 
 Measured hardware, selection correction, validation, and runtime limitations are recorded in [CUDA results](CUDA_RESULTS.md).
 
-The native Windows/Linux GPU path uses XGBoost 3.2.0 with `device=cuda:<id>`, histogram trees, quantized training matrices (`max_bin=63`), and verified device placement. The CPU path remains LightGBM. This is a separately evaluated learned candidate, not a claim that the two algorithms give identical results.
+The supported Windows/Linux training path uses XGBoost 3.2.0 with `device=cuda:<id>`, histogram trees, quantized training matrices (`max_bin=63`), and verified device placement. Legacy LightGBM baselines remain internal for comparison/tests. This is a separately evaluated learned candidate, not a claim that the algorithms give identical results.
 
 Official backend references: [XGBoost GPU support](https://xgboost.readthedocs.io/en/release_3.2.0/gpu/index.html) and [LightGBM installation](https://lightgbm.readthedocs.io/en/stable/Installation-Guide.html#build-cuda-version). LightGBM's CUDA backend does not support native Windows; changing its `device` parameter cannot fix the installed CPU-only library.
 
@@ -23,14 +23,14 @@ GPU acceleration does not turn file/network access or Shapely operations into CU
 
 ## Setup and click-to-run
 
-Requirements: NVIDIA CUDA-capable GPU, current NVIDIA driver, the normal project environment, and the optional GPU dependency:
+Use the full Windows/Linux installer in [TRAINING.md](TRAINING.md), or install the complete manifest in an existing project environment:
 
 ```powershell
 .venv\Scripts\python -m pip install -r requirements-cuda.txt
 .venv\Scripts\python scripts\workflow.py gpu-check
 ```
 
-Alternatively double-click `START_HERE.cmd`: option 11 installs CUDA dependencies after normal setup; option 12 runs the actual GPU probe; options 4 and 5 run quick/full CUDA training. Option 13 runs full CPU training. Linux/macOS shell menu names match, but CUDA requires a supported NVIDIA Linux environment; macOS cannot run this CUDA path.
+Alternatively double-click `START_HERE.cmd`: option 1 installs the complete CUDA environment; option 12 verifies it; options 4 and 5 run quick/full CUDA training. Option 11 initializes UI development without requiring NVIDIA. Linux menu names match; macOS supports UI development only. The old CPU training action is removed.
 
 The probe fits and predicts a real tiny model and checks the saved booster configuration for the requested CUDA device. GPU detection or a successful package import alone does not pass. A CUDA request that becomes CPU raises an error rather than silently succeeding. No automatic dependency installation occurs during training.
 
@@ -45,11 +45,9 @@ The probe fits and predicts a real tiny model and checks the saved booster confi
 # Select another locally installed GPU by its nvidia-smi index.
 .venv\Scripts\python scripts\workflow.py train --backend cuda --gpu-id 1 --threads 8
 
-# Retained CPU baseline path.
-.venv\Scripts\python scripts\workflow.py train --backend cpu --threads 2
 ```
 
-The lower-level `scripts/run_pipeline.py` retains CPU as its default for backward compatibility; pass `--backend cuda` there explicitly. Workflow training/prepare defaults to CUDA with eight CPU helper threads. `--threads` controls host-side/library workers; it does not select a number of GPU cores.
+Both the lower-level `scripts/run_pipeline.py` and workflow training/prepare default to CUDA with eight CPU helper threads. `--threads` controls host-side/library workers; it does not select a number of GPU cores.
 
 For direct module execution, set `FIRESENSE_BACKEND=cuda`, `FIRESENSE_GPU_ID=0`, and `FIRESENSE_THREADS=8` first. Modules without these variables retain CPU behavior. Set all three consistently when resuming; do not mix a CPU method-selection record with CUDA-generated downstream results.
 
@@ -65,7 +63,7 @@ The learned candidate is named `XGBoost CUDA`, with method ID `xgb`. GPU models 
 
 Selection now includes **both Terra-only and Terra+Aqua holdouts**. The first CUDA trial slightly improved Terra+Aqua mean CCC but performed poorly on the Terra-only spatial holdout and failed the existing historical anomaly-seam gate. The gate was not weakened. `mean_ccc` retains the Terra+Aqua comparison for historical compatibility; `selection_mean_ccc` includes both configurations and determines the chosen method. B1 can therefore be selected while every learned candidate, drift classifier, and forecast is still trained on CUDA.
 
-The public website's existing snapshot is not automatically replaced by a local training run. After reviewing new scientific metrics, explicitly export and commit the hosted snapshot using the documented hosting procedure. A code push still updates the UI, tests, and deployment workflow.
+The public snapshot is not automatically replaced by training. After reviewing new metrics, explicitly export and commit it using the hosting procedure. The current named-area export contains all 11 administrative regions and two examples; the earlier two-example snapshot was refreshed from accepted local outputs during the area-filter update.
 
 ## Verification
 

@@ -121,7 +121,7 @@ def step_validation():
     piece = {
         "schema_version": "1.0", "generated_at": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
         "producer": "harmonization",
-        "metrics": {"method_chosen": choice, "region_week": t.replace({np.nan: None}).to_dict(orient="records"),
+        "metrics": {"data_mode": "real" if real_data else "synthetic", "method_chosen": choice, "region_week": t.replace({np.nan: None}).to_dict(orient="records"),
                     "note": "region-week sums of SNPP-equivalent detections on test rows; spearman and lins_ccc closer to 1 is better"},
         "limitations": [
             "Values before 20 Jan 2012 are modeled from MODIS; they are estimates with intervals, not observations.",

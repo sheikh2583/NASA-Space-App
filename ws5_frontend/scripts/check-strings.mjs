@@ -2,7 +2,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 const dir = "src/components";
 // Proper names in data attributions are not UI text and are never translated.
-const ALLOWED = new Set(["OpenStreetMap", "CARTO"]);
+const ALLOWED = new Set(["OpenStreetMap", "CARTO", "geoBoundaries", "DataMeet India"]);
 let bad = 0;
 for (const f of readdirSync(dir)) {
   const src = readFileSync(`${dir}/${f}`, "utf8");

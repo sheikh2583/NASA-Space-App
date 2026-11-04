@@ -1,10 +1,12 @@
-import { lazy, Suspense, useCallback, useEffect, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { AOIError, api } from "./api";
 import Calendar from "./components/Calendar";
 import { DriversPanel, OutlookPanel, PeriodsPanel, StatusCard } from "./components/Panels";
 import ErrorBoundary from "./components/ErrorBoundary";
 import AnalysisControls from "./components/AnalysisControls";
+import AreaFilters from "./components/AreaFilters";
+import { EXAMPLE_AREAS, loadAreaCatalog, type AreaOption } from "./areas";
 import { DATA_MODE, DEMOS, RECORD_END, RECORD_START } from "./config";
 import { STATIC_DEMO } from "./snapshot";
 import { addDays, num } from "./lib/format";
@@ -14,7 +16,6 @@ import type {
 
 type View = "explore" | "validation" | "method";
 type Status = "idle" | "loading" | "ok" | "empty" | "oversized" | "error";
-type DemoKey = keyof typeof DEMOS;
 
 const MapView = lazy(() => import("./components/MapView"));
 const SeriesChart = lazy(() => import("./components/SeriesChart"));
@@ -24,8 +25,15 @@ const MethodPage = lazy(() => import("./components/Pages").then((module) => ({ d
 export default function App() {
   const { t, i18n } = useTranslation();
   const [view, setView] = useState<View>("explore");
-  const [area, setArea] = useState<Pick<AOIRequest, "geometry" | "bbox"> | null>(null);
-  const [demo, setDemo] = useState<DemoKey | null>(null);
+  const [area, setArea] = useState<Pick<AOIRequest, "geometry" | "bbox"> | null>(EXAMPLE_AREAS[0].request);
+  const [selectedId, setSelectedId] = useState<string | null>("bd");
+  const [areas, setAreas] = useState<AreaOption[]>(EXAMPLE_AREAS);
+  const [catalogUnavailable, setCatalogUnavailable] = useState(false);
+  const generation = useRef(0);
+  useEffect(() => { let active = true;
+    loadAreaCatalog().then((options) => { if (active) setAreas(options); }).catch(() => { if (active) setCatalogUnavailable(true); });
+    return () => { active = false; };
+  }, []);
   const [start, setStart] = useState(RECORD_START);
   const [end, setEnd] = useState(RECORD_END);
   const [res, setRes] = useState<Res>("week");
@@ -40,13 +48,16 @@ export default function App() {
   const [compare, setCompare] = useState<CompareResponse | null>(null);
   const [fallbackNote, setFallbackNote] = useState<string | null>(null);
 
-  const req: AOIRequest | null = area ? { ...area, start, end, res } : null;
+  const req: AOIRequest | null = useMemo(() => area ? { ...area, start, end, res } : null, [area, start, end, res]);
 
   const load = useCallback(async (r: AOIRequest) => {
+    const current = ++generation.current;
     setStatus("loading");
+    setSummary(null); setPeriods(null); setDrivers(null); setOutlook(null); setCells(null); setPeriod(null); setFallbackNote(null);
     setCompare(null);
     try {
       const s = await api.post<SummaryResponse>("/aoi/summary", r);
+      if (current !== generation.current) return;
       setSummary(s);
       setFallbackNote(s.fromFallback ? (s.notes?.[0] ?? "").replace("fallback:", "") : null);
       if (!s.series.length) { setStatus("empty"); return; }
@@ -56,12 +67,14 @@ export default function App() {
         api.post<DriversResponse>("/aoi/drivers", r),
         api.post<OutlookResponse>("/aoi/outlook", r),
       ]);
+      if (current !== generation.current) return;
       setPeriods(p.status === "fulfilled" ? p.value : null);
       setDrivers(d.status === "fulfilled" ? d.value : null);
       setOutlook(o.status === "fulfilled" ? o.value : null);
       const lastWeek = s.series[s.series.length - 1]?.t;
       if (lastWeek) setPeriod({ start: addDays(lastWeek, -7 * 7), end: addDays(lastWeek, 6), key: "recent" });
     } catch (e) {
+      if (current !== generation.current) return;
       setSummary(null);
       setStatus(e instanceof AOIError ? "oversized" : "error");
     }
@@ -70,23 +83,27 @@ export default function App() {
   useEffect(() => { if (req) void load(req); }, [area, start, end, res]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (!area || !period) return;
+    if (STATIC_DEMO || !area || !period) return;
+    let active = true;
     api.post<CellsResponse>("/aoi/cells", { ...area, start: period.start, end: period.end, res: "week" })
-      .then(setCells).catch(() => setCells(null));
+      .then((value) => { if (active) setCells(value); }).catch(() => { if (active) setCells(null); });
+    return () => { active = false; };
   }, [area, period]);
 
-  const pickDemo = (k: DemoKey) => { setDemo(k); const { geometry, bbox } = DEMOS[k]; setArea({ geometry, bbox }); };
-  const onDraw = (g: GeoJSON.Polygon) => { setDemo(null); setArea({ geometry: g }); };
+  const pickArea = (option: AreaOption) => { setSelectedId(option.id); setArea(option.request); };
   const runCompare = async () => {
     if (!req || !compareWith) return;
     const other = compareWith === "bd" || compareWith === "pb" ? DEMOS[compareWith] : null;
     if (!other) return;
-    setCompare(await api.post<CompareResponse>("/aoi/compare", { a: req, b: { ...other, start, end, res } }).catch(() => null));
+    const current = generation.current;
+    const result = await api.post<CompareResponse>("/aoi/compare", { a: req, b: { ...other, start, end, res } }).catch(() => null);
+    if (current === generation.current) setCompare(result);
   };
   const toggleLang = () => void i18n.changeLanguage(i18n.language === "bn" ? "en" : "bn");
   const reset = () => {
-    setArea(null); setDemo(null); setStatus("idle"); setSummary(null); setPeriods(null);
+    generation.current++; setArea(null); setSelectedId(null); setStatus("idle"); setSummary(null); setPeriods(null);
     setDrivers(null); setOutlook(null); setCells(null); setPeriod(null); setCompare(null);
+    setFallbackNote(null);
   };
 
   return (
@@ -110,14 +127,11 @@ export default function App() {
       {view === "validation" && <ErrorBoundary><ValidationPage /></ErrorBoundary>}
       {view === "method" && <ErrorBoundary><MethodPage /></ErrorBoundary>}
       {view === "explore" && (
-        <main className="layout">
+        <main className="explorer">
+          <AreaFilters areas={areas} selectedId={selectedId} unavailable={catalogUnavailable} onApply={pickArea} />
+          <div className="layout">
           <div className="mapcol">
-            <div className="mapbar">
-              <span className="hint">{t(STATIC_DEMO ? "hosting.pick_area" : "map.draw_hint")}</span>
-              <button className={"chip" + (demo === "bd" ? " on" : "")} onClick={() => pickDemo("bd")}>{t("map.demo_bd")}</button>
-              <button className={"chip" + (demo === "pb" ? " on" : "")} onClick={() => pickDemo("pb")}>{t("map.demo_pb")}</button>
-            </div>
-            <MapView aoi={req} cells={cells?.cells ?? null} period={period} onDraw={onDraw} />
+            <MapView aoi={req} cells={cells?.cells ?? null} period={period} areas={areas} selectedId={selectedId} onSelect={pickArea} />
           </div>
           <div className="panels">
             <AnalysisControls fixed={STATIC_DEMO} start={start} end={end} res={res} canRun={Boolean(req)}
@@ -176,6 +190,7 @@ export default function App() {
                 </section>
               </>
             )}
+          </div>
           </div>
         </main>
       )}

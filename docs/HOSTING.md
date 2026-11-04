@@ -14,9 +14,9 @@ The `Deploy live demo` GitHub Actions workflow (`.github/workflows/pages.yml`) r
 
 The interactive basemap uses `https://tile.openstreetmap.org/{z}/{x}/{y}.png` with visible OpenStreetMap contributor attribution. It needs no CARTO key. The NASA FIRMS MAP_KEY is unrelated to basemap access and must remain backend-only. Respect the [OSM tile policy](https://operations.osmfoundation.org/policies/tiles/): normal viewport requests, browser caching and Referer, no bulk downloading or offline tile prefetch. For heavier traffic, provision a suitable tile service separately.
 
-The first deployment is a static real-data demo with exactly the Bangladesh and Punjab example areas. `ws5_frontend/public/demo/snapshot.json` is an explicitly published, approximately 645 KB export from the completed real-data run. It includes weekly summaries, periods, associated drivers, outlooks, and validation records. It contains no API keys, raw CSVs, local model files, or private account data.
+The current deployment is a static real-data demo with eight Bangladesh divisions, Punjab/Haryana/Delhi, and two smaller example areas. `ws5_frontend/public/demo/areas.json` contains original geoBoundaries administrative outlines for selection on the OSM map. `snapshot.json` contains saved weekly summaries, periods, associated drivers, outlooks, and validation for all 13 choices. The named-area export was rebuilt from accepted CUDA-pipeline outputs with B1 selected. The two public JSON files total about 8.7 MB uncompressed and contain no keys, raw CSVs, local model files, or private account data.
 
-The app displays the snapshot date and limits. Custom drawing, alternate date/resolution queries, spatial cell layers, and CSV exports require a running backend and are disabled or omitted in snapshot mode. Calendar and series browsing, comparison, Validation, Method, English/Bangla, and printing remain available. A hosted UI update is separate from a data refresh: pushing code does not download NASA data or retrain a model.
+The app uses country/name/administrative-area filters and clickable named boundaries; manual drawing tools were removed. The snapshot date and limits remain visible. Arbitrary API AOIs, alternate date/resolution queries, spatial cell layers, and CSV exports require a running backend. Calendar and series browsing, comparison, Validation, Method, English/Bangla, and printing remain available. A UI update is separate from a data refresh: pushing code does not download NASA data or retrain a model.
 
 ## One-time repository setup
 
@@ -52,7 +52,7 @@ On Linux: `VITE_DEMO_MODE=snapshot VITE_DATA_MODE=real npm run build` inside `ws
 1. Complete local training and QA against real NASA inputs.
 2. Run `python scripts/export_hosted_demo.py` from the environment.
 3. Review the generated snapshot and its data-through date. The current export uses the fixed 2 November 2026 record; extending it requires updating configured dates and reviewing satellite windows.
-4. Run frontend tests/build in snapshot mode and commit `ws5_frontend/public/demo/snapshot.json` with the relevant documentation.
+4. Run frontend tests/build in snapshot mode and commit both `ws5_frontend/public/demo/snapshot.json` and `areas.json` with the relevant documentation. The exporter builds the catalog from loaded grid regions and their source ADM1 boundaries, then saves responses for every named region and example. It refuses scientific validation marked as synthetic.
 5. Push to `main`. The next successful Pages workflow publishes the new snapshot.
 
 Keep raw data and `.env` ignored. The small, public JSON snapshot is a deliberate exception to the policy excluding large generated scientific artifacts from Git.

@@ -1,6 +1,6 @@
 """Run the whole pipeline in order (any OS). Uses real FIRMS files in data/raw/firms if present, else synthetic data.
 
-  python scripts/run_pipeline.py            # full CPU run; measured timings in results/runs/
+  python scripts/run_pipeline.py            # full CUDA run; measured timings in results/runs/
   python scripts/run_pipeline.py --backend cuda --threads 8  # explicit CUDA ML stages
   python scripts/run_pipeline.py --quick    # fewer holdouts in the model step
   python scripts/run_pipeline.py --from v1  # resume from a step
@@ -88,9 +88,9 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--quick", action="store_true")
     ap.add_argument("--from", dest="start", default=None, choices=[name for name, _ in steps(False)])
-    ap.add_argument("--backend", choices=["cpu", "cuda"], default="cpu")
+    ap.add_argument("--backend", choices=["cpu", "cuda"], default="cuda")
     ap.add_argument("--gpu-id", type=int, default=0)
-    ap.add_argument("--threads", type=int, default=2)
+    ap.add_argument("--threads", type=int, default=8)
     a = ap.parse_args()
     sys.path.insert(0, ROOT)
     os.environ.update(FIRESENSE_BACKEND=a.backend, FIRESENSE_GPU_ID=str(a.gpu_id), FIRESENSE_THREADS=str(a.threads))

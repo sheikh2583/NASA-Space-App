@@ -119,70 +119,26 @@ anomalies to `data/interim/monazir/weather_BD.parquet` and `weather_PB.parquet`.
 ```bash
 # Linux / macOS: Python 3.11, Node 22 LTS and git must be installed
 cd nasa-modis-viirs
-bash scripts/setup.sh --no-pipeline     # venv + pinned packages + web app (2-5 minutes)
+bash scripts/setup.sh --ui-only        # initialize mock/UI development
 bash scripts/start.sh --mock            # look at the app on fixtures: http://localhost:5173
 ```
 ```powershell
 # Windows PowerShell
 cd nasa-modis-viirs
-powershell -ExecutionPolicy Bypass -File scripts\setup.ps1 -NoPipeline
+powershell -ExecutionPolicy Bypass -File scripts\setup.ps1 -UiOnly
 powershell -ExecutionPolicy Bypass -File scripts\start.ps1 -Mock
 ```
-To build everything on synthetic data instead (about 15 minutes): drop `--no-pipeline` and add `--quick`.
+Setup does not train or download data. Follow [TRAINING.md](TRAINING.md) to initialize CUDA and train on real inputs.
 
 ---
 
-## 5. Real-data run and ML training
-### 5.1 Run everything
-With section 3 done (FIRMS CSVs, boundaries, land cover in `data/raw/`, weather cached), one command runs the whole chain.
-It prints `Mode: REAL FIRMS files` when it found real data.
-```bash
-. .venv/bin/activate
-python scripts/run_pipeline.py            # full: about 35 min on 2 cores (most of it is the model step)
-# or
-python scripts/run_pipeline.py --quick    # fewer holdouts in the model step: about 12 min
-```
-```powershell
-.venv\Scripts\python scripts\run_pipeline.py --quick
-```
-If a step fails, fix it and resume from that step: `python scripts/run_pipeline.py --from model`.
+## 5. Real-data CUDA training
 
-| Step | Owner | What it does | Output |
-|---|---|---|---|
-| ingest | Monazir | FIRMS CSV → detections, VIIRS l/n/h → 20/60/90, vegetation fires only, clip to demo boxes | detections.parquet |
-| grid, sensors, cells | Sattyam | 0.1° per-satellite daily grid; which satellite operated each day; regions + land cover | grid_daily, sensor_days, cells |
-| panel, v0 | Sheikh | weekly cell panel; baselines B0/B1; first harmonized series and interval table | harmonized v0, interval_table v0 |
-| model | Sheikh | **ML training and evaluation** (5.2) | metrics.csv, method.json, predictions_oof |
-| intervals, drift | Samin | conformal 90% bands; drift flags | interval_table v1, drift_flags |
-| v1 | Sheikh | final harmonized series with the chosen method | harmonized v1 |
-| anomalies, outlook | Monazir, Samin | unusual weeks, critical periods, drivers; status and forecast skill | anomalies, periods, drivers, outlook |
-| validation, fixtures, fallback, qa | Sheikh, Sattyam, Samiul | validation pieces, API fixtures, static fallback, QA report | validation/*.json, contracts/fixtures, static_fallback |
+Use the current [CUDA training guide](TRAINING.md) for initialization, readiness, quick/full runs, monitoring, recovery, and publishing. The former CPU timings and commands in this section are obsolete and have been removed.
 
-### 5.2 What is trained, and how to read it
-- **Baselines** (`ws1_harmonize/baselines.py`): B0 = one SNPP/MODIS ratio; B1 = one ratio per admin1 region × calendar
-  month (shrunk toward B0 when a group is small). Both are fitted separately for Terra-only inputs (Nov 2000 - Jul 2002)
-  and Terra+Aqua inputs, on full overlap weeks only. The same code fits the NOAA-20 → SNPP ratio used after 2 Nov 2026.
-- **LightGBM** (`ws1_harmonize/model.py`): weekly cell counts, Poisson objective for detections and Tweedie for FRP.
-  Features are MODIS-derived or static only (counts, high-confidence counts, FRP, day/night, scan, 3×3 neighbours,
-  previous/next week, season, coarse location, land cover); VIIRS columns and the year are forbidden (tests enforce it).
-  Every training row is used twice, once with Aqua zeroed, so the model can handle the Terra-only years.
-- **Evaluation** (`ws1_harmonize/evaluate.py`), on region-week sums: spatial blocks (2×2°, block_id % 5: 0 = calib,
-  1 = test), rolling temporal folds, backward holdout (train 2015-2020 → test 2012-2014) and a drift-era check
-  (train 2015-2020 → test 2021+). Metrics: relative bias, RMSE on log1p, Spearman, Lin's CCC.
-- **Method choice** is automatic: the method with the higher mean Lin's CCC is used for the OOF file, the intervals and
-  harmonized v1. On synthetic data B1 won (0.983 vs 0.931), as expected for data generated as a pure ratio.
+The supported setup installs the complete environment from `requirements-cuda.txt`; setup no longer launches any pipeline. Select menu 1 for CUDA setup, 12 for GPU verification, 2 for readiness, and 4/5 for quick/full training. For dataset-free UI development use `-UiOnly` or `--ui-only`, then `python scripts/workflow.py dev --mock --open`.
 
-```bash
-. .venv/bin/activate
-python -m ws1_harmonize.run model --quick        # retrain + evaluate only the model step
-cat data/interim/sheikh/method.json              # which method was chosen and why
-column -s, -t < data/interim/sheikh/metrics.csv | less -S    # the full metrics table
-python -m ws1_harmonize.run model --reuse-metrics    # redo the choice/OOF/final fit without re-evaluating
-python scripts/run_pipeline.py --from intervals      # then rebuild everything downstream
-```
-Trained models: `data/interim/sheikh/lgbm_count.txt`, `lgbm_frp.txt`; baseline ratios: `b1_params.pkl`.
-No GPU needed. If a laptop is too slow, run the same commands in a Kaggle notebook (upload `data/processed` and
-`data/interim/sheikh/panel.parquet`) and copy the `data/interim/sheikh/` outputs back.
+The GPU candidate is XGBoost CUDA (Poisson counts, Tweedie FRP). B1 remains a scientific comparator and can win. Selection now averages both Terra+Aqua and Terra-only holdouts. Model artifacts and evidence are explained in [CUDA operations](CUDA_PIPELINE.md); the two GPU timing ranges are in [GPU estimates](GPU_TRAINING_TIMES.md).
 
 ### 5.3 Design review after the first real run (Sheikh + Samin, 20 minutes; H12 in the plan)
 | Look at | File | Good sign | If not |
@@ -293,7 +249,7 @@ into their own `data/` instead of downloading again, and add a line to `data/MAN
 | H4-6 | design review | section 5.3; decide claims; Samiul manual count |
 | H6-8 | deploy | Sattyam 7.1-7.2; Shammo deploys the app; Samiul runs QA against the live URL |
 | H8-24 | improve | gap list in ONBOARDING.md section 5 (P1 items), one PR per folder |
-| H24-36 | full run + freeze | full `run_pipeline.py` (no --quick) overnight; redeploy; feature freeze at H36 |
+| H24-36 | full run + freeze | full CUDA training and scientific QA; redeploy reviewed results; feature freeze at H36 |
 | H36-42 | polish | Bangla review; slides; rehearse demo_script.md |
 | H42-46 | ship | final deploy; video; submission checklist; submit at H46 |
 

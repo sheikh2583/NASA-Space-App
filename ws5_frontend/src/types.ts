@@ -4,7 +4,7 @@ export type Res = "day" | "week" | "month";
 export type Level = "none" | "watch" | "high";
 
 export interface AOIRequest {
-  geometry?: GeoJSON.Polygon;
+  geometry?: GeoJSON.Polygon | GeoJSON.MultiPolygon;
   bbox?: [number, number, number, number];
   start: string;
   end: string;

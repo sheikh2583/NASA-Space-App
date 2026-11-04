@@ -24,7 +24,7 @@ def run(*command: str, cwd: Path = ROOT, env: dict | None = None) -> None:
     subprocess.run(command, cwd=cwd, env=env, check=True)
 
 
-def train(quick: bool, start: str | None, backend: str = "cuda", gpu_id: int = 0, threads: int = 2) -> None:
+def train(quick: bool, start: str | None, backend: str = "cuda", gpu_id: int = 0, threads: int = 8) -> None:
     os.environ.update(FIRESENSE_BACKEND=backend, FIRESENSE_GPU_ID=str(gpu_id), FIRESENSE_THREADS=str(threads))
     run(PY, "scripts/prepare_training.py")
     command = [PY, "scripts/run_pipeline.py", "--backend", backend, "--gpu-id", str(gpu_id), "--threads", str(threads)]

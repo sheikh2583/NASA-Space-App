@@ -1,10 +1,10 @@
-param([ValidateSet("menu", "setup", "setup-cuda", "gpu-check", "cpu-train", "prepare", "smoke", "quick", "train", "dev", "mock", "results", "share", "all")][string]$Action = "menu")
+param([ValidateSet("menu", "setup", "setup-cuda", "setup-ui", "gpu-check", "prepare", "smoke", "quick", "train", "dev", "mock", "results", "share", "all")][string]$Action = "menu")
 $ErrorActionPreference = "Stop"
 Set-Location (Join-Path $PSScriptRoot "..")
 if ($Action -eq "menu") {
   Write-Host "FireSense workflows" -ForegroundColor Cyan
-  Write-Host "1 Setup CPU dependencies`n2 Prepare/check CUDA training inputs`n3 Smoke tests + UI build`n4 Quick CUDA training`n5 Full CUDA training`n6 Open trained UI`n7 Open mock UI (no datasets)`n8 Generate results`n9 Minimal share ZIP`n10 Full CUDA pipeline + tests + UI build`n11 Setup CUDA dependencies`n12 Verify GPU training`n13 Full CPU training`n0 Exit"
-  $actions = @{"1"="setup"; "2"="prepare"; "3"="smoke"; "4"="quick"; "5"="train"; "6"="dev"; "7"="mock"; "8"="results"; "9"="share"; "10"="all"; "11"="setup-cuda"; "12"="gpu-check"; "13"="cpu-train"}
+  Write-Host "1 Setup complete CUDA environment`n2 Prepare/check training inputs`n3 Smoke tests + UI build`n4 Quick CUDA training`n5 Full CUDA training`n6 Open trained UI`n7 Open mock UI (no datasets)`n8 Generate results`n9 Minimal share ZIP`n10 Full CUDA pipeline + tests + UI build`n11 Setup UI development only (no NVIDIA required)`n12 Verify GPU training`n0 Exit"
+  $actions = @{"1"="setup"; "2"="prepare"; "3"="smoke"; "4"="quick"; "5"="train"; "6"="dev"; "7"="mock"; "8"="results"; "9"="share"; "10"="all"; "11"="setup-ui"; "12"="gpu-check"}
   $choice = Read-Host "Choose a number"
   if ($choice -eq "0") { exit 0 }
   if (-not $actions.ContainsKey($choice)) { Write-Host "Unknown choice"; exit 1 }
@@ -14,9 +14,9 @@ New-Item -ItemType Directory -Force -Path results\logs | Out-Null
 $log = Join-Path (Get-Location) ("results\logs\{0}-{1}.log" -f $Action, (Get-Date -Format "yyyyMMdd-HHmmss"))
 Start-Transcript -Path $log | Out-Null
 try {
-  if ($Action -eq "setup" -or $Action -eq "setup-cuda") {
+  if ($Action -in @("setup", "setup-cuda", "setup-ui")) {
     $setupArgs = @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "scripts\setup.ps1", "-NoPipeline")
-    if ($Action -eq "setup-cuda") { $setupArgs += "-Cuda" }
+    if ($Action -eq "setup-ui") { $setupArgs += "-UiOnly" }
     & powershell.exe @setupArgs
     $result = $LASTEXITCODE
   } else {
@@ -24,7 +24,6 @@ try {
     if (-not (Test-Path $python)) { throw "Run option 1 (Setup) first." }
     $workflowArgs = @("scripts\workflow.py", $Action)
     if ($Action -eq "quick") { $workflowArgs = @("scripts\workflow.py", "train", "--quick") }
-    if ($Action -eq "cpu-train") { $workflowArgs = @("scripts\workflow.py", "train", "--backend", "cpu") }
     if ($Action -eq "dev") { $workflowArgs += "--open" }
     if ($Action -eq "mock") { $workflowArgs = @("scripts\workflow.py", "dev", "--mock", "--open") }
     & $python @workflowArgs

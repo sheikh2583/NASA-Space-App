@@ -49,6 +49,6 @@ The accepted execution report predates the final report-only placement fix: its 
 - Frontend: all six tests, translation checks, and snapshot production build passed.
 - Optional dependency installation passed `pip check`. Windows PowerShell and Linux shell launcher syntax were checked; a fresh Linux environment was not executed.
 
-The live public demo's saved CPU snapshot was intentionally preserved. Pushing this source updates the application and documentation through GitHub Pages; publishing new science requires the explicit snapshot export and review in [hosting](HOSTING.md). Raw data, trained models, run logs, and backups remain local and are excluded from the source ZIP.
+The original CUDA implementation preserved the earlier public snapshot. The subsequent named-area UI update deliberately refreshed it from these accepted local outputs after QA and review, adding responses for all 11 administrative regions and the two examples. Future updates still require explicit export/review in [hosting](HOSTING.md). Raw data, trained models, run logs, and backups remain local and are excluded from the source ZIP.
 
 The next performance work should batch or avoid repeated tiny forecast fits and profile CPU feature/anomaly operations. A larger GPU alone does not resolve launch overhead. Any optimization must repeat held-out evaluation and all scientific gates; do not force selection of the GPU candidate.

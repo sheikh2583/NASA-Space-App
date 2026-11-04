@@ -1,2 +1,3 @@
-# Optional native Windows/Linux NVIDIA training backend. CPU environment stays usable without this.
+# Complete CUDA training environment (Python 3.11, NVIDIA Windows/Linux).
+-r requirements.lock.txt
 xgboost==3.2.0

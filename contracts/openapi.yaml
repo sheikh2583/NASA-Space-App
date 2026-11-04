@@ -162,7 +162,7 @@ components:
         - required: [geometry]
         - required: [bbox]
       properties:
-        geometry: { type: object, description: GeoJSON Polygon (exactly one of geometry or bbox) }
+        geometry: { type: object, description: GeoJSON Polygon or MultiPolygon (exactly one of geometry or bbox) }
         bbox:
           type: array
           description: '[min_lon, min_lat, max_lon, max_lat]'

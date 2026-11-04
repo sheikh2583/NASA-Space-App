@@ -13,7 +13,8 @@ let fallbackIndex: Promise<FallbackIndex> | null = null;
 
 export function centreOf(req: AOIRequest): [number, number] {
   if (req.bbox) return [(req.bbox[0] + req.bbox[2]) / 2, (req.bbox[1] + req.bbox[3]) / 2];
-  const ring = req.geometry!.coordinates[0];
+  const geometry = req.geometry!;
+  const ring = geometry.type === "MultiPolygon" ? geometry.coordinates.flatMap((polygon) => polygon[0]) : geometry.coordinates[0];
   const xs = ring.map((p) => p[0]);
   const ys = ring.map((p) => p[1]);
   return [(Math.min(...xs) + Math.max(...xs)) / 2, (Math.min(...ys) + Math.max(...ys)) / 2];
