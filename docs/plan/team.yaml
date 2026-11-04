@@ -3,7 +3,7 @@
 # Append-only shared files go into the commit of the card's owner (see `shared`).
 
 lead: Sheikh
-pr_user: sheikh2583          # every branch is pushed and every PR opened from this account
+pr_user: sheikh2583          # pull-request flow only: every branch is pushed and every PR opened from this account
 branch_prefix: ws1           # scripts/git/guard.py requires the PR user's prefix
 
 people:

@@ -11,7 +11,7 @@ requires: [real-data]
 branch: ws1/T05-coverage-audit
 touches: [docs/science/decisions.md, docs/project/contract-changes.md]
 creates: [docs/specs/I8_AUDIT_RESULTS.md, ws6_validation/coverage_review.md]
-checks: [CHECK-PLAN, CHECK-PY]
+checks: [CHECK-PLAN, "python -m pytest -q ws2_platform/tests/test_coverage.py"]
 ---
 ## Goal
 Measure what the outage registry would change before anything changes, then record the decision with the documented

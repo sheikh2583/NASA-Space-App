@@ -35,16 +35,17 @@ Preserve unrelated user edits and the local `codex/` proposal folder. Keep crede
 2. **Scope.** Change only the paths in the card's `touches` and `creates`, plus your own row in
    `docs/plan/STATUS.md`. If anything else must change, or the code differs from what the card says, stop and ask.
 3. **Checks.** Never weaken, skip or delete a test.
-   - **Don't run `CHECK-PY` (blanket `pytest`) or `CHECK-SMOKE` (`workflow.py smoke`).** Some of those tests fit
-     learners.
-   - **Don't run `plan.py checks <ID> --run` if the card lists either one.** Run `python scripts/plan.py checks <ID>`
-     without `--run` to see the commands, run only the individually reviewed non-fitting ones, and list the rest
-     for Sheikh to run.
+   - A card's `checks` hold only agent-safe checks. `python scripts/plan.py check` rejects anything else, and
+     `python scripts/plan.py checks <ID> --run` refuses it again at run time. It also scans each test file, and the
+     `conftest.py` files it loads, for fitting code first.
+   - Human-only checks (`CHECK-PY`: blanket pytest; `CHECK-SMOKE`; `CHECK-QA`: `workflow.py validate`) sit in the
+     card's `human_checks`. `checks --run` prints them as "Sheikh runs: …"; never run them yourself.
+   - If `checks --run` refuses a step, stop and tell Sheikh. Don't run that step another way.
 4. **Commits.** Follow Sheikh's instructions for the task. Sheikh normally commits and pushes himself.
    - When asked to use the plan's commit flow, `python scripts/plan.py split --card <ID> -m "<ID>: …" --run` makes
      one commit per folder owner, with that owner's `--author` (`docs/plan/team.yaml`).
    - Never force-push.
-5. **Secrets and data.** Never print, log or commit `FIRMS_MAP_KEY`, `HF_TOKEN` or `.env`. Never commit `data/`,
+5. **Secrets and data.** Never print, log or commit `FIRMS_MAP_KEY`, `EARTHDATA_TOKEN` or `.env`. Never commit `data/`,
    models, `dist/`, `node_modules/` or `share/`.
 6. **Science.**
    - Keep observed VIIRS, adjusted NOAA-20 and modeled MODIS distinct.
@@ -53,8 +54,9 @@ Preserve unrelated user edits and the local `codex/` proposal folder. Keep crede
    - Detections are not burned area.
    - Changing scientific outputs needs the card's spec, a contract line, and a decision in a pull request Sheikh
      merges.
-   - All training, quick or full, is Sheikh's manual step (H02, H03). Afterwards you re-report the metrics on all
-     six holdouts from the saved outputs.
+   - All training, quick or full, is Sheikh's manual step (H02, H03, with `scripts/train.ps1` / `train.sh`), and so
+     are pipeline stages (`python -m <package>.run`) and `workflow.py validate`. Afterwards you re-report the metrics
+     on every holdout, from the saved outputs.
 7. **Numbers.** Measured numbers come from data at runtime or from `docs/results/training-results.md`, with their source.
    Never from memory.
 8. **Tests.**
@@ -62,6 +64,8 @@ Preserve unrelated user edits and the local `codex/` proposal folder. Keep crede
    - UI component tests use `renderHtml` / `textOf` (`ws5_frontend/src/test/render.tsx`).
    - Don't add dependencies without the lead's OK.
 9. **Hosting.**
-   - Render serves the UI and the live API (`docs/guides/deployment.md`).
+   - Render serves the UI and the live API (`docs/guides/deployment.md`). New data reaches it only as a new runtime
+     release (`scripts/release_runtime.py`, card T16), never by replacing an existing release asset.
+   - Don't claim a deploy is live without `python scripts/check_render.py` (card T17).
    - The basemap is OpenStreetMap; never restore CARTO URLs.
    - The FIRMS key never goes to the browser.

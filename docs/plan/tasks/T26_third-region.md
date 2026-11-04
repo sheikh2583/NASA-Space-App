@@ -14,7 +14,8 @@ touches: [common/regions.py, ws2_platform/cells.py, ws2_platform/api/make_fixtur
           ws5_frontend/src/i18n/en.json, ws5_frontend/src/i18n/bn.json, ws5_frontend/public/demo/snapshot.json,
           scripts/export_hosted_demo.py, README.md, docs/results/training-results.md]
 creates: []
-checks: [CHECK-PLAN, CHECK-PY, CHECK-QA, CHECK-FILES, CHECK-SMOKE, CHECK-SNAP]
+checks: [CHECK-PLAN, "python -m pytest -q ws4_outlook/tests/test_season_profile.py ws2_platform/tests/test_tiny_api.py", CHECK-FILES, CHECK-SNAP]
+human_checks: [CHECK-PY, CHECK-QA, CHECK-SMOKE]
 ---
 ## Goal
 Show that the method transfers by adding one more region end to end, without harming the existing two.
@@ -43,8 +44,9 @@ Show that the method transfers by adding one more region end to end, without har
    `SEASON_WINDOWS` the same way `docs/specs/I1_SEASON_PROFILE.md` section 2 did. Record the shares in the PR.
 3. **Weather.** Run `python -m ws3_anomaly.loaders.weather` so the new region's NASA POWER cache exists. Check how
    it's invoked in `scripts/run_pipeline.py` first.
-4. **Run.** `python scripts/workflow.py prepare`. Then **stop and ask Sheikh to run the full training**
-   (`python scripts/workflow.py train`; it is his manual step). Afterwards run `python scripts/workflow.py validate`.
+4. **Stop and ask Sheikh** to run the training with `scripts/train.ps1` (or `scripts/train.sh`). It includes
+   readiness, the quick and full CUDA runs and QA, and all of it is human-only (`docs/guides/training.md`). Continue
+   when he reports the results.
 5. **Compare** with the latest `docs/results/training-results.md` section: the existing regions' held-out CCC and coverage must not
    get worse by more than 0.005 CCC or 1 coverage point. Explain any change.
 6. **Demo wiring.** Add a demo AOI (a 1.8° × 1.4° box inside the region, like Punjab's) to `AOIS` and to

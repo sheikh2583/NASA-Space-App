@@ -136,10 +136,10 @@ Each criterion is marked measured (M) or person-checked (H). Expected-failure te
 | A3 | Nov 2024: SNPP day-pass detections in PB and BD on local 4-5 Nov = 0; NOAA-20 day-pass detections on those days > 0; SNPP present on 7-9 Nov | M |
 | A4 | `candidate_gaps.csv` reviewed for each region's burning months (PB Apr-May and Oct-Nov, BD Feb-Apr), 2012-2026. Each candidate is added to the registry with a source, or listed as a reviewed real zero in `ws6_validation/coverage_review.md`. Candidates are never excluded automatically | H |
 | A5 | Before wiring: the `would_flip` count at the chosen threshold, and the number of SNPP+MODIS and SNPP+NOAA-20 overlap weeks that leave the fit, are written in the PR | M |
-| A6 | After wiring, a full `train` (not `--quick`) reports: B1 and LightGBM mean held-out CCC on all six holdouts; 90% band coverage, weekly and monthly; PB and BD November B1 ratios and the NOAA-20 ratio, before and after. The method choice is re-made from these numbers, not assumed | M |
+| A6 | After wiring, Sheikh's full training run (H02; agents never train) reports: the selection metrics for B1 and the learned candidate on every holdout; 90% band coverage, weekly and monthly; PB and BD November B1 ratios and the NOAA-20 ratio, before and after. The method choice is re-made from these numbers, not assumed | M |
 | A7 | PB 2024 ISO weeks 44-45: excluded days show `adjusted_from_noaa20` and the weekly total no longer drops below the NOAA-20-implied value; `modeled_share` / source mix visible in the API and snapshot | M |
 | A8 | All five QA groups pass; `test_rows_on_non_operating_days_are_documented` passes with the event ids in `note`; a new test covers the NOAA-20 fill before the cutoff, a region with no detections (default windows) and an empty registry | M |
-| A9 | Snapshot re-exported (`scripts/export_hosted_demo.py`), Pages build passes, `version.json` matches the commit, and the method page (en and bn) says how outages are handled | M + H |
+| A9 | New runtime release published (`scripts/release_runtime.py`), Render rebuilt and `scripts/check_render.py` passes (`/health` `data_through`, `/version.json` commit), legacy snapshot re-exported, and the method page (en and bn) says how outages are handled | M + H |
 
 ## 6. Work left, in order (plan cards in `docs/plan/tasks/`)
 

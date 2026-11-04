@@ -3,7 +3,7 @@
     python scripts/plan.py check                 # validate every card, the status board and their links
     python scripts/plan.py next [--all]          # the next agent card that can start here (or all of them)
     python scripts/plan.py show T07              # one card with its authors, branch and expanded checks
-    python scripts/plan.py checks T07 [--run]    # print (or run, stopping at the first failure) a card's checks
+    python scripts/plan.py checks T07 [--run]    # print (or run) a card's agent-safe checks; human-only ones are listed
     python scripts/plan.py split --card T07 -m "T07: season endpoint" [--run]
                                                  # commit the working-tree changes as one commit per owner
     python scripts/plan.py set T07 review --note "PR #14"
@@ -12,6 +12,10 @@
 Cards live in docs/plan/tasks/<ID>_<slug>.md with YAML front matter (docs/plan/README.md, "Card format").
 Status lives only in docs/plan/STATUS.md. Team, authors and path ownership live in docs/plan/team.yaml.
 Standard library + PyYAML only.
+
+Training policy (AGENTS.md): a card's `checks` must be agent-safe, meaning no training, no fitting, no blanket pytest,
+no smoke or QA workflow. `check` rejects anything else, and `checks --run` refuses it again at run time and scans each
+test file for fitting code first. Human-only checks go in `human_checks`; they are printed for Sheikh, never run.
 """
 from __future__ import annotations
 
@@ -33,27 +37,76 @@ FINISHED = ("done", "cut")              # "cut" = dropped on purpose (cut order)
 KINDS = {"T": "agent", "H": "human", "G": "gate"}   # G is unused in the current plan; kept for future sign-off cards
 PHASES = ("P0", "P1", "P2", "P3", "P4")
 SIZES = ("S", "M", "L")
-REQUIRES = ("real-data", "secret:FIRMS_MAP_KEY", "secret:EARTHDATA_TOKEN", "hf-token", "gh-auth", "earthdata-files", "network")
+REQUIRES = ("real-data", "secret:FIRMS_MAP_KEY", "secret:EARTHDATA_TOKEN", "env:RENDER_URL", "gh-auth", "earthdata-files",
+            "network")
 AGENT_KEYS = ("id", "title", "kind", "owner", "authors", "phase", "size", "needs", "branch", "touches", "creates", "checks")
 HUMAN_KEYS = ("id", "title", "kind", "owner", "phase", "size", "needs")
 AGENT_HEADINGS = ("## Goal", "## Steps", "## Acceptance", "## Stop and ask if")
 HUMAN_HEADINGS = ("## Goal", "## Steps", "## Done when")
 STATUS_COLUMNS = ("ID", "Kind", "Title", "Owner", "Needs", "Status", "Note")
 
+# Test files reviewed on 4 Nov 2026, after the docs restructure: they fit no model, call no CUDA probe and run no
+# training workflow (CI already runs test_bootstrap, test_runtime_bundle, test_share_zip and test_frontend_hosting).
+# Only these, and test files the plan's cards create, may run from an agent's `checks`. Not on the list, because they
+# fit, probe or drive training entry points: ws1_harmonize/tests/*, common/tests/test_compute.py,
+# scripts/tests/test_cuda_entrypoints.py, scripts/tests/test_resume_backend.py.
+SAFE_TESTS = (
+    "common/tests/test_common.py",
+    "scripts/tests/test_area_catalog.py",
+    "scripts/tests/test_bootstrap.py",
+    "scripts/tests/test_plan.py",
+    "scripts/tests/test_plan_checks.py",
+    "scripts/tests/test_runtime_bundle.py",
+    "scripts/tests/test_share_zip.py",
+    "ws2_platform/tests/test_coverage.py",
+    "ws2_platform/tests/test_frontend_hosting.py",
+    "ws2_platform/tests/test_platform.py",
+    "ws2_platform/tests/test_tiny_api.py",
+    "ws3_anomaly/tests/test_anomaly.py",
+    "ws3_anomaly/tests/test_ingest.py",
+    "ws4_outlook/tests/test_outlook.py",
+    "ws4_outlook/tests/test_season_profile.py",
+    "ws6_validation/tests/test_contract.py",
+    "ws6_validation/tests/test_data_qa.py",
+    "ws6_validation/tests/test_e2e.py",
+)
+# The Render image builds the web app with these settings (root Dockerfile), so CHECK-WEB does too.
+RENDER_WEB_ENV = {"VITE_API_BASE_URL": "/", "VITE_DEMO_MODE": "live", "VITE_DATA_MODE": "real", "VITE_FALLBACK_BASE_URL": ""}
+
 # Named checks. Each is a list of (command, working directory relative to the repo root, extra environment).
 CHECKS = {
-    "CHECK-PY": [(["python", "-m", "pytest", "-q"], ".", {})],
-    "CHECK-WEB": [(["npm", "test"], "ws5_frontend", {}), (["npm", "run", "check:strings"], "ws5_frontend", {}),
-                  (["npm", "run", "build"], "ws5_frontend", {})],
-    "CHECK-SNAP": [(["npm", "run", "build"], "ws5_frontend", {"VITE_DEMO_MODE": "snapshot", "VITE_DATA_MODE": "real"})],
-    "CHECK-SMOKE": [(["python", "scripts/workflow.py", "smoke"], ".", {})],
-    "CHECK-QA": [(["python", "scripts/workflow.py", "validate"], ".", {})],
-    "CHECK-FILES": [(["python", "tools/verify_files.py", "--all"], ".", {})],
     "CHECK-PLAN": [(["python", "scripts/plan.py", "check"], ".", {})],
+    "CHECK-TESTS": [(["python", "-m", "pytest", "-q", *SAFE_TESTS], ".", {})],
+    "CHECK-WEB": [(["npm", "test"], "ws5_frontend", RENDER_WEB_ENV),
+                  (["npm", "run", "check:strings"], "ws5_frontend", RENDER_WEB_ENV),
+                  (["npm", "run", "build"], "ws5_frontend", RENDER_WEB_ENV)],
+    "CHECK-SNAP": [(["npm", "run", "build"], "ws5_frontend", {"VITE_DEMO_MODE": "snapshot", "VITE_DATA_MODE": "real"})],
+    "CHECK-FILES": [(["python", "tools/verify_files.py", "--all"], ".", {})],
     "CHECK-GUARD": [(["python", "scripts/git/guard.py", "--range", "origin/main...HEAD", "--user", "{pr_user}",
                       "--branch", "{branch}"], ".", {})],
+    # Human-only under AGENTS.md: some tests fit learners, smoke trains, and QA runs whole test folders and rewrites
+    # data/processed/validation/qa.json. Cards list these under `human_checks`; Sheikh runs them.
+    "CHECK-PY": [(["python", "-m", "pytest", "-q"], ".", {})],
+    "CHECK-SMOKE": [(["python", "scripts/workflow.py", "smoke"], ".", {})],
+    "CHECK-QA": [(["python", "scripts/workflow.py", "validate"], ".", {})],
 }
+HUMAN_ONLY = {"CHECK-PY", "CHECK-SMOKE", "CHECK-QA"}
 LITERAL = re.compile(r"^(python|npm|npx|git) ")
+PYTEST_OPTIONS = {"-q", "-x", "-v", "-rs", "--no-header"}
+WORKFLOW_SAFE = {"build", "share", "dev"}   # every other workflow.py command trains, probes, tests, smokes or validates
+HUMAN_SCRIPTS = {"run_pipeline.py", "prepare_training.py", "smoke.py", "teammate.py", "bootstrap.py", "results.py"}
+HUMAN_MODULES = ("ws1_harmonize", "ws6_validation.qa", "scripts.run_pipeline", "scripts.prepare_training")
+# Code in a test file (or a conftest.py it loads) that means it may fit or probe. Checked before every agent pytest run.
+FIT_PATTERNS = (
+    r"\.fit\(",
+    r"^\s*(?:import|from)\s+(?:lightgbm|xgboost|catboost|sklearn|torch)\b",
+    r"probe_cuda",
+    r"run_pipeline",
+    r"prepare_training",
+    r"evaluate_forecast",
+    r"ws1_harmonize(?:\.|\s+import\s+)model",
+    r"workflow\.py['\"]?\s*,?\s*['\"]?(?:train|all|smoke|test|prepare|gpu-check)\b",
+)
 NOT_IN_SOURCE_ZIP = {".csv", ".parquet", ".hdf", ".gz"}   # scripts/share_zip.py leaves these out
 
 
@@ -102,9 +155,9 @@ def _git(root: Path, *args) -> str | None:
 
 
 def main_status_text(root: Path) -> str | None:
-    """STATUS.md as merged on main (origin/main if fetched, else local main). Cards only count as done once merged.
-    "" when main exists but has no board yet (the plan isn't merged, so nothing is done); None when there is no main."""
-    for ref in ("origin/main", "main"):
+    """STATUS.md as committed on main (local main, which Sheikh commits to, else origin/main). Cards only count as done
+    once on main. "" when main exists but has no board yet (nothing is done); None when there is no main."""
+    for ref in ("main", "origin/main"):
         if _git(root, "rev-parse", "--verify", "--quiet", ref + "^{commit}") is None:
             continue
         return _git(root, "show", f"{ref}:docs/plan/STATUS.md") or ""
@@ -249,6 +302,15 @@ def validate(plan: Plan) -> Plan:
         for ch in m.get("checks") or []:
             if ch not in CHECKS and not LITERAL.match(str(ch)):
                 E.append(f"{cid}: check '{ch}' is neither a named check ({', '.join(CHECKS)}) nor a python/npm/git command")
+            elif ch in HUMAN_ONLY:
+                E.append(f"{cid}: check '{ch}' is human-only (AGENTS.md); move it to human_checks")
+            elif ch not in CHECKS:
+                why = unsafe_reason(shlex.split(str(ch)), c, created_by_plan(plan, c))
+                if why:
+                    E.append(f"{cid}: check '{ch}' is not agent-safe ({why}); move it to human_checks")
+        for ch in m.get("human_checks") or []:
+            if ch not in CHECKS and not LITERAL.match(str(ch)):
+                E.append(f"{cid}: human check '{ch}' is neither a named check nor a python/npm/git command")
         for p in m.get("creates") or []:
             creators.setdefault(p, []).append(cid)
         authors = set(m.get("authors") or [])
@@ -320,10 +382,8 @@ def _env_has(root: Path, name: str) -> bool:
 def requirement_met(root: Path, req: str) -> bool:
     if req == "real-data":
         return (root / "data/processed/harmonized.parquet").exists()
-    if req.startswith("secret:"):
+    if req.startswith(("secret:", "env:")):
         return _env_has(root, req.split(":", 1)[1])
-    if req == "hf-token":
-        return bool(os.environ.get("HF_TOKEN")) or (Path.home() / ".cache/huggingface/token").exists()
     if req == "gh-auth":
         try:
             return subprocess.run(["gh", "auth", "status"], capture_output=True).returncode == 0
@@ -354,9 +414,76 @@ def eligible(plan: Plan, met=None, flying: set | None = None):
 
 
 # ------------------------------------------------------------------ commands
-def expand_checks(plan: Plan, card: Card, branch: str | None = None):
+def created_by_plan(plan: Plan, card: Card) -> set:
+    """Paths this card or a card it needs creates. Tests written by the plan may run; fitting_hits() scans them first."""
+    paths = set(card.get("creates") or [])
+    for a in _ancestors(plan, card.id) if card.id in plan.cards else ():
+        paths.update(plan.cards[a].get("creates") or [])
+    return paths
+
+
+def unsafe_reason(cmd: list, card: Card | None = None, created: set | None = None) -> str | None:
+    """Why a literal check command is human-only under AGENTS.md, or None when an agent may run it."""
+    if not cmd:
+        return "empty command"
+    if cmd[0] != "python":
+        return None                                   # npm, npx and git commands train nothing
+    args = cmd[1:]
+    if args[:2] == ["-m", "pytest"]:
+        opts = [a for a in args[2:] if a.startswith("-")]
+        files = [a for a in args[2:] if not a.startswith("-")]
+        if any(o not in PYTEST_OPTIONS for o in opts):
+            return f"pytest options other than {' '.join(sorted(PYTEST_OPTIONS))}"
+        if not files:
+            return "blanket pytest; name the reviewed test files"
+        if created is None:
+            created = set((card.get("creates") or []) if card else [])
+        for f in files:
+            path = f.split("::", 1)[0]
+            if not path.endswith(".py"):
+                return f"'{f}' is not a test file; folders run unreviewed tests"
+            if path not in SAFE_TESTS and path not in created:
+                return f"'{path}' is not a reviewed non-fitting test (SAFE_TESTS) or a test this plan creates"
+        return None
+    if args[:1] == ["-m"]:
+        mod = args[1] if len(args) > 1 else ""
+        if mod.endswith(".run") or mod.startswith(HUMAN_MODULES):
+            return f"python -m {mod} runs a pipeline stage or QA"
+        return None
+    script = args[0].replace("\\", "/") if args else ""
+    name = script.rsplit("/", 1)[-1]
+    if name == "workflow.py":
+        sub = args[1] if len(args) > 1 else ""
+        return None if sub in WORKFLOW_SAFE else f"workflow.py {sub or '(no command)'} is human-only"
+    if name in HUMAN_SCRIPTS:
+        return f"{name} trains, probes or runs fitting tests"
+    return None
+
+
+def fitting_hits(root: Path, test_file: str) -> list[str]:
+    """Lines in a test file, or in a conftest.py pytest would load for it, that look like fitting or probing."""
+    path = root / test_file.split("::", 1)[0]
+    files = [path]
+    d = path.parent
+    while True:
+        if (d / "conftest.py").exists():
+            files.append(d / "conftest.py")
+        if d == root or root not in d.parents:
+            break
+        d = d.parent
+    hits = []
+    for f in files:
+        if not f.exists():
+            continue
+        for i, line in enumerate(f.read_text(encoding="utf-8").splitlines(), 1):
+            if any(re.search(p, line) for p in FIT_PATTERNS):
+                hits.append(f"{f.relative_to(root).as_posix()}:{i}: {line.strip()}")
+    return hits
+
+
+def expand_checks(plan: Plan, card: Card, branch: str | None = None, key: str = "checks"):
     out = []
-    for ch in card.get("checks") or []:
+    for ch in card.get(key) or []:
         steps = CHECKS.get(ch)
         if steps is None:
             steps = [(shlex.split(ch), ".", {})]
@@ -374,17 +501,46 @@ def _resolve(cmd):
     return cmd
 
 
+def refusal(plan: Plan, card: Card, name: str, cmd: list) -> str | None:
+    """Why this step must not run from an agent session, or None. Checked again here, whatever the card says."""
+    if name in HUMAN_ONLY:
+        return f"{name} is human-only (AGENTS.md)"
+    why = unsafe_reason(cmd, card, created_by_plan(plan, card))
+    if why:
+        return why
+    if cmd[:3] == ["python", "-m", "pytest"]:
+        for f in (a for a in cmd[3:] if not a.startswith("-")):
+            hits = fitting_hits(plan.root, f)
+            if hits:
+                return "possible fitting code in a test; Sheikh must review it first: " + "; ".join(hits[:3])
+    return None
+
+
+def print_human_checks(plan: Plan, card: Card) -> None:
+    steps = expand_checks(plan, card, key="human_checks")
+    if steps:
+        print("Sheikh runs (human-only; list these under 'Needs Sheikh'):")
+        for name, cmd, cwd, env in steps:
+            envs = " ".join(f"{k}={v}" for k, v in env.items())
+            print(f"    {name}: {(envs + ' ') if envs else ''}{' '.join(cmd)}  (in {cwd})")
+
+
 def run_checks(plan: Plan, card: Card) -> int:
     branch = subprocess.run(["git", "branch", "--show-current"], cwd=plan.root, capture_output=True, text=True).stdout.strip()
     for name, cmd, cwd, env in expand_checks(plan, card, branch or None):
         shown = " ".join(cmd)
+        why = refusal(plan, card, name, cmd)
+        if why:
+            print(f"REFUSED {name}: {shown}. {why}. Nothing was run; tell Sheikh.", flush=True)
+            return 2
         print(f"--- {name}: {shown}  (in {cwd})", flush=True)
         r = subprocess.run(_resolve(cmd), cwd=plan.root / cwd, env={**os.environ, **env})
         if r.returncode != 0:
             print(f"FAIL {name}: {shown}  (exit {r.returncode}). Fix the cause; never weaken a test.", flush=True)
             return r.returncode
         print(f"PASS {name}", flush=True)
-    print(f"ALL CHECKS PASSED for {card.id}")
+    print(f"ALL AGENT CHECKS PASSED for {card.id}")
+    print_human_checks(plan, card)
     return 0
 
 
@@ -487,10 +643,11 @@ def show(plan: Plan, card: Card):
         print(f"  branch:   {card.get('branch')}")
         for a in card.get("authors") or []:
             print(f"  author:   {a}: --author \"{team[a]['author']}\"")
-        print("  checks:")
+        print("  checks (agent-safe; plan.py checks --run):")
         for name, cmd, cwd, env in expand_checks(plan, card):
             envs = " ".join(f"{k}={v}" for k, v in env.items())
             print(f"    {name}: {(envs + ' ') if envs else ''}{' '.join(cmd)}  (in {cwd})")
+        print_human_checks(plan, card)
     print(card.body)
 
 
@@ -551,6 +708,7 @@ def main(argv=None) -> int:
         for name, cmd, cwd, env in expand_checks(plan, card):
             envs = " ".join(f"{k}={v}" for k, v in env.items())
             print(f"{name}: {(envs + ' ') if envs else ''}{' '.join(cmd)}  (in {cwd})")
+        print_human_checks(plan, card)
         return 0
     if a.cmd == "next":
         validate(plan)

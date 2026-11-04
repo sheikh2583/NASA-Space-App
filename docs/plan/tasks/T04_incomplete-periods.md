@@ -13,7 +13,8 @@ touches: [ws2_platform/api/app.py, contracts/openapi.yaml, docs/project/contract
           ws5_frontend/src/components/SeriesChart.tsx, ws5_frontend/src/components/Calendar.tsx,
           ws5_frontend/src/i18n/en.json, ws5_frontend/src/i18n/bn.json, ws5_frontend/public/demo/snapshot.json]
 creates: [ws2_platform/tests/test_api_complete.py, ws5_frontend/src/components/Calendar.test.tsx]
-checks: [CHECK-PLAN, CHECK-PY, CHECK-WEB, CHECK-SNAP]
+checks: [CHECK-PLAN, "python -m pytest -q ws2_platform/tests/test_api_complete.py ws2_platform/tests/test_tiny_api.py", CHECK-WEB, CHECK-SNAP]
+human_checks: [CHECK-PY]
 ---
 ## Goal
 The last snapshot week (starting 2 Nov 2026) holds one day of data, but it is drawn as a full week (value 98). That

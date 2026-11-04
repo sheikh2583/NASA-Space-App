@@ -1,99 +1,73 @@
 ---
 id: T16
-title: "Hosted API, part 1: data release script, Docker download and hybrid web mode"
+title: "Render data releases: publish a new runtime data version with one command"
 kind: agent
-owner: Sattyam
-authors: [Sattyam, Sheikh, Shammo]
-phase: P2
-size: L
-needs: [T07]
+owner: Sheikh
+authors: [Sheikh]
+phase: P1
+size: M
+needs: [T00]
 requires: []
-branch: ws1/T16-hosted-api-code
-touches: [ws2_platform/Dockerfile, ws2_platform/api/app.py, ws5_frontend/src/api.ts, ws5_frontend/src/snapshot.ts,
-          ws5_frontend/src/App.tsx, ws5_frontend/src/i18n/en.json, ws5_frontend/src/i18n/bn.json, docs/guides/deployment.md]
-creates: [scripts/release_data.py, scripts/tests/test_release_data.py, ws2_platform/fetch_data.py,
-          ws2_platform/tests/test_fetch_data.py, ws5_frontend/src/mode.ts, ws5_frontend/src/mode.test.ts]
-checks: [CHECK-PLAN, CHECK-PY, CHECK-WEB, CHECK-SNAP]
+branch: ws1/T16-runtime-release
+touches: [docs/guides/deployment.md]
+creates: [scripts/release_runtime.py, scripts/tests/test_release_runtime.py]
+checks: [CHECK-PLAN, "python -m pytest -q scripts/tests/test_release_runtime.py scripts/tests/test_runtime_bundle.py"]
 ---
 ## Goal
-Let judges draw **any** area inside the processed regions on the public site, while the snapshot stays as an
-automatic fallback. This card writes and tests the code; Sheikh creates the account and token (H01), and T17 deploys.
+The hosted API already exists: one Render service builds the UI and serves FastAPI with data from a pinned GitHub
+Release (`deployment/runtime.json`, `docs/guides/deployment.md`). What is still manual is publishing a **new** data version after
+Sheikh's training runs (H02, H03). Make that one checked command, so T40 and T28 can do it without mistakes.
 
 ## Context
-- `ws2_platform/Dockerfile` copies the API's runtime files from `data/processed/`:
-  - `cells.parquet`, `harmonized.parquet` and `sensor_days.parquet`;
-  - `interval_table.json`, `drivers_region.json` and `outlook_region.json`;
-  - `validation/`.
-
-  Its comment says they are all under 10 MB. A GitHub checkout has no `data/`, so the image must download a
-  versioned data release.
-- `/health` already loads the Store and returns `method_version`, `data_through` and `cells`. If loading fails, it
-  currently errors with a 500.
-- `src/api.ts` `call()` uses the snapshot when `STATIC_DEMO` (`VITE_DEMO_MODE === "snapshot"`). It also has an older
-  region fallback (`VITE_FALLBACK_BASE_URL`); leave that alone.
-- Hugging Face Spaces (Docker):
-  - the free CPU Basic tier has 2 vCPU and 16 GB RAM, and sleeps when unused;
-  - the app URL is `https://<owner>-<space-name>.hf.space`;
-  - the README front matter needs `sdk: docker` and `app_port: 7860`.
+- `scripts/runtime_bundle.py pack` packages existing validated outputs into `share/firesense-runtime.zip` and prints
+  its SHA256. Sheikh's `scripts/train.ps1 -Pack` / `train.sh --pack` already runs it at the end of a full run (H02,
+  H03), so the zip is usually there already. `fetch` (used by the Dockerfile) refuses a bad checksum, synthetic or failed saved QA, unexpected files,
+  or a populated target folder. Read both before writing anything.
+- `docs/guides/deployment.md`, "Data delivery and updates": upload to a **new** versioned release; never replace an asset under
+  a pinned URL; update the URL and SHA256 in `deployment/runtime.json`; commit and push. Render rebuilds on the commit.
+- Release asset URLs look like
+  `https://github.com/sheikh2583/NASA-Space-App/releases/download/<tag>/firesense-runtime.zip`.
+- Packaging and uploading train nothing. This card must not change `Dockerfile`, `render.yaml` or the requirements.
 
 ## Steps
-1. **`scripts/release_data.py`** (Sheikh).
-   - `pack(processed="data/processed", out_dir="share")` refuses unless `data/processed/validation/qa.json` has every
-     check `pass`.
-   - It writes `firesense-data-<method_version>-<YYYYMMDD>.tar.gz` with exactly the runtime files listed above (the
-     same list as the Dockerfile).
-   - It also writes `manifest.json`: for each file its name, size and sha256, plus `method_version` (from
-     `harmonized.parquet`), `data_through` (max `sensor_days.date`), the git commit, and the tarball's sha256.
-   - With `--publish`, it prints the exact command and doesn't run it:
-     `gh release create data-<method_version>-<YYYYMMDD> <tar> manifest.json --title … --notes "Derived from NASA FIRMS (see docs/REFERENCES.md)"`.
-   - `scripts/tests/test_release_data.py`, using `ws2_platform/tests/tiny_data.make_tiny_processed`:
-     - the tarball contains exactly the file list;
-     - the manifest hashes match;
-     - a failing `qa.json` refuses to pack.
-2. **`ws2_platform/fetch_data.py`** (Sattyam). Standard library only.
-   - `fetch(url, sha256, dest="data/processed")` downloads to a temporary file, verifies the sha256, extracts with
-     `tarfile` (rejecting absolute paths and `..`), and checks that every manifest file exists.
-   - On a mismatch it raises `ValueError("checksum mismatch")`.
-   - `python -m ws2_platform.fetch_data URL SHA256`.
-   - Tests use a `file://` URL to a tarball made in `tmp_path`: it extracts; a wrong sha fails; a `../evil` member is
-     rejected.
-3. **Dockerfile.**
-   - Add `ARG DATA_URL` and `ARG DATA_SHA256`.
-   - Replace the `COPY data/processed/...` lines with
-     `RUN python -m ws2_platform.fetch_data "$DATA_URL" "$DATA_SHA256"`.
-   - Keep a commented "local build" alternative showing the old COPY lines.
-   - Keep `HEALTHCHECK` and `CMD`.
-4. **`/health`.** Wrap the body in try/except: on failure return
-   `JSONResponse(status_code=503, content={"status": "unavailable", "detail": "data not loaded"})`. Never return a
-   stack trace or a file path. Add a test with `tiny_api` that `/health` is 200 with `status == "ok"`.
-5. **Hybrid web mode** (Shammo).
-   - **New `src/mode.ts`:** `export type Mode = "api" | "snapshot"`. `resolveMode(env, probe: () => Promise<boolean>): Promise<Mode>`
-     works like this:
-     - `VITE_DEMO_MODE === "snapshot"` → `"snapshot"`;
-     - `VITE_DEMO_MODE === "hybrid"` → `"api"` if `await probe()` is true within 4 seconds, else `"snapshot"`;
-     - otherwise → `"api"`.
-     Cache the result for the session.
-   - The probe is `fetch(BASE + "/health")` with an AbortController and a 4-second timeout, and it requires
-     `status === "ok"`.
-   - `api.ts`: `call()` asks the cached mode; `snapshot` uses `snapshotCall`.
-   - `App.tsx` treats drawing and custom dates as allowed only in `api` mode (today it checks `STATIC_DEMO`). In
-     hybrid mode, when it falls back, it shows the banner `t("hosting.api_unavailable")`: "Live service unavailable:
-     showing the saved demo areas."
-   - **`mode.test.ts`:**
-     - snapshot env → snapshot;
-     - hybrid with a probe that resolves true → api;
-     - hybrid with a probe that rejects → snapshot;
-     - hybrid with a probe that never resolves → snapshot after the timeout (use fake timers:
-       `vi.useFakeTimers()`).
-6. **`docs/guides/deployment.md`.** Add a "Hosted API (Hugging Face Space)" section covering: cutting a data release
-   (`release_data.py`), building with `DATA_URL` and `DATA_SHA256`, the Space README header, rollback (point
-   `DATA_URL` at the previous release and restart), and `/health`.
-7. Run the checks, mark the card done, `split` (Sattyam, Sheikh, Shammo), push and open the PR.
+1. **`scripts/release_runtime.py`** (standard library only; `encoding="utf-8"` on every text read and write):
+   - `plan_release(manifest: dict, zip_path: Path, tag: str, data_through: str) -> dict` returns the new manifest:
+     `url` for the tag, `sha256` of the zip, `data_through`. It raises `ValueError` if the tag equals the tag in the
+     current URL, or if `data_through` isn't an ISO date.
+   - `default_tag(today: date, existing: set[str]) -> str` returns `runtime-YYYYMMDD-render-vN` with the lowest free `N`.
+   - `main(argv)`:
+     - `--data-through` (required) and `--tag` (default `default_tag`).
+     - `--zip` (default `share/firesense-runtime.zip`). If it is missing, run `runtime_bundle.py pack` with the
+       current interpreter. That only packages saved outputs; it trains nothing.
+     - Without `--publish`, a dry run: print the new manifest and the commands it would run.
+     - With `--publish`:
+       - check that `gh release view <tag>` fails, meaning the tag is unused; otherwise stop;
+       - `gh release create <tag> share/firesense-runtime.zip --title <tag> --notes "<data_through>; packaged from
+         validated outputs; no training"`;
+       - download the asset back to a scratch folder with `gh release download`, and compare its SHA256 with the
+         local zip;
+       - only then write `deployment/runtime.json` (2-space indent, trailing newline).
+     - Every `gh` call goes through one `run(cmd)` function, so tests can replace it.
+     - It never commits or pushes; it prints "Next: Sheikh commits deployment/runtime.json; Render rebuilds".
+2. **`scripts/tests/test_release_runtime.py`** (no network, no `gh`, no real data):
+   - `plan_release` gives the expected URL and checksum for a small zip made in `tmp_path`;
+   - it refuses the current tag and a bad date;
+   - `default_tag` skips existing versions;
+   - with `run` replaced by a fake that records commands, `--publish` creates the release and writes the manifest;
+   - when the fake reports that the tag exists, nothing is written;
+   - when the downloaded checksum differs, nothing is written.
+3. **`docs/guides/deployment.md`**, "Data delivery and updates": replace the manual steps with the dry run and the `--publish`
+   command, keep the rules (new tag every time, never replace an asset), and add rollback: put the previous URL and
+   SHA256 back in `deployment/runtime.json` and commit.
+4. Run the checks and mark the card done. Then hand over for commit: Sheikh commits himself, unless he asked for the
+   PR flow (`docs/plan/README.md` section 3).
 
 ## Acceptance
-- [ ] The release, fetch and mode tests pass in CI.
-- [ ] `docker build` isn't run here (no data in CI). It runs in T17.
-- [ ] The default Pages build (snapshot mode) behaves exactly as before.
+- [ ] The tests pass without network or data.
+- [ ] A dry run on the laptop packs the zip and prints a manifest; paste it into the hand-over (no upload in this
+  card).
+- [ ] `deployment/runtime.json` is unchanged by this card.
 
 ## Stop and ask if
-- The runtime files on the laptop total more than 200 MB. Check: `python -c "import os;print(sum(os.path.getsize(os.path.join(r,f)) for r,_,fs in os.walk('data/processed') for f in fs)/1e6)"`.
+- `runtime_bundle.py pack` refuses the current outputs.
+- `gh` is missing or isn't logged in as sheikh2583 when T40 or T28 first use `--publish`.

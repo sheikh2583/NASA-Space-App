@@ -12,7 +12,8 @@ branch: ws1/T24-burned-area-check
 touches: [ws5_frontend/src/components/Pages.tsx, ws5_frontend/src/i18n/en.json, ws5_frontend/src/i18n/bn.json,
           ws5_frontend/public/demo/snapshot.json, docs/science/method_en.md]
 creates: [ws6_validation/mcd64.py, ws6_validation/tests/test_mcd64.py]
-checks: [CHECK-PLAN, CHECK-PY, CHECK-QA, CHECK-FILES, CHECK-WEB, CHECK-SNAP]
+checks: [CHECK-PLAN, "python -m pytest -q ws6_validation/tests/test_mcd64.py", CHECK-FILES, CHECK-WEB, CHECK-SNAP]
+human_checks: [CHECK-QA]
 ---
 ## Goal
 Everything we validate today compares active-fire products with each other. A burned-area product (post-fire surface
@@ -53,7 +54,9 @@ change, a different algorithm) is **independent** evidence for both amount and t
    `t("burned.result", { rho, days })`. Show the values exactly as measured, even if the agreement is weak.
 5. **Method page** (`docs/science/method_en.md`). Add one bullet under "How we checked" (from T10) with the measured ρ and
    timing difference, using only supported Markdown.
-6. Republish. Run the checks, mark the card done, `split`, push and open the PR.
+6. Republish the legacy snapshot (`python scripts/export_hosted_demo.py`). QA is Sheikh's (`human_checks`). Render
+   serves the piece after the next runtime release (T40 or T28). Run the checks, mark the card done, and hand over
+   for commit.
 
 ## Acceptance
 - [ ] Tests pass. The piece validates. The result is on the Validation page and the Method page, with the measured

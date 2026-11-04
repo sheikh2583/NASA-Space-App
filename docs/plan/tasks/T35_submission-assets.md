@@ -31,7 +31,8 @@ screen recording of story mode.
      `"<chrome path>" --headless=new --print-to-pdf=share/submission/slides.pdf docs/submission/slides.html`.
 3. **`scripts/record_story.mjs`.** A Playwright script, run with `npx --yes playwright@1.48.2`. It doesn't go into
    `package.json`.
-   - Open the snapshot preview at `#s=1` (`npm run preview` in `ws5_frontend`) at 1280 × 720, and record video
+   - Open what judges will see: `$RENDER_URL/#s=1`. Load it once first, so the service is awake. Without
+     `RENDER_URL`, use the local live build (`python scripts/workflow.py dev`, port 5173). Record at 1280 × 720
      (`recordVideo`).
    - Press Next on the timings from `docs/submission/video_script.md` (about 30 seconds in total), then save to
      `share/submission/story.webm`.

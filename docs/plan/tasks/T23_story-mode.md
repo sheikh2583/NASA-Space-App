@@ -22,6 +22,9 @@ data, makes the case in 90 seconds and doubles as the video script.
 Step text lives in i18n (`story.s1`…`story.s7`, en and bn). **Every number is read from data at runtime** (season
 profile, blind-spot piece) and passed in by interpolation; no number is typed into the text.
 
+In the Area column, `pb` and `bd` mean the catalog areas Punjab and Dhaka (`ws5_frontend/public/demo/areas.json`).
+Look up their ids at runtime by name; don't hard-code them.
+
 | Step | Area | Highlight | Content |
 |---|---|---|---|
 | 1 | pb | calendar | The smoke season: the Oct-Nov band every year since 2000. |
@@ -30,7 +33,7 @@ profile, blind-spot piece) and passed in by interpolation; no number is typed in
 | 4 | pb | season card, timing | Later in the season: timing trend `days_per_decade` with its interval. |
 | 5 | pb | validation blind-spot block | Or out of view? The T20 verdict sentence, as it is. |
 | 6 | bd | season card | Bangladesh is different: dry-season peak (`typical.p50`) and its own trends. |
-| 7 | – | brief button and region picker | Use it: open the planner brief, or pick your region. |
+| 7 | – | brief button and area filters | Use it: open the planner brief, or pick your division or state. |
 
 When a trend verdict is `no_clear_shift`, the step says so instead. The story adapts to the data; it doesn't force
 the claim.
@@ -48,7 +51,7 @@ the claim.
      - a `no_clear_shift` verdict selects the fallback text.
 2. **`components/Story.tsx`.**
    - A side panel (a bottom sheet under 640 px) with step dots, Back, Next and Exit. Keyboard: ← → and Escape.
-   - Applying a step uses the same setters as `App.tsx` (`pickDemo`, `setView`). Highlight with a CSS outline on
+   - Applying a step uses the same setters as `App.tsx` (`pickArea` with an option from the area catalog, `setView`). Highlight with a CSS outline on
      elements carrying `data-story="<highlight>"`; add those attributes to the existing cards.
    - Respect `prefers-reduced-motion`.
 3. **Start.**

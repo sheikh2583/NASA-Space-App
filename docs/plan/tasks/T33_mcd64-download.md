@@ -11,7 +11,7 @@ requires: [secret:EARTHDATA_TOKEN]
 branch: ws1/T33-mcd64-download
 touches: [data/MANIFEST.md]
 creates: [tools/get_mcd64a1.py, scripts/tests/test_get_mcd64a1.py]
-checks: [CHECK-PLAN, CHECK-PY]
+checks: [CHECK-PLAN, "python -m pytest -q scripts/tests/test_get_mcd64a1.py"]
 ---
 ## Goal
 Get the independent burned-area product, so T24 can check our season totals and timing against it.

@@ -13,7 +13,8 @@ touches: [ws2_platform/sensors.py, ws2_platform/tests/test_platform.py, common/s
           ws1_harmonize/run.py, ws1_harmonize/tests/test_harmonize.py, contracts/parquet_schemas.json,
           docs/project/contract-changes.md]
 creates: [ws2_platform/tests/test_sensors_outages.py]
-checks: [CHECK-PLAN, CHECK-PY, CHECK-SMOKE]
+checks: [CHECK-PLAN, "python -m pytest -q ws2_platform/tests/test_sensors_outages.py ws2_platform/tests/test_platform.py common/tests/test_common.py ws2_platform/tests/test_coverage.py"]
+human_checks: ["python -m pytest -q ws1_harmonize/tests/test_harmonize.py", CHECK-SMOKE]
 ---
 ## Goal
 Take verified outage days out of the record and the training ratios, and fill them from NOAA-20 where it exists. This
@@ -81,10 +82,11 @@ is the most important validity fix (`docs/specs/I8_COVERAGE.md`, sections 4-5, a
 
 ## Acceptance
 - [ ] All new tests pass in CI, without data, and the existing sensor-days test is unchanged.
-- [ ] Running `python -m ws2_platform.sensors` on the laptop writes `coverage_days.parquet` and prints how many
-  (date, sat) rows became non-operating. Paste that into the PR; it should match the chosen threshold's count in
-  `docs/specs/I8_AUDIT_RESULTS.md`.
-- [ ] No full training run in this card.
+- [ ] No pipeline stage and no training run in this card. `python -m ws2_platform.sensors` is the pipeline's
+  `sensors` stage, so it runs inside Sheikh's training run (H02), which writes `coverage_days.parquet`. T40 compares its
+  non-operating count with `docs/specs/I8_AUDIT_RESULTS.md`.
+- [ ] `ws1_harmonize/tests/test_harmonize.py` fits models, so it is listed under `human_checks`. Sheikh runs it with
+  H02.
 
 ## Stop and ask if
-- The non-operating count differs from the audit's count by more than 5%.
+- The new unit tests can't show the non-operating count without running the pipeline. Then leave that to T40.

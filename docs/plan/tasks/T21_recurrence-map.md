@@ -14,7 +14,8 @@ touches: [ws2_platform/api/app.py, contracts/openapi.yaml, docs/project/contract
           ws5_frontend/src/snapshot.ts, ws5_frontend/src/i18n/en.json, ws5_frontend/src/i18n/bn.json]
 creates: [ws2_platform/recurrence.py, ws2_platform/tests/test_recurrence.py, ws5_frontend/public/demo/recurrence_bd.json,
           ws5_frontend/public/demo/recurrence_pb.json]
-checks: [CHECK-PLAN, CHECK-PY, CHECK-WEB, CHECK-SNAP]
+checks: [CHECK-PLAN, "python -m pytest -q ws2_platform/tests/test_recurrence.py ws2_platform/tests/test_tiny_api.py", CHECK-WEB, CHECK-SNAP]
+human_checks: [CHECK-PY]
 ---
 ## Goal
 Planners need *where* burning returns every year, not only when. Turn the observed seasons into a map of the share of

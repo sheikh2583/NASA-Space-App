@@ -13,7 +13,8 @@ touches: [ws2_platform/api/app.py, ws2_platform/tests/test_api_season.py, contra
           ws5_frontend/src/types.ts, ws5_frontend/src/components/Calendar.tsx, ws5_frontend/src/components/SeasonCard.tsx,
           ws5_frontend/src/i18n/en.json, ws5_frontend/src/i18n/bn.json, ws5_frontend/public/demo/snapshot.json]
 creates: []
-checks: [CHECK-PLAN, CHECK-PY, CHECK-WEB, CHECK-SNAP, CHECK-FILES]
+checks: [CHECK-PLAN, "python -m pytest -q ws2_platform/tests/test_api_season.py ws2_platform/tests/test_tiny_api.py ws3_anomaly/tests/test_season_flags.py", CHECK-WEB, CHECK-SNAP, CHECK-FILES]
+human_checks: [CHECK-PY]
 ---
 ## Goal
 Show the approved season-level flags (decision in T14) where people look: on the calendar's year labels and in the season card.

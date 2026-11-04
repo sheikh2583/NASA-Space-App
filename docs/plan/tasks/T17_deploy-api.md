@@ -1,65 +1,54 @@
 ---
 id: T17
-title: "Hosted API, part 2: publish the data release, deploy the Space, switch Pages to hybrid"
+title: "Render deploy check: a script that verifies the live service, run once and recorded"
 kind: agent
 owner: Sheikh
-authors: [Sheikh, Sattyam]
-phase: P2
-size: M
+authors: [Sheikh]
+phase: P1
+size: S
 needs: [H01]
-requires: [real-data, hf-token]
-branch: ws1/T17-deploy-api
-touches: [.github/workflows/pages.yml, docs/guides/deployment.md]
-creates: [ws2_platform/space/README.md, ws2_platform/space/Dockerfile]
-checks: [CHECK-PLAN, CHECK-SNAP]
+requires: [env:RENDER_URL, network]
+branch: ws1/T17-render-check
+touches: [docs/guides/deployment.md]
+creates: [scripts/check_render.py, scripts/tests/test_check_render.py]
+checks: [CHECK-PLAN, "python -m pytest -q scripts/tests/test_check_render.py"]
 ---
 ## Goal
-Put the API online with the reviewed data, and make the public site use it when it's up and the snapshot when it
-isn't.
+`docs/guides/deployment.md` says not to claim the service is live without checking the assigned URL. Turn its five-point
+"Verify the deployed service" list into a script the agent can run after every deploy (T19, T28, T40, H05), and record
+the first measured result.
+
+## Context
+- Routes (`ws2_platform/api/app.py`): `GET /health` returns `status`, `method_version`, `data_through` and `cells`;
+  `GET /version.json` returns the deployed `commit` and `mode`; POST routes are under `/aoi/*`; the UI is served at `/`
+  (`ws2_platform/api/frontend.py`).
+- `deployment/runtime.json` holds `data_through`, the date the deployed data should report.
+- `contracts/fixtures/bangladesh_request.json` is a valid small request body.
+- Free Render services sleep after 15 minutes; the first request can take about a minute.
 
 ## Steps
-1. `python scripts/release_data.py`. Paste the printed `gh release create …` command into the PR, then run it (the
-   GitHub CLI must be logged in as sheikh2583). Write down the asset URL and the tarball sha256 from `manifest.json`.
-2. Create `ws2_platform/space/README.md` with front matter:
-   ```
-   ---
-   title: FireSense API
-   sdk: docker
-   app_port: 7860
-   ---
-   ```
-   Add one paragraph pointing to the GitHub repository.
-3. Create `ws2_platform/space/Dockerfile`:
-   - `FROM python:3.11-slim`.
-   - `RUN apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*`. The
-     slim image has no git.
-   - `RUN git clone --depth 1 --branch main https://github.com/sheikh2583/NASA-Space-App /app`, then
-     `WORKDIR /app`.
-   - `RUN pip install --no-cache-dir -r requirements.lock.txt`.
-   - `RUN python -m ws2_platform.fetch_data <asset URL> <sha256>`, using the values from step 1.
-   - `ENV DATA_DIR=/app/data/processed PORT=7860`, and the `EXPOSE`, `HEALTHCHECK` and `CMD` lines from
-     `ws2_platform/Dockerfile`.
-4. If `huggingface-cli` is missing, run `python -m pip install huggingface_hub` into the virtual environment. It's a
-   deployment tool for this card only; don't add it to `requirements*.txt`. Then upload to the Space:
-   `huggingface-cli upload <account>/firesense-api ws2_platform/space . --repo-type space`. The token comes from `HF_TOKEN`;
-   never print it.
-5. Wait for the build, which takes a few minutes. Then `curl https://<account>-firesense-api.hf.space/health` must
-   return `status: ok`, plus the `method_version` and `data_through` of the release. Paste the response into the PR.
-6. **Measure.** Post the Punjab demo request to `/aoi/summary` five times; record the median time (the first call
-   may be slow).
-7. **Pages.** In `.github/workflows/pages.yml`, set the build env to `VITE_DEMO_MODE: hybrid` and
-   `VITE_API_BASE_URL: https://<account>-firesense-api.hf.space`. The URL is public, not a secret.
-8. Update `docs/guides/deployment.md` with the real Space id, the release tag and the rollback steps.
-9. Run the checks, mark the card done, `split`, push and open the PR. After merge, check on the live site:
-   - drawing a box in Punjab returns a calendar;
-   - pausing the Space in its settings shows the "Live service unavailable" banner and the snapshot.
+1. **`scripts/check_render.py`** (standard library only: `urllib.request`, `json`; `encoding="utf-8"` everywhere):
+   - URL from `--url`, else `RENDER_URL` from the environment or `.env`.
+   - `--commit` defaults to `git rev-parse HEAD`.
+   - First request: retry up to 6 times, 15 s apart, to let the service wake.
+   - Checks, each printed as `PASS`/`FAIL` with the measured value:
+     - `/health`: `status == "ok"`, `cells > 0`, `data_through` equals `deployment/runtime.json`;
+     - `/version.json`: `commit` equals `--commit`, and `mode == "live-api"`;
+     - `/`: HTML containing `<div id="root">`;
+     - `POST /aoi/summary` with `contracts/fixtures/bangladesh_request.json`: status 200 and a non-empty series, with
+       the elapsed seconds;
+     - `/docs`: status 200.
+   - Exit code 0 only if all checks pass. It prints nothing from `.env` except `RENDER_URL`.
+2. **`scripts/tests/test_check_render.py`**: replace the HTTP function with a fake. Cover all-pass, a wrong commit, a
+   `data_through` mismatch, and a service that wakes on the third try. No network.
+3. Run `python scripts/check_render.py --commit "$(git rev-parse origin/main)"`. Paste the output into
+   `docs/guides/deployment.md` as "Verification, <date> (measured, scripts/check_render.py)". If `version.json` lags because
+   Render is still building, wait 5 minutes and run it once more.
+4. Run the checks, mark the card done, and hand over for commit.
 
 ## Acceptance
-- [ ] `/health` on the Space reports the release's method version (response pasted in the PR).
-- [ ] The median summary time is recorded as measured.
-- [ ] After merge, both paths (API up and API down) are checked on the live site; screenshots in the PR or a comment.
+- [ ] The tests pass without network.
+- [ ] One real run against the Render URL is recorded, all PASS, or each FAIL explained.
 
 ## Stop and ask if
-- The Space build fails twice.
-- `/health` returns 503.
-- The median summary time is over 5 seconds.
+- `/health` never answers after the retries. Sheikh checks the Render logs; the agent can't read them.

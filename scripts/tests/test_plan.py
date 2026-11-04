@@ -26,7 +26,7 @@ requires: [{requires}]
 branch: ws1/{id}-x
 touches: [{touches}]
 creates: [{creates}]
-checks: [CHECK-PY]
+checks: [CHECK-PLAN]
 ---
 ## Goal
 g

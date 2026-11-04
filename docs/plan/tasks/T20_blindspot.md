@@ -12,7 +12,8 @@ branch: ws1/T20-blindspot
 touches: [ws5_frontend/src/components/Pages.tsx, ws5_frontend/src/i18n/en.json, ws5_frontend/src/i18n/bn.json,
           ws5_frontend/public/demo/snapshot.json]
 creates: [ws3_anomaly/blindspot.py, ws3_anomaly/tests/test_blindspot.py]
-checks: [CHECK-PLAN, CHECK-PY, CHECK-QA, CHECK-FILES, CHECK-WEB, CHECK-SNAP]
+checks: [CHECK-PLAN, "python -m pytest -q ws3_anomaly/tests/test_blindspot.py", CHECK-FILES, CHECK-WEB, CHECK-SNAP]
+human_checks: [CHECK-QA]
 ---
 ## Goal
 - Punjab's paddy-season detections are falling 58% per decade, measured on the snapshot.
@@ -67,9 +68,11 @@ honestly what the data shows. This is our most original scientific point.
 6. **UI.** In `Pages.tsx` `ValidationPage`, add a block "Fires out of view?". Use a small Recharts line chart of R1
    and R2 by year for Punjab paddy (lazy-loaded like `SeriesChart`), plus the verdict sentence
    `t("blindspot.verdict_" + verdict)` and the limitations. Add the i18n keys in en and bn.
-7. Run `python -m ws3_anomaly.blindspot`, then `python -m ws6_validation.qa` and
-   `python scripts/export_hosted_demo.py`. Run the checks, mark the card done, `split`, push and open the PR. Paste
-   the verdicts and the overpass-hour table into the PR.
+7. Run `python -m ws3_anomaly.blindspot`. It is a standalone analysis that only reads saved detections, writes one
+   new piece and fits nothing. Then run `python scripts/export_hosted_demo.py`. QA (`workflow.py validate`) is
+   Sheikh's; it is listed under `human_checks`. Run the checks, mark the card done, and hand over for commit. Paste
+   the verdicts and the overpass-hour table into the hand-over. Render serves the new piece after the next runtime
+   release (T40 or T28).
 
 ## Acceptance
 - [ ] The three synthetic tests pass.

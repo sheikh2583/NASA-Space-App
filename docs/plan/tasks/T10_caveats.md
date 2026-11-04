@@ -42,9 +42,12 @@ honest limits read as strength.
    - This is not an alert service; for emergencies use national services and FIRMS directly.
 2. Append `## How we checked`. Write one list item per truth check from `ws6_validation/truth_checks.md` (T31), in
    the form "check: FIRMS value, our value, verdict". Then add one item each for:
-   - held-out agreement: "Lin's CCC 0.9417 for the chosen method on six held-out tests (4 Nov 2026 run)";
-   - band coverage: "91.6% weekly, 93.7% monthly for nominal 90% bands".
-   Copy the numbers exactly from `docs/results/training-results.md`; if T40 has added a newer section, use that one.
+   - held-out agreement: the selected method and its selection CCC, against the learned candidate, across the
+     holdouts named in `docs/results/training-results.md`;
+   - band coverage: the weekly and monthly coverage of the nominal 90% bands (in `docs/results/cuda-results.md` today).
+
+   Copy the numbers exactly, naming the file and its run. If T40 has added a newer section, use that one. Never type
+   a number from this card or from memory.
 3. Translate both sections into Bangla at the end of `docs/science/method_bn.md`, in the same structure. Add a first line
    inside the section, in Bangla: "**Translation drafted with AI assistance.**" Keep it there unless a fluent
    reviewer checks the text.

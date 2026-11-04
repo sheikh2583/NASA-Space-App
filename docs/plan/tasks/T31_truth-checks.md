@@ -11,7 +11,7 @@ requires: [real-data, secret:FIRMS_MAP_KEY]
 branch: ws1/T31-truth-checks
 touches: []
 creates: [ws6_validation/truth_checks.py, ws6_validation/tests/test_truth_checks.py, ws6_validation/truth_checks.md]
-checks: [CHECK-PLAN, CHECK-PY]
+checks: [CHECK-PLAN, "python -m pytest -q ws6_validation/tests/test_truth_checks.py"]
 ---
 ## Goal
 Our headline numbers must survive a judge opening FIRMS. Compare three surprising numbers with what the FIRMS API

@@ -14,7 +14,8 @@ touches: [ws4_outlook/outlook.py, ws4_outlook/tests/test_outlook.py, contracts/o
           ws5_frontend/src/components/Panels.tsx, ws5_frontend/src/styles.css, ws5_frontend/src/i18n/en.json,
           ws5_frontend/src/i18n/bn.json, ws5_frontend/public/demo/snapshot.json]
 creates: [ws5_frontend/src/components/Panels.test.tsx]
-checks: [CHECK-PLAN, CHECK-PY, CHECK-WEB, CHECK-SNAP, CHECK-FILES]
+checks: [CHECK-PLAN, "python -m pytest -q ws4_outlook/tests/test_outlook.py ws2_platform/tests/test_tiny_api.py", CHECK-WEB, CHECK-SNAP, CHECK-FILES]
+human_checks: [CHECK-PY]
 ---
 ## Goal
 Two wrong status cards are live today (measured on 4 Nov from the snapshot):

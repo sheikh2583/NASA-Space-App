@@ -11,7 +11,7 @@ requires: []
 branch: ws1/T01-licence-references
 touches: [README.md, docs/project/submission-checklist.md]
 creates: [LICENSE, docs/REFERENCES.md, docs/AI_USE.md]
-checks: [CHECK-PLAN, CHECK-PY]
+checks: [CHECK-PLAN]
 ---
 ## Goal
 Give the repository a licence and two documents the submission needs: every external resource with a link, and an

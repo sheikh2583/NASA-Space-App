@@ -27,11 +27,12 @@ see the whole page.
   If a tool can't run on this machine, write "not run: <reason>" in the report, and continue.
 
 ## Steps
-1. Build the snapshot (CHECK-SNAP), then start the preview server in the background.
+1. Review what judges will open: the Render URL from `RENDER_URL`, after T17 passes. Otherwise start the local live
+   build in the background with `python scripts/workflow.py dev`; it serves the API and UI and trains nothing.
 2. **Screenshots** into `ws6_validation/screens/`, PNGs under 300 KB each, at widths 360, 390, 1366 and 1920 px, of:
-   - both demo areas;
+   - Dhaka (the default) and Punjab;
    - the season card;
-   - the region picker;
+   - the area filters (country, name search, Apply);
    - the brief (`#v=brief`);
    - story mode step 1 (`#s=1`);
    - English and Bangla (`#l=bn`).

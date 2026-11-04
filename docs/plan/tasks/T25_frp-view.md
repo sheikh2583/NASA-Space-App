@@ -14,7 +14,8 @@ touches: [ws2_platform/api/app.py, contracts/openapi.yaml, docs/project/contract
           ws5_frontend/src/components/AnalysisControls.tsx, ws5_frontend/src/components/SeriesChart.tsx,
           ws5_frontend/src/i18n/en.json, ws5_frontend/src/i18n/bn.json]
 creates: [ws2_platform/tests/test_api_frp.py, ws5_frontend/public/demo/frp_bd.json, ws5_frontend/public/demo/frp_pb.json]
-checks: [CHECK-PLAN, CHECK-PY, CHECK-WEB, CHECK-SNAP]
+checks: [CHECK-PLAN, "python -m pytest -q ws2_platform/tests/test_api_frp.py ws2_platform/tests/test_tiny_api.py", CHECK-WEB, CHECK-SNAP]
+human_checks: [CHECK-PY]
 ---
 ## Goal
 Show fire radiative power (FRP) as a second view without overclaiming. It has no uncertainty band, is labelled

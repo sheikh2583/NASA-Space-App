@@ -12,7 +12,8 @@ branch: ws1/T13-interval-report
 touches: [ws4_outlook/conformal.py, ws4_outlook/run.py, ws5_frontend/src/components/Pages.tsx,
           ws5_frontend/src/i18n/en.json, ws5_frontend/src/i18n/bn.json, ws5_frontend/public/demo/snapshot.json]
 creates: [ws4_outlook/interval_report.py, ws4_outlook/tests/test_interval_report.py]
-checks: [CHECK-PLAN, CHECK-PY, CHECK-QA, CHECK-FILES, CHECK-WEB, CHECK-SNAP]
+checks: [CHECK-PLAN, "python -m pytest -q ws4_outlook/tests/test_interval_report.py", CHECK-FILES, CHECK-WEB, CHECK-SNAP]
+human_checks: [CHECK-QA]
 ---
 ## Goal
 Overall band coverage is 91.6% weekly and 93.7% monthly for nominal 90%. A statistics-minded judge will ask where
@@ -57,12 +58,16 @@ card changes no band.
    `contracts/parquet_schemas.json` `predictions_oof` plus `cells`. When truth is drawn from the band's own
    distribution, overall coverage is 0.85-0.95 at n ≥ 2000; the interval score is finite; every requested stratum
    appears.
-5. On the laptop, run `python -m ws4_outlook.run interval_report` and then `python -m ws6_validation.qa`.
+5. **Sheikh runs (human-only; `ws4_outlook.run` is a pipeline stage module):**
+   `python -m ws4_outlook.run interval_report`, then `python scripts/workflow.py validate`. Either do it at his next
+   training run (H02 or H03), or ask him now. Don't run them yourself. Until the piece exists, the UI shows nothing
+   for it.
 6. **UI** (`Pages.tsx` `ValidationPage`). Add a table "Where the bands hold" from `pieces.intervals_by_stratum`,
    with columns stratum, n, coverage and interval score. Rows with coverage under 0.85 get the class `warn`. Add
    i18n keys `validation.by_stratum` and `validation.by_stratum_note`.
-7. Republish with `python scripts/export_hosted_demo.py`, run the checks, mark the card done, `split`, push and open
-   the PR. Paste the five weakest strata into the PR.
+7. Once the piece exists, republish the legacy snapshot with `python scripts/export_hosted_demo.py`. Run the checks,
+   mark the card done, and hand over for commit. Paste the five weakest strata into the hand-over, or "pending
+   Sheikh's run".
 
 ## Acceptance
 - [ ] `build_table` output is unchanged: `interval_table.json` hash before = after, pasted into the PR.

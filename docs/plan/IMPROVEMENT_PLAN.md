@@ -5,17 +5,21 @@
 This plan replaces the 3 Nov plan and its `scaffold-patches.zip`. That plan was written before the real-data run, and
 its scaffold was not applied. It was revised from `docs/agents/claude-review.md`.
 
-Current facts are in `docs/agents/claude-handoff.md` and `docs/results/training-results.md`:
-- **Data and training:** real data through 2 Nov 2026. The full training run selected B1 (held-out CCC 0.9417 against
-  0.9351 for LightGBM).
-- **Interval coverage:** 91.6% weekly and 93.7% monthly for nominal 90% bands.
-- **Hosting:** live static snapshot on GitHub Pages; FastAPI runs locally only.
+Current facts are in `docs/agents/claude-handoff.md`, `docs/results/training-results.md`,
+`docs/results/cuda-results.md` and `docs/guides/deployment.md` (copied from them on 4 Nov 2026):
+- **Data and training:** real data through 2 Nov 2026. In the CUDA run, B1 is selected, with selection CCC 0.8855
+  against 0.8696 for XGBoost CUDA, across Terra+Aqua and Terra-only holdouts (`training-results.md`). Training is
+  human-only (`AGENTS.md`).
+- **Interval coverage:** 91.6% weekly and 93.7% monthly for nominal 90% bands (`cuda-results.md`).
+- **Hosting:** one Render Docker service serves the UI and the live FastAPI from one origin, with pinned runtime data.
+  GitHub Pages is a legacy, manual-only snapshot.
 
 Rules for every item:
 - **Before any change to scientific outputs:** write a spec with contracts and acceptance criteria, and get Sheikh's
-  sign-off. Then re-run full training and report the measured results separately from estimates.
-- **Snapshot site:** every user-facing feature works in the static snapshot or shows an explicit "needs the live
-  API" state. The static host cannot serve new endpoints.
+  sign-off. Then Sheikh re-runs the full training (agents never train) and the results are reported, measured apart
+  from estimated.
+- **Hosting:** every user-facing feature works on Render (live API). In the legacy static snapshot it works too, or
+  shows an explicit "needs the live API" state.
 - **Expected-failure tests:** these record unfinished work and are reported apart from passing features. Tests use
   real fixtures, never `None` stores.
 
@@ -26,10 +30,10 @@ Rules for every item:
 | **Next** | **I8 verified coverage and outages** | Registry and read-only audit done; spec written | Sheikh runs the audit locally; a person checks the transcribed entries ([spec](../specs/I8_COVERAGE.md)) |
 | Next | I4 plain-language help, I15 caveats | Not started | Wording only; en and bn; no scientific change |
 | Next | I1 season profile | Not started | Spec first (below) |
-| Small UI | I3 region picker (ADM1) | Two demo buttons exist | Label as division (BD) / state or territory (IN); select exact IDs, not a bounding box |
+| Done | I3 region picker (ADM1) | Done on `main`: named-area explorer from geoBoundaries (`areas.json`, `AreaFilters`) | None (card T11 retired) |
 | Small UI | I7 Compare collapse | Forecast alerts already withheld without skill | Only fold Compare; keep the season-to-date context |
-| Infrastructure first | I2 near-real-time refresh | Not started | Design artifact storage, reconciliation and rollback before code |
-| Infrastructure first | Full FastAPI hosting | Not started | Versioned artifacts, health check that loads data, memory sizing |
+| Infrastructure first | I2 near-real-time refresh | Not started | Server-side, cached, key only in Render's environment (T18, T19) |
+| Done | Full FastAPI hosting | Done on `main` (Render, versioned runtime release, `/health`) | One-command data releases (T16) and a deploy check (T17) |
 | Validation first | I5 FRP, I10 recurrence, I12 GeoJSON, I13 intervals, I14 season flags | Not started | Contract and validation design per item (below) |
 | Reassess | I6 day-view speed, I11 config regions | Not started | Benchmark on current data; list the real steps for a third region |
 | Defer | I16 global, I17 geostationary, I18 experiments, I19 offline | Not started | After the event |

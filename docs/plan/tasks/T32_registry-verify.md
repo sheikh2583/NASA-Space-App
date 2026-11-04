@@ -11,7 +11,7 @@ requires: [network]
 branch: ws1/T32-registry-verify
 touches: [common/outages.yaml]
 creates: [tools/modaps_outages.py, scripts/tests/test_modaps_outages.py]
-checks: [CHECK-PLAN, CHECK-PY]
+checks: [CHECK-PLAN, "python -m pytest -q scripts/tests/test_modaps_outages.py ws2_platform/tests/test_coverage.py"]
 ---
 ## Goal
 Every outage that will change our numbers must match NASA's own table. 24 entries were copied from a page summary

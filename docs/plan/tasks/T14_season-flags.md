@@ -11,7 +11,7 @@ requires: []
 branch: ws1/T14-season-flags
 touches: [docs/specs/I1_SEASON_PROFILE.md, docs/project/contract-changes.md]
 creates: [ws3_anomaly/season_flags.py, ws3_anomaly/tests/test_season_flags.py]
-checks: [CHECK-PLAN, CHECK-PY]
+checks: [CHECK-PLAN, "python -m pytest -q ws3_anomaly/tests/test_season_flags.py ws4_outlook/tests/test_season_profile.py"]
 ---
 ## Goal
 Weekly flags catch spikes, but a whole season that runs high or low is flagged only at its edges. Build a season-level
