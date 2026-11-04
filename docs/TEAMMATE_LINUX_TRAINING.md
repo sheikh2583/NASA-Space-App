@@ -13,11 +13,14 @@ A step-by-step guide for a teammate who trains the model on their own Linux lapt
 
 ## Part A: Sheikh (Windows PC), before handing off
 
-Build the input ZIP. This only packs files. It does not train anything.
+Build the input ZIP in PowerShell. This only packs files. It does not train anything. It takes a few minutes and ends with `INPUT ZIP: ...`.
 
 ```powershell
-.venv\Scripts\python scripts\teammate.py pack-inputs
+cd "X:\Nasa Space Apps Challenge\nasa-modis-viirs"
+.\.venv\Scripts\python.exe scripts\teammate.py pack-inputs
 ```
+
+The first line must point at the repo folder (the one that contains `.venv` and `scripts`). Otherwise PowerShell says `The module '.venv' could not be loaded`.
 
 Send your teammate these **2 files** (Google Drive, USB, etc.), plus a link to this guide:
 
