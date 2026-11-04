@@ -1,7 +1,9 @@
 """Current status (core, never cut) and season outlook (prompts P4.7, P4.8; decision 14).
 
 current_status(weekly, as_of): percentile of the latest complete week against the same week in earlier
-years; watch at the 80th percentile, high at the 90th; data_through = last day with data.
+years; high when the lower bound reaches the 90th percentile, watch at the 80th, low at the 25th, very_low when the
+upper bound is at or below the 10th; a difference under 10 detections from typical is never unusual (none);
+data_through = last day with data.
 outlook(weekly, as_of): current_status + season-to-date percentile and the expected range of cumulative
 activity at this point of the season (from earlier seasons). Uses only data up to as_of.
 forecast skill (evaluate_forecast): 2-4 week ahead quantile LightGBM, leave-one-season-out, skill against
@@ -16,7 +18,9 @@ from common.climatology import cumulative_by_season, percentile_of, season_of, w
 from common import compute
 
 WATCH, HIGH = 80.0, 90.0
-LEVEL_WORDS = {"none": "within the normal range", "watch": "higher than usual", "high": "much higher than usual"}
+LOW, VERY_LOW, MIN_CHANGE = 25.0, 10.0, 10.0
+LEVEL_WORDS = {"none": "within the usual range", "watch": "higher than usual", "high": "much higher than usual",
+               "low": "lower than usual", "very_low": "much lower than usual"}
 
 
 def _prep(weekly: pd.DataFrame, as_of) -> pd.DataFrame:
@@ -35,11 +39,32 @@ def current_status(weekly: pd.DataFrame, as_of, data_through=None, data_source="
     wk = week_of_year([last["week_start"]]).iloc[0]
     same = w[(week_of_year(w["week_start"]).values == wk) & (w["week_start"] < last["week_start"])]["value"]
     pct = percentile_of(float(last["value"]), same.values)
-    lo_pct = percentile_of(float(last.get("lo", last["value"]) if not pd.isna(last.get("lo", np.nan)) else last["value"]), same.values)
-    level = "high" if lo_pct >= HIGH else ("watch" if pct >= WATCH else "none")
+    value = float(last["value"])
+    lo = last.get("lo", np.nan)
+    hi = last.get("hi", np.nan)
+    lo_pct = percentile_of(value if pd.isna(lo) else float(lo), same.values)
+    hi_pct = percentile_of(value if pd.isna(hi) else float(hi), same.values)
+    typical = float(np.nanmedian(same.values)) if same.notna().any() else 0.0
+    small = abs(value - typical) < MIN_CHANGE
+    if small:
+        level = "none"
+    elif lo_pct >= HIGH:
+        level = "high"
+    elif pct >= WATCH:
+        level = "watch"
+    elif hi_pct <= VERY_LOW:
+        level = "very_low"
+    elif pct <= LOW:
+        level = "low"
+    else:
+        level = "none"
     week_txt = last["week_start"].strftime("%d %b %Y")
-    msg = (f"Burning in the week of {week_txt} was {LEVEL_WORDS[level]} for this time of year "
-           f"(higher than {pct:.0f}% of the same week in past years).")
+    n = int(same.notna().sum())
+    if small and typical < MIN_CHANGE:
+        msg = f"Little or no burning in the week of {week_txt}, as usual for this time of year."
+    else:
+        msg = (f"Burning in the week of {week_txt} was {LEVEL_WORDS[level]} for this time of year "
+               f"(percentile {pct:.0f} of the same week in {n} past years).")
     through = data_through or (last["week_start"] + pd.Timedelta(days=6)).date().isoformat()
     return {"week_percentile": round(float(pct), 1), "level": level, "data_through": str(through),
             "data_source": data_source, "message": msg}
