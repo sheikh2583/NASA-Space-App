@@ -6,6 +6,8 @@ FireSense combines NASA FIRMS MODIS and VIIRS observations into a consistent fir
 
 **Operator guide — updated 4 November 2026.** Start from the repository root and run each command only after the previous one succeeds. Setup, data acquisition, training, and publication are separate steps.
 
+**Coding agents: strict no training.** Read [AGENTS.md](AGENTS.md) before working here. Training, model-fit probes, readiness checks, default/training-only setup, and tests that fit models are **human-only**. Agents may edit code, run reviewed checks without fitting, and deploy existing validated outputs. The operator commands below do not grant agents permission to train.
+
 [Initialize](#initialize-a-fresh-checkout) · [CUDA setup](#cuda-training-dependencies) · [Data and keys](#prepare-real-training-data) · [Train](#train-and-validate) · [Debug](#debug-and-test) · [Deploy](#deploy-the-demo) · [Project structure](#project-structure-and-contribution)
 
 ## Choose your starting point

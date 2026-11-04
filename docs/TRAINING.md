@@ -1,5 +1,7 @@
 # CUDA training guide
 
+**Human-operated guide. Coding agents must not execute training or fitting checks.** [AGENTS.md](../AGENTS.md) prohibits model fits, including CUDA probes, readiness checks, default/training-only setup, and tests that fit learners. Agents may prepare commands and inspect existing outputs; a human runs the fitting workflows below.
+
 Current workflow: 4 November 2026. Start in the repository root. Training requires NVIDIA Windows/Linux, Python 3.11, the real inputs below, and a passing CUDA probe. The complete project setup also requires Node.js 22.12+; training-only setup does not. Setup installs dependencies only; training is always separate. For UI/API development without a GPU, use `-UiOnly` / `--ui-only` and the mock launch in [README](../README.md).
 
 ## Start here: run on your training machine

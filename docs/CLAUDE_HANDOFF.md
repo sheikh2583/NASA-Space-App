@@ -1,5 +1,7 @@
 # Claude handoff
 
+**Policy update: strict no training by coding agents.** Read [AGENTS.md](../AGENTS.md) first. All training, fitting tests, CUDA probes, readiness checks, and setup modes that fit models are human-only. Historical run evidence below is not authorization to repeat it. Agents may implement code and deploy/query existing validated artifacts; report fitting-dependent validation as not run.
+
 Updated 4 November 2026, Asia/Dhaka. The current [README](../README.md), [training guide](TRAINING.md), and source supersede older CPU-era setup/training and prototype backlog instructions. The local `codex/` directory is an unchanged historical proposal folder, not a patch queue to apply automatically.
 
 ## Repository and entry points
