@@ -1,0 +1,1009 @@
+{
+  "schema_version": "0.1.0-draft",
+  "area": "pb",
+  "as_of": "2026-11-03",
+  "data_through": "2026-11-01",
+  "units": "SNPP-equivalent detections per season",
+  "definition": "Central activity window: from the day 10% to the day 90% of a season's satellite fire detections had accumulated. A detection statistic, not the physical start or end of burning.",
+  "seasons": [
+    {
+      "name": "wheat_residue",
+      "window": {
+        "start_md": "04-01",
+        "end_md": "06-30"
+      },
+      "typical": {
+        "n_seasons": 26,
+        "season_years": [
+          2001,
+          2002,
+          2003,
+          2004,
+          2005,
+          2006,
+          2007,
+          2008,
+          2009,
+          2010,
+          2011,
+          2012,
+          2013,
+          2014,
+          2015,
+          2016,
+          2017,
+          2018,
+          2019,
+          2020,
+          2021,
+          2022,
+          2023,
+          2024,
+          2025,
+          2026
+        ],
+        "p10": {
+          "median_md": "05-01",
+          "q25_md": "04-27",
+          "q75_md": "05-04",
+          "median_offset_days": 30.5
+        },
+        "p50": {
+          "median_md": "05-09",
+          "q25_md": "05-05",
+          "q75_md": "05-12",
+          "median_offset_days": 38.1
+        },
+        "p90": {
+          "median_md": "05-18",
+          "q25_md": "05-14",
+          "q75_md": "05-20",
+          "median_offset_days": 47.7
+        },
+        "peak": {
+          "median_md": "05-09",
+          "q25_md": "05-06",
+          "q75_md": "05-12",
+          "median_offset_days": 38.0
+        },
+        "total": {
+          "median": 9111.2,
+          "q25": 8152.3,
+          "q75": 10722.5
+        }
+      },
+      "typical_observed_era": {
+        "n_seasons": 15,
+        "season_years": [
+          2012,
+          2013,
+          2014,
+          2015,
+          2016,
+          2017,
+          2018,
+          2019,
+          2020,
+          2021,
+          2022,
+          2023,
+          2024,
+          2025,
+          2026
+        ],
+        "p10": {
+          "median_md": "05-02",
+          "q25_md": "04-30",
+          "q75_md": "05-06",
+          "median_offset_days": 31.9
+        },
+        "p50": {
+          "median_md": "05-10",
+          "q25_md": "05-08",
+          "q75_md": "05-15",
+          "median_offset_days": 39.4
+        },
+        "p90": {
+          "median_md": "05-20",
+          "q25_md": "05-19",
+          "q75_md": "05-24",
+          "median_offset_days": 49.3
+        },
+        "peak": {
+          "median_md": "05-10",
+          "q25_md": "05-07",
+          "q75_md": "05-15",
+          "median_offset_days": 39.5
+        },
+        "total": {
+          "median": 9317.0,
+          "q25": 8374.0,
+          "q75": 10521.0
+        }
+      },
+      "timing_trend": {
+        "metric": "p50 day",
+        "basis": "observed_era",
+        "n": 15,
+        "days_per_decade": -1.4,
+        "ci": [
+          -7.8,
+          5.2
+        ],
+        "verdict": "no_clear_shift"
+      },
+      "magnitude_trend": {
+        "metric": "season total",
+        "basis": "observed_era",
+        "n": 15,
+        "pct_per_decade": 7.6,
+        "ci": [
+          -17.1,
+          35.3
+        ],
+        "verdict": "no_clear_shift",
+        "caveat": "Detections, not burned area; overpass timing changes can lower counts."
+      },
+      "current": {
+        "season_year": 2026,
+        "status": "ended",
+        "to_date_total": 8728.0
+      },
+      "years": [
+        {
+          "season_year": 2000,
+          "status": "missing",
+          "total": 0.0,
+          "coverage": 0.0,
+          "modeled_share": 1.0,
+          "p10_date": null,
+          "p50_date": null,
+          "p90_date": null,
+          "peak_date": null,
+          "multi_peak": false,
+          "interval_sensitivity_days": null
+        },
+        {
+          "season_year": 2001,
+          "status": "complete",
+          "total": 18323.9,
+          "coverage": 1.0,
+          "modeled_share": 1.0,
+          "p10_date": "2001-05-02",
+          "p50_date": "2001-05-10",
+          "p90_date": "2001-05-18",
+          "peak_date": "2001-05-10",
+          "multi_peak": false,
+          "interval_sensitivity_days": 0.0
+        },
+        {
+          "season_year": 2002,
+          "status": "complete",
+          "total": 14171.8,
+          "coverage": 1.0,
+          "modeled_share": 1.0,
+          "p10_date": "2002-04-28",
+          "p50_date": "2002-05-04",
+          "p90_date": "2002-05-12",
+          "peak_date": "2002-05-02",
+          "multi_peak": false,
+          "interval_sensitivity_days": 0.0
+        },
+        {
+          "season_year": 2003,
+          "status": "complete",
+          "total": 11478.7,
+          "coverage": 1.0,
+          "modeled_share": 1.0,
+          "p10_date": "2003-04-29",
+          "p50_date": "2003-05-07",
+          "p90_date": "2003-05-12",
+          "peak_date": "2003-05-08",
+          "multi_peak": false,
+          "interval_sensitivity_days": 35.8
+        },
+        {
+          "season_year": 2004,
+          "status": "complete",
+          "total": 6931.8,
+          "coverage": 1.0,
+          "modeled_share": 1.0,
+          "p10_date": "2004-04-20",
+          "p50_date": "2004-05-02",
+          "p90_date": "2004-05-09",
+          "peak_date": "2004-05-06",
+          "multi_peak": false,
+          "interval_sensitivity_days": 0.0
+        },
+        {
+          "season_year": 2005,
+          "status": "complete",
+          "total": 8839.5,
+          "coverage": 1.0,
+          "modeled_share": 1.0,
+          "p10_date": "2005-04-27",
+          "p50_date": "2005-05-06",
+          "p90_date": "2005-05-14",
+          "peak_date": "2005-05-12",
+          "multi_peak": false,
+          "interval_sensitivity_days": 0.0
+        },
+        {
+          "season_year": 2006,
+          "status": "complete",
+          "total": 6329.1,
+          "coverage": 1.0,
+          "modeled_share": 1.0,
+          "p10_date": "2006-04-24",
+          "p50_date": "2006-05-02",
+          "p90_date": "2006-05-11",
+          "peak_date": "2006-05-04",
+          "multi_peak": false,
+          "interval_sensitivity_days": 0.0
+        },
+        {
+          "season_year": 2007,
+          "status": "complete",
+          "total": 8285.1,
+          "coverage": 1.0,
+          "modeled_share": 1.0,
+          "p10_date": "2007-04-30",
+          "p50_date": "2007-05-09",
+          "p90_date": "2007-05-16",
+          "peak_date": "2007-05-10",
+          "multi_peak": false,
+          "interval_sensitivity_days": 0.0
+        },
+        {
+          "season_year": 2008,
+          "status": "complete",
+          "total": 9848.6,
+          "coverage": 1.0,
+          "modeled_share": 1.0,
+          "p10_date": "2008-05-02",
+          "p50_date": "2008-05-10",
+          "p90_date": "2008-05-18",
+          "peak_date": "2008-05-08",
+          "multi_peak": false,
+          "interval_sensitivity_days": 0.2
+        },
+        {
+          "season_year": 2009,
+          "status": "complete",
+          "total": 8626.2,
+          "coverage": 1.0,
+          "modeled_share": 1.0,
+          "p10_date": "2009-04-27",
+          "p50_date": "2009-05-05",
+          "p90_date": "2009-05-13",
+          "peak_date": "2009-05-07",
+          "multi_peak": false,
+          "interval_sensitivity_days": 0.0
+        },
+        {
+          "season_year": 2010,
+          "status": "complete",
+          "total": 6917.0,
+          "coverage": 1.0,
+          "modeled_share": 1.0,
+          "p10_date": "2010-04-26",
+          "p50_date": "2010-05-05",
+          "p90_date": "2010-05-14",
+          "peak_date": "2010-05-06",
+          "multi_peak": false,
+          "interval_sensitivity_days": 0.2
+        },
+        {
+          "season_year": 2011,
+          "status": "complete",
+          "total": 8959.5,
+          "coverage": 1.0,
+          "modeled_share": 1.0,
+          "p10_date": "2011-05-04",
+          "p50_date": "2011-05-12",
+          "p90_date": "2011-05-19",
+          "peak_date": "2011-05-12",
+          "multi_peak": false,
+          "interval_sensitivity_days": 0.0
+        },
+        {
+          "season_year": 2012,
+          "status": "complete",
+          "total": 7891.0,
+          "coverage": 1.0,
+          "modeled_share": 0.0,
+          "p10_date": "2012-05-07",
+          "p50_date": "2012-05-16",
+          "p90_date": "2012-05-26",
+          "peak_date": "2012-05-17",
+          "multi_peak": false,
+          "interval_sensitivity_days": null
+        },
+        {
+          "season_year": 2013,
+          "status": "complete",
+          "total": 9553.0,
+          "coverage": 1.0,
+          "modeled_share": 0.0,
+          "p10_date": "2013-05-01",
+          "p50_date": "2013-05-09",
+          "p90_date": "2013-05-18",
+          "peak_date": "2013-05-09",
+          "multi_peak": false,
+          "interval_sensitivity_days": null
+        },
+        {
+          "season_year": 2014,
+          "status": "complete",
+          "total": 10924.0,
+          "coverage": 1.0,
+          "modeled_share": 0.0,
+          "p10_date": "2014-05-06",
+          "p50_date": "2014-05-16",
+          "p90_date": "2014-05-24",
+          "peak_date": "2014-05-15",
+          "multi_peak": false,
+          "interval_sensitivity_days": null
+        },
+        {
+          "season_year": 2015,
+          "status": "complete",
+          "total": 8640.0,
+          "coverage": 1.0,
+          "modeled_share": 0.0,
+          "p10_date": "2015-05-04",
+          "p50_date": "2015-05-08",
+          "p90_date": "2015-05-19",
+          "peak_date": "2015-05-07",
+          "multi_peak": false,
+          "interval_sensitivity_days": null
+        },
+        {
+          "season_year": 2016,
+          "status": "complete",
+          "total": 8108.0,
+          "coverage": 1.0,
+          "modeled_share": 0.0,
+          "p10_date": "2016-04-26",
+          "p50_date": "2016-05-04",
+          "p90_date": "2016-05-14",
+          "peak_date": "2016-05-05",
+          "multi_peak": false,
+          "interval_sensitivity_days": null
+        },
+        {
+          "season_year": 2017,
+          "status": "complete",
+          "total": 7338.0,
+          "coverage": 1.0,
+          "modeled_share": 0.0,
+          "p10_date": "2017-05-01",
+          "p50_date": "2017-05-08",
+          "p90_date": "2017-05-20",
+          "peak_date": "2017-05-04",
+          "multi_peak": false,
+          "interval_sensitivity_days": null
+        },
+        {
+          "season_year": 2018,
+          "status": "complete",
+          "total": 9263.0,
+          "coverage": 1.0,
+          "modeled_share": 0.0,
+          "p10_date": "2018-05-02",
+          "p50_date": "2018-05-10",
+          "p90_date": "2018-05-19",
+          "peak_date": "2018-05-10",
+          "multi_peak": false,
+          "interval_sensitivity_days": null
+        },
+        {
+          "season_year": 2019,
+          "status": "complete",
+          "total": 12142.0,
+          "coverage": 1.0,
+          "modeled_share": 0.0,
+          "p10_date": "2019-05-07",
+          "p50_date": "2019-05-19",
+          "p90_date": "2019-05-26",
+          "peak_date": "2019-05-23",
+          "multi_peak": false,
+          "interval_sensitivity_days": null
+        },
+        {
+          "season_year": 2020,
+          "status": "complete",
+          "total": 9317.0,
+          "coverage": 1.0,
+          "modeled_share": 0.0,
+          "p10_date": "2020-05-06",
+          "p50_date": "2020-05-15",
+          "p90_date": "2020-05-23",
+          "peak_date": "2020-05-14",
+          "multi_peak": false,
+          "interval_sensitivity_days": null
+        },
+        {
+          "season_year": 2021,
+          "status": "complete",
+          "total": 7360.0,
+          "coverage": 1.0,
+          "modeled_share": 0.0,
+          "p10_date": "2021-04-28",
+          "p50_date": "2021-05-07",
+          "p90_date": "2021-05-16",
+          "peak_date": "2021-05-06",
+          "multi_peak": false,
+          "interval_sensitivity_days": null
+        },
+        {
+          "season_year": 2022,
+          "status": "complete",
+          "total": 11485.0,
+          "coverage": 1.0,
+          "modeled_share": 0.0,
+          "p10_date": "2022-04-26",
+          "p50_date": "2022-05-04",
+          "p90_date": "2022-05-14",
+          "peak_date": "2022-05-05",
+          "multi_peak": false,
+          "interval_sensitivity_days": null
+        },
+        {
+          "season_year": 2023,
+          "status": "complete",
+          "total": 11016.0,
+          "coverage": 1.0,
+          "modeled_share": 0.0,
+          "p10_date": "2023-05-02",
+          "p50_date": "2023-05-10",
+          "p90_date": "2023-05-20",
+          "peak_date": "2023-05-11",
+          "multi_peak": false,
+          "interval_sensitivity_days": null
+        },
+        {
+          "season_year": 2024,
+          "status": "complete",
+          "total": 9906.0,
+          "coverage": 1.0,
+          "modeled_share": 0.0,
+          "p10_date": "2024-05-06",
+          "p50_date": "2024-05-15",
+          "p90_date": "2024-05-25",
+          "peak_date": "2024-05-16",
+          "multi_peak": false,
+          "interval_sensitivity_days": null
+        },
+        {
+          "season_year": 2025,
+          "status": "complete",
+          "total": 10118.0,
+          "coverage": 1.0,
+          "modeled_share": 0.0,
+          "p10_date": "2025-05-04",
+          "p50_date": "2025-05-14",
+          "p90_date": "2025-05-22",
+          "peak_date": "2025-05-15",
+          "multi_peak": false,
+          "interval_sensitivity_days": null
+        },
+        {
+          "season_year": 2026,
+          "status": "complete",
+          "total": 8728.0,
+          "coverage": 1.0,
+          "modeled_share": 0.0,
+          "p10_date": "2026-04-30",
+          "p50_date": "2026-05-08",
+          "p90_date": "2026-05-21",
+          "peak_date": "2026-05-07",
+          "multi_peak": false,
+          "interval_sensitivity_days": null
+        }
+      ]
+    },
+    {
+      "name": "paddy_residue",
+      "window": {
+        "start_md": "09-15",
+        "end_md": "12-31"
+      },
+      "typical": {
+        "n_seasons": 25,
+        "season_years": [
+          2001,
+          2002,
+          2003,
+          2004,
+          2005,
+          2006,
+          2007,
+          2008,
+          2009,
+          2010,
+          2011,
+          2012,
+          2013,
+          2014,
+          2015,
+          2016,
+          2017,
+          2018,
+          2019,
+          2020,
+          2021,
+          2022,
+          2023,
+          2024,
+          2025
+        ],
+        "p10": {
+          "median_md": "10-21",
+          "q25_md": "10-13",
+          "q75_md": "10-25",
+          "median_offset_days": 36.2
+        },
+        "p50": {
+          "median_md": "11-02",
+          "q25_md": "10-28",
+          "q75_md": "11-05",
+          "median_offset_days": 48.9
+        },
+        "p90": {
+          "median_md": "11-12",
+          "q25_md": "11-08",
+          "q75_md": "11-14",
+          "median_offset_days": 58.3
+        },
+        "peak": {
+          "median_md": "11-03",
+          "q25_md": "10-31",
+          "q75_md": "11-06",
+          "median_offset_days": 49.5
+        },
+        "total": {
+          "median": 44099.0,
+          "q25": 35605.8,
+          "q75": 50878.0
+        }
+      },
+      "typical_observed_era": {
+        "n_seasons": 14,
+        "season_years": [
+          2012,
+          2013,
+          2014,
+          2015,
+          2016,
+          2017,
+          2018,
+          2019,
+          2020,
+          2021,
+          2022,
+          2023,
+          2024,
+          2025
+        ],
+        "p10": {
+          "median_md": "10-24",
+          "q25_md": "10-22",
+          "q75_md": "10-26",
+          "median_offset_days": 39.9
+        },
+        "p50": {
+          "median_md": "11-05",
+          "q25_md": "11-03",
+          "q75_md": "11-06",
+          "median_offset_days": 51.1
+        },
+        "p90": {
+          "median_md": "11-14",
+          "q25_md": "11-12",
+          "q75_md": "11-15",
+          "median_offset_days": 60.2
+        },
+        "peak": {
+          "median_md": "11-06",
+          "q25_md": "11-03",
+          "q75_md": "11-08",
+          "median_offset_days": 52.0
+        },
+        "total": {
+          "median": 42624.5,
+          "q25": 30944.8,
+          "q75": 52267.0
+        }
+      },
+      "timing_trend": {
+        "metric": "p50 day",
+        "basis": "observed_era",
+        "n": 14,
+        "days_per_decade": 4.3,
+        "ci": [
+          1.0,
+          6.6
+        ],
+        "verdict": "later"
+      },
+      "magnitude_trend": {
+        "metric": "season total",
+        "basis": "observed_era",
+        "n": 14,
+        "pct_per_decade": -58.4,
+        "ci": [
+          -91.1,
+          -25.0
+        ],
+        "verdict": "fewer",
+        "caveat": "Detections, not burned area; overpass timing changes can lower counts."
+      },
+      "current": {
+        "season_year": 2026,
+        "status": "in_progress",
+        "cutoff_offset_days": 48.0,
+        "data_through": "2026-11-02",
+        "to_date_total": 455.0,
+        "n_past": 25,
+        "percentile_at_cutoff": 0.0,
+        "typical_to_date_total": 21656.4,
+        "typical_share_by_cutoff": 0.45,
+        "modeled_share": 0.0
+      },
+      "years": [
+        {
+          "season_year": 2000,
+          "status": "missing",
+          "total": 758.8,
+          "coverage": 0.5,
+          "modeled_share": 1.0,
+          "p10_date": null,
+          "p50_date": null,
+          "p90_date": null,
+          "peak_date": null,
+          "multi_peak": false,
+          "interval_sensitivity_days": null
+        },
+        {
+          "season_year": 2001,
+          "status": "complete",
+          "total": 58642.9,
+          "coverage": 0.938,
+          "modeled_share": 1.0,
+          "p10_date": "2001-09-27",
+          "p50_date": "2001-10-14",
+          "p90_date": "2001-10-23",
+          "peak_date": "2001-10-11",
+          "multi_peak": false,
+          "interval_sensitivity_days": 4.8
+        },
+        {
+          "season_year": 2002,
+          "status": "complete",
+          "total": 35979.6,
+          "coverage": 0.938,
+          "modeled_share": 1.0,
+          "p10_date": "2002-10-05",
+          "p50_date": "2002-10-18",
+          "p90_date": "2002-10-30",
+          "peak_date": "2002-10-17",
+          "multi_peak": false,
+          "interval_sensitivity_days": 2.3
+        },
+        {
+          "season_year": 2003,
+          "status": "complete",
+          "total": 35605.8,
+          "coverage": 0.938,
+          "modeled_share": 1.0,
+          "p10_date": "2003-10-08",
+          "p50_date": "2003-10-20",
+          "p90_date": "2003-11-01",
+          "peak_date": "2003-10-23",
+          "multi_peak": false,
+          "interval_sensitivity_days": 0.9
+        },
+        {
+          "season_year": 2004,
+          "status": "complete",
+          "total": 33192.0,
+          "coverage": 1.0,
+          "modeled_share": 1.0,
+          "p10_date": "2004-10-09",
+          "p50_date": "2004-10-22",
+          "p90_date": "2004-11-02",
+          "peak_date": "2004-10-21",
+          "multi_peak": false,
+          "interval_sensitivity_days": 1.0
+        },
+        {
+          "season_year": 2005,
+          "status": "complete",
+          "total": 54260.8,
+          "coverage": 1.0,
+          "modeled_share": 1.0,
+          "p10_date": "2005-10-13",
+          "p50_date": "2005-10-28",
+          "p90_date": "2005-11-10",
+          "peak_date": "2005-11-03",
+          "multi_peak": false,
+          "interval_sensitivity_days": 0.1
+        },
+        {
+          "season_year": 2006,
+          "status": "complete",
+          "total": 35859.5,
+          "coverage": 0.938,
+          "modeled_share": 1.0,
+          "p10_date": "2006-10-08",
+          "p50_date": "2006-10-25",
+          "p90_date": "2006-11-06",
+          "peak_date": "2006-11-02",
+          "multi_peak": true,
+          "interval_sensitivity_days": 0.8
+        },
+        {
+          "season_year": 2007,
+          "status": "complete",
+          "total": 50410.7,
+          "coverage": 0.938,
+          "modeled_share": 1.0,
+          "p10_date": "2007-10-11",
+          "p50_date": "2007-10-26",
+          "p90_date": "2007-11-07",
+          "peak_date": "2007-11-01",
+          "multi_peak": false,
+          "interval_sensitivity_days": 0.2
+        },
+        {
+          "season_year": 2008,
+          "status": "complete",
+          "total": 47302.8,
+          "coverage": 0.938,
+          "modeled_share": 1.0,
+          "p10_date": "2008-10-17",
+          "p50_date": "2008-10-31",
+          "p90_date": "2008-11-09",
+          "peak_date": "2008-10-30",
+          "multi_peak": false,
+          "interval_sensitivity_days": 0.7
+        },
+        {
+          "season_year": 2009,
+          "status": "complete",
+          "total": 43431.5,
+          "coverage": 1.0,
+          "modeled_share": 1.0,
+          "p10_date": "2009-10-17",
+          "p50_date": "2009-10-30",
+          "p90_date": "2009-11-12",
+          "peak_date": "2009-10-29",
+          "multi_peak": false,
+          "interval_sensitivity_days": 0.1
+        },
+        {
+          "season_year": 2010,
+          "status": "complete",
+          "total": 44650.6,
+          "coverage": 1.0,
+          "modeled_share": 1.0,
+          "p10_date": "2010-10-17",
+          "p50_date": "2010-11-02",
+          "p90_date": "2010-11-12",
+          "peak_date": "2010-11-04",
+          "multi_peak": false,
+          "interval_sensitivity_days": 0.2
+        },
+        {
+          "season_year": 2011,
+          "status": "complete",
+          "total": 46797.2,
+          "coverage": 1.0,
+          "modeled_share": 1.0,
+          "p10_date": "2011-10-18",
+          "p50_date": "2011-10-30",
+          "p90_date": "2011-11-08",
+          "peak_date": "2011-11-03",
+          "multi_peak": false,
+          "interval_sensitivity_days": 0.0
+        },
+        {
+          "season_year": 2012,
+          "status": "complete",
+          "total": 50878.0,
+          "coverage": 0.938,
+          "modeled_share": 0.0,
+          "p10_date": "2012-10-22",
+          "p50_date": "2012-11-03",
+          "p90_date": "2012-11-11",
+          "peak_date": "2012-11-01",
+          "multi_peak": false,
+          "interval_sensitivity_days": null
+        },
+        {
+          "season_year": 2013,
+          "status": "complete",
+          "total": 45237.0,
+          "coverage": 0.938,
+          "modeled_share": 0.0,
+          "p10_date": "2013-10-22",
+          "p50_date": "2013-11-02",
+          "p90_date": "2013-11-13",
+          "peak_date": "2013-10-31",
+          "multi_peak": false,
+          "interval_sensitivity_days": null
+        },
+        {
+          "season_year": 2014,
+          "status": "complete",
+          "total": 52833.0,
+          "coverage": 0.938,
+          "modeled_share": 0.0,
+          "p10_date": "2014-10-21",
+          "p50_date": "2014-11-03",
+          "p90_date": "2014-11-13",
+          "peak_date": "2014-11-06",
+          "multi_peak": false,
+          "interval_sensitivity_days": null
+        },
+        {
+          "season_year": 2015,
+          "status": "complete",
+          "total": 44099.0,
+          "coverage": 1.0,
+          "modeled_share": 0.0,
+          "p10_date": "2015-10-22",
+          "p50_date": "2015-11-05",
+          "p90_date": "2015-11-14",
+          "peak_date": "2015-11-05",
+          "multi_peak": false,
+          "interval_sensitivity_days": null
+        },
+        {
+          "season_year": 2016,
+          "status": "complete",
+          "total": 63626.0,
+          "coverage": 1.0,
+          "modeled_share": 0.0,
+          "p10_date": "2016-10-21",
+          "p50_date": "2016-11-03",
+          "p90_date": "2016-11-12",
+          "peak_date": "2016-11-03",
+          "multi_peak": false,
+          "interval_sensitivity_days": null
+        },
+        {
+          "season_year": 2017,
+          "status": "complete",
+          "total": 40320.0,
+          "coverage": 0.938,
+          "modeled_share": 0.0,
+          "p10_date": "2017-10-20",
+          "p50_date": "2017-11-01",
+          "p90_date": "2017-11-20",
+          "peak_date": "2017-11-02",
+          "multi_peak": false,
+          "interval_sensitivity_days": null
+        },
+        {
+          "season_year": 2018,
+          "status": "complete",
+          "total": 41150.0,
+          "coverage": 0.938,
+          "modeled_share": 0.0,
+          "p10_date": "2018-10-25",
+          "p50_date": "2018-11-06",
+          "p90_date": "2018-11-16",
+          "peak_date": "2018-11-08",
+          "multi_peak": false,
+          "interval_sensitivity_days": null
+        },
+        {
+          "season_year": 2019,
+          "status": "complete",
+          "total": 30812.0,
+          "coverage": 0.938,
+          "modeled_share": 0.0,
+          "p10_date": "2019-10-24",
+          "p50_date": "2019-11-05",
+          "p90_date": "2019-11-10",
+          "peak_date": "2019-11-07",
+          "multi_peak": false,
+          "interval_sensitivity_days": null
+        },
+        {
+          "season_year": 2020,
+          "status": "complete",
+          "total": 52730.0,
+          "coverage": 1.0,
+          "modeled_share": 0.0,
+          "p10_date": "2020-10-26",
+          "p50_date": "2020-11-04",
+          "p90_date": "2020-11-12",
+          "peak_date": "2020-11-05",
+          "multi_peak": false,
+          "interval_sensitivity_days": null
+        },
+        {
+          "season_year": 2021,
+          "status": "complete",
+          "total": 55910.0,
+          "coverage": 1.0,
+          "modeled_share": 0.0,
+          "p10_date": "2021-10-29",
+          "p50_date": "2021-11-08",
+          "p90_date": "2021-11-14",
+          "peak_date": "2021-11-11",
+          "multi_peak": false,
+          "interval_sensitivity_days": null
+        },
+        {
+          "season_year": 2022,
+          "status": "complete",
+          "total": 31343.0,
+          "coverage": 1.0,
+          "modeled_share": 0.0,
+          "p10_date": "2022-10-26",
+          "p50_date": "2022-11-05",
+          "p90_date": "2022-11-13",
+          "peak_date": "2022-11-03",
+          "multi_peak": false,
+          "interval_sensitivity_days": null
+        },
+        {
+          "season_year": 2023,
+          "status": "complete",
+          "total": 21860.0,
+          "coverage": 0.938,
+          "modeled_share": 0.0,
+          "p10_date": "2023-10-30",
+          "p50_date": "2023-11-08",
+          "p90_date": "2023-11-18",
+          "peak_date": "2023-11-16",
+          "multi_peak": false,
+          "interval_sensitivity_days": null
+        },
+        {
+          "season_year": 2024,
+          "status": "complete",
+          "total": 5903.0,
+          "coverage": 0.938,
+          "modeled_share": 0.0,
+          "p10_date": "2024-10-26",
+          "p50_date": "2024-11-09",
+          "p90_date": "2024-11-23",
+          "peak_date": "2024-11-21",
+          "multi_peak": false,
+          "interval_sensitivity_days": null
+        },
+        {
+          "season_year": 2025,
+          "status": "complete",
+          "total": 2318.0,
+          "coverage": 0.938,
+          "modeled_share": 0.0,
+          "p10_date": "2025-10-25",
+          "p50_date": "2025-11-04",
+          "p90_date": "2025-11-15",
+          "peak_date": "2025-11-06",
+          "multi_peak": false,
+          "interval_sensitivity_days": null
+        },
+        {
+          "season_year": 2026,
+          "status": "partial",
+          "total": 455.0,
+          "coverage": 0.438,
+          "modeled_share": 0.0,
+          "p10_date": null,
+          "p50_date": null,
+          "p90_date": null,
+          "peak_date": null,
+          "multi_peak": false,
+          "interval_sensitivity_days": null
+        }
+      ]
+    }
+  ]
+}

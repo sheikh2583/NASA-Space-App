@@ -1,0 +1,63 @@
+# Satellite outage registry (improvement I8). PROPOSED: read by ws2_platform/coverage.py (audit only).
+# Not yet read by ws2_platform/sensors.py, so it changes no pipeline output. Spec: docs/specs/I8_COVERAGE.md.
+#
+# One entry per interval in UTC. start_utc is inclusive, end_utc exclusive. A granule listed "inclusive" ends 6 minutes
+# after its start time. Times are those in the source table; where the table and its comment disagree, the wider
+# interval is used and the note says so.
+#
+# verification:
+#   documented        written in a NASA notice already cited in docs/DECISIONS.md
+#   table_and_data    listed in the source table AND consistent with our archive (detections resume after it)
+#   transcribed       copied from the source table on 4 Nov 2026 via a page summary; a person must check it against
+#                     the page before the registry is used to change outputs
+# products: the MODAPS table has no product column, so "unspecified" means every SNPP VIIRS product may be affected.
+#
+# Coverage: the MODAPS table starts 14 Nov 2011. Only multi-hour SNPP entries from 2024-2026 are copied here; earlier
+# years still need to be entered (spec section 6) or found by the audit's candidate-gap check.
+
+events:
+  - id: terra-2026-03-26-standby
+    sat: Terra
+    start_utc: "2026-03-26T20:00:00Z"
+    end_utc: "2026-03-27T19:23:00Z"
+    source: NASA Earthdata alert, March 2026 (DECISIONS.md decision 18)
+    source_url: ""
+    products: MODIS C6.1 active fire
+    verification: documented
+    note: MODIS standby; data flagged questionable
+
+  - id: snpp-2024-11-02-gps
+    sat: SNPP
+    start_utc: "2024-11-02T22:12:00Z"
+    end_utc: "2024-11-06T17:36:00Z"
+    source: NASA MODAPS Suomi NPP outage table, 2024-307 to 2024-311
+    source_url: https://modaps.modaps.eosdis.nasa.gov/services/production/outages_suomi_npp.html
+    products: unspecified
+    verification: table_and_data
+    note: "GPS anomaly outage (11/2/24 22:12 - 11/6/24 17:30, inclusive). Archive has SNPP detections on 7-9 Nov (CLAUDE_REVIEW.md)."
+
+  # ---- transcribed, not yet checked by a person ----
+  - {id: snpp-2024-01-30-smd, sat: SNPP, start_utc: "2024-01-30T23:21:00Z", end_utc: "2024-01-31T16:00:00Z", source: MODAPS table 2024-030, source_url: https://modaps.modaps.eosdis.nasa.gov/services/production/outages_suomi_npp.html, products: unspecified, verification: transcribed, note: "SMD outage; table start 23:24, comment 23:21 (wider used)"}
+  - {id: snpp-2024-04-24-anomaly, sat: SNPP, start_utc: "2024-04-24T18:04:00Z", end_utc: "2024-04-24T20:29:00Z", source: MODAPS table 2024-115, source_url: https://modaps.modaps.eosdis.nasa.gov/services/production/outages_suomi_npp.html, products: unspecified, verification: transcribed, note: "data missing 18:04:42-20:28:05 (comment, wider than table 18:06-20:24)"}
+  - {id: snpp-2024-05-30-gps, sat: SNPP, start_utc: "2024-05-30T00:00:00Z", end_utc: "2024-06-04T00:00:00Z", source: MODAPS table 2024-151, source_url: https://modaps.modaps.eosdis.nasa.gov/services/production/outages_suomi_npp.html, products: unspecified, verification: transcribed, note: "GPS anomaly outage (C2) 5/30/24 through 6/3/24"}
+  - {id: snpp-2024-07-09-gps, sat: SNPP, start_utc: "2024-07-09T21:42:00Z", end_utc: "2024-07-16T17:42:00Z", source: MODAPS table 2024-191, source_url: https://modaps.modaps.eosdis.nasa.gov/services/production/outages_suomi_npp.html, products: unspecified, verification: transcribed, note: GPS anomaly outage}
+  - {id: snpp-2024-07-24-cdp, sat: SNPP, start_utc: "2024-07-24T05:24:00Z", end_utc: "2024-07-29T15:24:00Z", source: MODAPS table 2024-206, source_url: https://modaps.modaps.eosdis.nasa.gov/services/production/outages_suomi_npp.html, products: unspecified, verification: transcribed, note: CDP reset anomaly}
+  - {id: snpp-2024-09-26-gps, sat: SNPP, start_utc: "2024-09-26T00:00:00Z", end_utc: "2024-09-27T17:36:00Z", source: MODAPS table 2024-270, source_url: https://modaps.modaps.eosdis.nasa.gov/services/production/outages_suomi_npp.html, products: unspecified, verification: transcribed, note: GPS anomaly outage}
+  - {id: snpp-2025-01-20-l0, sat: SNPP, start_utc: "2025-01-20T17:12:00Z", end_utc: "2025-01-20T20:18:00Z", source: MODAPS table 2025-020, source_url: https://modaps.modaps.eosdis.nasa.gov/services/production/outages_suomi_npp.html, products: unspecified, verification: transcribed, note: L0 data gap}
+  - {id: snpp-2025-07-03-l0, sat: SNPP, start_utc: "2025-07-03T15:48:00Z", end_utc: "2025-07-03T17:54:00Z", source: MODAPS table 2025-184, source_url: https://modaps.modaps.eosdis.nasa.gov/services/production/outages_suomi_npp.html, products: unspecified, verification: transcribed, note: L0 data gap}
+  - {id: snpp-2025-07-04-l0a, sat: SNPP, start_utc: "2025-07-04T12:12:00Z", end_utc: "2025-07-04T13:54:00Z", source: MODAPS table 2025-185, source_url: https://modaps.modaps.eosdis.nasa.gov/services/production/outages_suomi_npp.html, products: unspecified, verification: transcribed, note: L0 data gap}
+  - {id: snpp-2025-07-04-l0b, sat: SNPP, start_utc: "2025-07-04T16:00:00Z", end_utc: "2025-07-04T22:00:00Z", source: MODAPS table 2025-185, source_url: https://modaps.modaps.eosdis.nasa.gov/services/production/outages_suomi_npp.html, products: unspecified, verification: transcribed, note: L0 data gap}
+  - {id: snpp-2025-07-05-l0, sat: SNPP, start_utc: "2025-07-05T08:00:00Z", end_utc: "2025-07-06T02:00:00Z", source: MODAPS table 2025-186 and 2025-187, source_url: https://modaps.modaps.eosdis.nasa.gov/services/production/outages_suomi_npp.html, products: unspecified, verification: transcribed, note: "L0 data gaps 5 Jul 08:00-24:00 and 6 Jul 00:00-02:00, merged"}
+  - {id: snpp-2025-07-06-l0, sat: SNPP, start_utc: "2025-07-06T08:00:00Z", end_utc: "2025-07-07T00:00:00Z", source: MODAPS table 2025-187, source_url: https://modaps.modaps.eosdis.nasa.gov/services/production/outages_suomi_npp.html, products: unspecified, verification: transcribed, note: "L0 data gap; table end 00:00 read as end of day"}
+  - {id: snpp-2025-07-07-l0, sat: SNPP, start_utc: "2025-07-07T06:00:00Z", end_utc: "2025-07-08T00:00:00Z", source: MODAPS table 2025-188, source_url: https://modaps.modaps.eosdis.nasa.gov/services/production/outages_suomi_npp.html, products: unspecified, verification: transcribed, note: "L0 data gap; table end 00:00 read as end of day"}
+  - {id: snpp-2025-08-25-splitter, sat: SNPP, start_utc: "2025-08-25T18:00:00Z", end_utc: "2025-08-25T19:18:00Z", source: MODAPS table 2025-237, source_url: https://modaps.modaps.eosdis.nasa.gov/services/production/outages_suomi_npp.html, products: unspecified, verification: transcribed, note: splitter failing}
+  - {id: snpp-2025-08-26-c3s, sat: SNPP, start_utc: "2025-08-26T12:18:00Z", end_utc: "2025-08-26T13:54:00Z", source: MODAPS table 2025-238, source_url: https://modaps.modaps.eosdis.nasa.gov/services/production/outages_suomi_npp.html, products: unspecified, verification: transcribed, note: C3S transition}
+  - {id: snpp-2025-10-06-antenna, sat: SNPP, start_utc: "2025-10-06T14:36:00Z", end_utc: "2025-10-06T16:12:00Z", source: MODAPS table 2025-279, source_url: https://modaps.modaps.eosdis.nasa.gov/services/production/outages_suomi_npp.html, products: unspecified, verification: transcribed, note: antenna issue}
+  - {id: snpp-2025-11-11-l0, sat: SNPP, start_utc: "2025-11-11T11:36:00Z", end_utc: "2025-11-12T16:24:00Z", source: MODAPS table 2025-315, source_url: https://modaps.modaps.eosdis.nasa.gov/services/production/outages_suomi_npp.html, products: unspecified, verification: transcribed, note: VIIRS anomaly L0 outage}
+  - {id: snpp-2025-12-09-edos, sat: SNPP, start_utc: "2025-12-09T21:18:00Z", end_utc: "2025-12-09T23:00:00Z", source: MODAPS table 2025-343, source_url: https://modaps.modaps.eosdis.nasa.gov/services/production/outages_suomi_npp.html, products: unspecified, verification: transcribed, note: "EDOS outage 21:18-22:54 plus bad granule 22:54, merged"}
+  - {id: snpp-2026-03-09-viirs, sat: SNPP, start_utc: "2026-03-09T18:00:00Z", end_utc: "2026-03-12T00:00:00Z", source: MODAPS table 2026-068, source_url: https://modaps.modaps.eosdis.nasa.gov/services/production/outages_suomi_npp.html, products: unspecified, verification: transcribed, note: "VIIRS anomaly impact 2026/068 18:00 - 2026/071 23:54 inclusive"}
+  - {id: snpp-2026-03-13-viirs, sat: SNPP, start_utc: "2026-03-13T08:12:00Z", end_utc: "2026-03-13T11:42:00Z", source: MODAPS table 2026-072, source_url: https://modaps.modaps.eosdis.nasa.gov/services/production/outages_suomi_npp.html, products: unspecified, verification: transcribed, note: VIIRS anomaly impact period 2}
+  - {id: snpp-2026-04-28-viirs, sat: SNPP, start_utc: "2026-04-28T00:00:00Z", end_utc: "2026-05-01T05:00:00Z", source: MODAPS table 2026-118, source_url: https://modaps.modaps.eosdis.nasa.gov/services/production/outages_suomi_npp.html, products: unspecified, verification: transcribed, note: "VIIRS anomaly impact through 2026/121 04:54 inclusive"}
+  - {id: snpp-2026-06-01-viirs, sat: SNPP, start_utc: "2026-06-01T00:00:00Z", end_utc: "2026-06-03T02:00:00Z", source: MODAPS table 2026-152, source_url: https://modaps.modaps.eosdis.nasa.gov/services/production/outages_suomi_npp.html, products: unspecified, verification: transcribed, note: "VIIRS anomaly impact through 2026/154 01:54 inclusive"}
+  - {id: snpp-2026-07-10-viirs, sat: SNPP, start_utc: "2026-07-10T11:48:00Z", end_utc: "2026-07-17T04:00:00Z", source: MODAPS table 2026-191, source_url: https://modaps.modaps.eosdis.nasa.gov/services/production/outages_suomi_npp.html, products: unspecified, verification: transcribed, note: "VIIRS anomaly impact through 2026/198 03:54 inclusive"}
+  - {id: snpp-2026-08-03-viirs, sat: SNPP, start_utc: "2026-08-03T02:00:00Z", end_utc: "2026-08-06T16:30:00Z", source: MODAPS table 2026-215, source_url: https://modaps.modaps.eosdis.nasa.gov/services/production/outages_suomi_npp.html, products: unspecified, verification: transcribed, note: "VIIRS anomaly impact through 2026/218 16:24 inclusive"}

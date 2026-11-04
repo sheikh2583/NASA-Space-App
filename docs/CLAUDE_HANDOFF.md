@@ -65,3 +65,30 @@ The Windows CUDA dependency installer was executed successfully on the RTX 4070 
 The current selector passed ten frontend tests, translations, type checking, and production snapshot build. Every named area's saved response was checked against its own geometry and selected-cell count. Browser checks covered real Dhaka startup, Bangla name search with pending/applied labels, Apply/Reset, Haryana selection, keyboard map selection, comparison between administrative regions, mobile width without overflow, and desktop rendering with no console errors. Earlier integration runs passed all five real-output QA groups and 55 unit/script tests with two hardware tests skipped. Dependency hardening separately passed 29 common/script tests and two actual CUDA integration tests. No scientific retraining was needed for the selector update.
 
 Keep one pipeline per checkout; output paths remain shared. Inputs/date completeness, representative FIRMS viewer comparison, fluent Bangla review, full backend hosting, and presentation/submission checks remain follow-up work. Read [CLAUDE_REVIEW.md](CLAUDE_REVIEW.md) before changing scientific assumptions; user authorization in this chat takes precedence over historical scope statements.
+
+## Follow-up from Claude, 4 November 2026
+
+- **Plan.** The win plan is in `docs/plan/`:
+  - 43 cards: 38 for the coding agent (T), and 5 for Sheikh only (H: Hugging Face account, two training runs,
+    submit, event days);
+  - the board `STATUS.md`;
+  - the tool `scripts/plan.py` (`next`, `show`, `checks --run`, `split`, `set`, `check`).
+
+  Agents start from `AGENTS.md`, whose no-training policy overrides any card check that fits models
+  (`CHECK-PY`, `CHECK-SMOKE`). `python scripts/plan.py check` validates every card against the code.
+- **Specs.**
+  - `docs/specs/I8_COVERAGE.md`: outages. Registry in `common/outages.yaml`; read-only audit in
+    `ws2_platform/coverage.py`.
+  - `docs/specs/I1_SEASON_PROFILE.md`: season profile. Library in `ws4_outlook/season_profile.py`; draft schema
+    and Punjab fixture in `contracts/`.
+
+  Neither is wired into the pipeline yet; `data/processed/` and the snapshot are unchanged.
+- **Test helpers.**
+  - `ws2_platform/tests/conftest.py` (`tiny_api`, `tiny_request`): API tests that run in CI without data.
+  - `ws5_frontend/src/test/render.tsx` (`renderHtml`): component tests in Vitest's node environment.
+  - `tools/verify_files.py --all`: checks every contracted file in `data/processed`.
+- **Live defects found while checking the plan** (cards in brackets):
+  - The Punjab status reads "Normal" for a record-low week, and Bangladesh reads "High" for 3 detections (T03).
+  - Three validation pieces say "Built on SYNTHETIC data" (T02).
+  - The last week is partial but drawn as full (T04).
+  - The FIRMS downloader can put the key into error text (T18).

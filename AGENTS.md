@@ -26,3 +26,42 @@ There is no automatic exception for validation, smoke testing, a small dataset, 
 If a code change needs numerical validation that requires fitting, finish the permitted implementation and static checks, provide the manual validation commands, and explicitly report that training validation was not run. Never invent new scores or present historical results as validation of changed code.
 
 Preserve unrelated user edits and the local `codex/` proposal folder. Keep credentials, raw downloads, trained models, and generated run artifacts outside Git; never print secrets. See `CLAUDE.md` for scientific and project conventions, subject to this policy.
+
+## Work plan (subject to the no-training rule above)
+
+1. **What to do next** comes from the plan, not from you. Run `python scripts/plan.py next`, then follow
+   `docs/plan/README.md` section 3 ("The loop"). Read the card in full (`python scripts/plan.py show <ID>`) and
+   every file it names before editing anything.
+2. **Scope.** Change only the paths in the card's `touches` and `creates`, plus your own row in
+   `docs/plan/STATUS.md`. If anything else must change, or the code differs from what the card says, stop and ask.
+3. **Checks.** Never weaken, skip or delete a test.
+   - **Don't run `CHECK-PY` (blanket `pytest`) or `CHECK-SMOKE` (`workflow.py smoke`).** Some of those tests fit
+     learners.
+   - **Don't run `plan.py checks <ID> --run` if the card lists either one.** Run `python scripts/plan.py checks <ID>`
+     without `--run` to see the commands, run only the individually reviewed non-fitting ones, and list the rest
+     for Sheikh to run.
+4. **Commits.** Follow Sheikh's instructions for the task. Sheikh normally commits and pushes himself.
+   - When asked to use the plan's commit flow, `python scripts/plan.py split --card <ID> -m "<ID>: …" --run` makes
+     one commit per folder owner, with that owner's `--author` (`docs/plan/team.yaml`).
+   - Never force-push.
+5. **Secrets and data.** Never print, log or commit `FIRMS_MAP_KEY`, `HF_TOKEN` or `.env`. Never commit `data/`,
+   models, `dist/`, `node_modules/` or `share/`.
+6. **Science.**
+   - Keep observed VIIRS, adjusted NOAA-20 and modeled MODIS distinct.
+   - Weather is an association, never a cause.
+   - Season timing is a "central activity window", not the start or end of burning.
+   - Detections are not burned area.
+   - Changing scientific outputs needs the card's spec, a contract line, and a decision in a pull request Sheikh
+     merges.
+   - All training, quick or full, is Sheikh's manual step (H02, H03). Afterwards you re-report the metrics on all
+     six holdouts from the saved outputs.
+7. **Numbers.** Measured numbers come from data at runtime or from `docs/TRAINING_RESULTS.md`, with their source.
+   Never from memory.
+8. **Tests.**
+   - API tests use `tiny_api` / `tiny_request` (`ws2_platform/tests/conftest.py`), so they run in CI without data.
+   - UI component tests use `renderHtml` / `textOf` (`ws5_frontend/src/test/render.tsx`).
+   - Don't add dependencies without the lead's OK.
+9. **Hosting.**
+   - Render serves the UI and the live API (`docs/RENDER.md`).
+   - The basemap is OpenStreetMap; never restore CARTO URLs.
+   - The FIRMS key never goes to the browser.

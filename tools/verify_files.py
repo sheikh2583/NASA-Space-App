@@ -4,10 +4,12 @@ Parquet: columns and types (contracts/parquet_schemas.json), allowed values (_en
 JSON: the matching JSON Schema in contracts/json_schemas/.
 
 Usage: python tools/verify_files.py data/processed/*.parquet data/processed/*.json data/processed/validation/*.json
+       python tools/verify_files.py --all     # every contracted file in data/processed (works in PowerShell too)
 Exit code 1 if any file fails.
 """
 from __future__ import annotations
 
+import glob
 import json
 import os
 import sys
@@ -18,7 +20,7 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 
 ROOT = os.path.join(os.path.dirname(__file__), "..")
-CONTRACT = json.load(open(os.path.join(ROOT, "contracts", "parquet_schemas.json")))
+CONTRACT = json.load(open(os.path.join(ROOT, "contracts", "parquet_schemas.json"), encoding="utf-8"))
 PA_TYPES = {"string": pa.string(), "int32": pa.int32(), "float32": pa.float32(), "float64": pa.float64(),
             "date32": pa.date32(), "bool": pa.bool_()}
 JSON_SCHEMA_FOR = {"interval_table.json": "interval_table", "drivers_region.json": "drivers_region",
@@ -75,8 +77,8 @@ def check_json(path: str) -> list[str]:
     name = "validation_piece" if os.path.basename(os.path.dirname(path)) == "validation" else JSON_SCHEMA_FOR.get(base)
     if name is None:
         return [f"no JSON Schema known for {base}"]
-    schema = json.load(open(os.path.join(ROOT, "contracts", "json_schemas", f"{name}.schema.json")))
-    errors = sorted(jsonschema.Draft7Validator(schema).iter_errors(json.load(open(path))), key=lambda e: list(e.path))
+    schema = json.load(open(os.path.join(ROOT, "contracts", "json_schemas", f"{name}.schema.json"), encoding="utf-8"))
+    errors = sorted(jsonschema.Draft7Validator(schema).iter_errors(json.load(open(path, encoding="utf-8"))), key=lambda e: list(e.path))
     return [f"{'/'.join(map(str, e.path)) or '(root)'}: {e.message}" for e in errors[:20]]
 
 
@@ -91,7 +93,30 @@ def check(path: str) -> list[str]:
     return ["unknown file type"]
 
 
+def contracted_files(root: str = ROOT) -> tuple[list[str], list[str]]:
+    """(files with a contract, other files) under data/processed and data/processed/validation."""
+    d = os.path.join(root, "data", "processed")
+    found = sorted(glob.glob(os.path.join(d, "*.parquet")) + glob.glob(os.path.join(d, "*.json"))
+                   + glob.glob(os.path.join(d, "validation", "*.json")))
+    known, other = [], []
+    for p in found:
+        base = os.path.basename(p)
+        if p.endswith(".parquet"):
+            ok = base[: -len(".parquet")] in CONTRACT
+        else:
+            ok = os.path.basename(os.path.dirname(p)) == "validation" or base in JSON_SCHEMA_FOR
+        (known if ok else other).append(p)
+    return known, other
+
+
 def main(paths) -> int:
+    if paths == ["--all"]:
+        paths, other = contracted_files()
+        for p in other:
+            print("SKIP " + p + "  (no contract for this file)")
+        if not paths:
+            print("SKIP: no contracted files in data/processed on this machine")
+            return 0
     failed = 0
     for p in paths:
         errs = check(p)

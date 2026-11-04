@@ -2,6 +2,8 @@
 
 Read [AGENTS.md](AGENTS.md) first. **Strict no-training policy: coding agents must not run training, model-fitting tests, benchmarks, CUDA probes, readiness checks, or setup paths that fit models.** Training commands in the documentation are for humans. This rule supersedes prior training permissions and older task templates.
 
+Work plan: run `python scripts/plan.py next` and follow `docs/plan/README.md` section 3 (the loop), subject to the no-training policy in `AGENTS.md`.
+
 Read `docs/CLAUDE_HANDOFF.md`, `docs/CLAUDE_REVIEW.md`, `docs/TRAINING.md`, and `docs/TRAINING_RESULTS.md` before changing training logic. The handoff and review supersede the older status/backlog documents under the user's local `codex/` folder.
 
 - Start with `git status --short`; preserve unrelated user edits, including any local `codex/` folder.

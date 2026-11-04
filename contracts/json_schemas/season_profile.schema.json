@@ -1,0 +1,76 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "season_profile (DRAFT 0.1.0, improvement I1)",
+  "description": "Output of ws4_outlook.season_profile.season_profile. Proposed for /aoi/season and for snapshot.json areas.<key>.season. Timing is a detection statistic (central activity window), not physical onset or end of burning.",
+  "type": "object",
+  "required": ["schema_version", "area", "as_of", "data_through", "units", "definition", "seasons"],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "area": {"type": ["string", "null"]},
+    "as_of": {"type": "string", "format": "date"},
+    "data_through": {"type": ["string", "null"]},
+    "units": {"type": "string"},
+    "definition": {"type": "string"},
+    "seasons": {"type": "array", "items": {"$ref": "#/definitions/season"}}
+  },
+  "definitions": {
+    "md": {"type": ["string", "null"], "pattern": "^[0-9]{2}-[0-9]{2}$"},
+    "timing": {
+      "type": ["object", "null"],
+      "required": ["median_md", "q25_md", "q75_md", "median_offset_days"],
+      "properties": {
+        "median_md": {"$ref": "#/definitions/md"}, "q25_md": {"$ref": "#/definitions/md"},
+        "q75_md": {"$ref": "#/definitions/md"}, "median_offset_days": {"type": "number"}
+      }
+    },
+    "typical": {
+      "type": ["object", "null"],
+      "required": ["n_seasons", "season_years", "p10", "p50", "p90", "peak", "total"],
+      "properties": {
+        "n_seasons": {"type": "integer", "minimum": 0},
+        "season_years": {"type": "array", "items": {"type": "integer"}},
+        "p10": {"$ref": "#/definitions/timing"}, "p50": {"$ref": "#/definitions/timing"},
+        "p90": {"$ref": "#/definitions/timing"}, "peak": {"$ref": "#/definitions/timing"},
+        "total": {"type": ["object", "null"]}
+      }
+    },
+    "trend": {
+      "type": ["object", "null"],
+      "required": ["metric", "basis", "n", "ci", "verdict"],
+      "properties": {
+        "n": {"type": "integer"},
+        "ci": {"type": ["array", "null"], "items": {"type": ["number", "null"]}, "minItems": 2, "maxItems": 2},
+        "verdict": {"enum": ["later", "earlier", "more", "fewer", "no_clear_shift", "insufficient_seasons"]}
+      }
+    },
+    "season": {
+      "type": "object",
+      "required": ["name", "window", "typical", "typical_observed_era", "timing_trend", "magnitude_trend", "current", "years"],
+      "properties": {
+        "name": {"type": "string"},
+        "window": {"type": "object", "required": ["start_md", "end_md"]},
+        "typical": {"$ref": "#/definitions/typical"},
+        "typical_observed_era": {"$ref": "#/definitions/typical"},
+        "timing_trend": {"$ref": "#/definitions/trend"},
+        "magnitude_trend": {"$ref": "#/definitions/trend"},
+        "current": {
+          "type": ["object", "null"],
+          "required": ["season_year", "status"],
+          "properties": {"status": {"enum": ["in_progress", "ended", "not_started"]}}
+        },
+        "years": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["season_year", "status", "total", "coverage", "modeled_share", "p10_date", "p50_date",
+                         "p90_date", "peak_date", "multi_peak", "interval_sensitivity_days"],
+            "properties": {
+              "status": {"enum": ["complete", "partial", "missing", "low_activity"]},
+              "multi_peak": {"type": "boolean"}
+            }
+          }
+        }
+      }
+    }
+  }
+}
