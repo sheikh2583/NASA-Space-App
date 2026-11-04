@@ -2,6 +2,7 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } fro
 import { useTranslation } from "react-i18next";
 import { AOIError, api } from "./api";
 import Calendar from "./components/Calendar";
+import SeasonCard from "./components/SeasonCard";
 import { DriversPanel, OutlookPanel, PeriodsPanel, StatusCard } from "./components/Panels";
 import ErrorBoundary from "./components/ErrorBoundary";
 import LoadingNote from "./components/LoadingNote";
@@ -12,7 +13,8 @@ import { DATA_MODE, RECORD_END, RECORD_START } from "./config";
 import { STATIC_DEMO } from "./snapshot";
 import { addDays, num } from "./lib/format";
 import type {
-  AOIRequest, CellsResponse, CompareResponse, CriticalPeriodsResponse, DriversResponse, OutlookResponse, Res, SummaryResponse,
+  AOIRequest, CellsResponse, CompareResponse, CriticalPeriodsResponse, DriversResponse, OutlookResponse, Res,
+  SeasonProfileResponse, SummaryResponse,
 } from "./types";
 
 type View = "explore" | "validation" | "method";
@@ -52,6 +54,7 @@ export default function App() {
   const [periods, setPeriods] = useState<CriticalPeriodsResponse | null>(null);
   const [drivers, setDrivers] = useState<DriversResponse | null>(null);
   const [outlook, setOutlook] = useState<OutlookResponse | null>(null);
+  const [season, setSeason] = useState<SeasonProfileResponse | null>(null);
   const [cells, setCells] = useState<CellsResponse | null>(null);
   const [period, setPeriod] = useState<{ start: string; end: string; key: string } | null>(null);
   const [compareWith, setCompareWith] = useState<string>("");
@@ -63,7 +66,7 @@ export default function App() {
   const load = useCallback(async (r: AOIRequest) => {
     const current = ++generation.current;
     setStatus("loading");
-    setSummary(null); setPeriods(null); setDrivers(null); setOutlook(null); setCells(null); setPeriod(null); setFallbackNote(null);
+    setSummary(null); setPeriods(null); setDrivers(null); setOutlook(null); setSeason(null); setCells(null); setPeriod(null); setFallbackNote(null);
     setCompare(null);
     try {
       const s = await api.post<SummaryResponse>("/aoi/summary", r);
@@ -72,15 +75,17 @@ export default function App() {
       setFallbackNote(s.fromFallback ? (s.notes?.[0] ?? "").replace("fallback:", "") : null);
       if (!s.series.length) { setStatus("empty"); return; }
       setStatus("ok");
-      const [p, d, o] = await Promise.allSettled([
+      const [p, d, o, seasonProfile] = await Promise.allSettled([
         api.post<CriticalPeriodsResponse>("/aoi/critical-periods", r),
         api.post<DriversResponse>("/aoi/drivers", r),
         api.post<OutlookResponse>("/aoi/outlook", r),
+        api.post<SeasonProfileResponse>("/aoi/season", r),
       ]);
       if (current !== generation.current) return;
       setPeriods(p.status === "fulfilled" ? p.value : null);
       setDrivers(d.status === "fulfilled" ? d.value : null);
       setOutlook(o.status === "fulfilled" ? o.value : null);
+      setSeason(seasonProfile.status === "fulfilled" ? seasonProfile.value : null);
       const lastWeek = s.series[s.series.length - 1]?.t;
       if (lastWeek) setPeriod({ start: addDays(lastWeek, -7 * 7), end: addDays(lastWeek, 6), key: "recent" });
     } catch (e) {
@@ -112,7 +117,7 @@ export default function App() {
   const toggleLang = () => void i18n.changeLanguage(i18n.language === "bn" ? "en" : "bn");
   const reset = () => {
     generation.current++; setArea(null); setSelectedId(null); setStatus("idle"); setSummary(null); setPeriods(null);
-    setDrivers(null); setOutlook(null); setCells(null); setPeriod(null); setCompare(null);
+    setDrivers(null); setOutlook(null); setSeason(null); setCells(null); setPeriod(null); setCompare(null);
     setFallbackNote(null);
   };
 
@@ -158,11 +163,19 @@ export default function App() {
             {status === "ok" && summary && (
               <>
                 {outlook && <ErrorBoundary><StatusCard o={outlook} /></ErrorBoundary>}
+                {season && <ErrorBoundary><SeasonCard profile={season} /></ErrorBoundary>}
                 <ErrorBoundary>
                   <section className="card">
                     <h2>{t("calendar.title")}</h2>
                     <p className="meta">{t("calendar.hint")}</p>
                     {res === "week" && <Calendar series={summary.series} selected={period?.key ?? null}
+                      bands={(season?.seasons ?? []).flatMap((item) => {
+                        const typical = item.typical;
+                        return typical?.p10?.median_md && typical.p90?.median_md && typical.peak?.median_md
+                          ? [{ label: t(`season.name_${item.name}`), from: typical.p10.median_md,
+                              to: typical.p90.median_md, peak: typical.peak.median_md }]
+                          : [];
+                      })}
                       onSelect={(w) => setPeriod({ start: w, end: addDays(w, 6), key: w })} />}
                   </section>
                 </ErrorBoundary>

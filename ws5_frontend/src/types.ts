@@ -76,6 +76,57 @@ export interface OutlookResponse extends Envelope {
   status: "skill" | "no_demonstrated_skill"; alert: { level: Level; rule?: string };
 }
 
+export interface SeasonTiming {
+  median_md: string | null;
+  q25_md: string | null;
+  q75_md: string | null;
+  median_offset_days: number;
+}
+
+export interface SeasonTrend {
+  metric: string;
+  basis: string;
+  n: number;
+  ci: [number, number] | null;
+  verdict: "later" | "earlier" | "more" | "fewer" | "no_clear_shift" | "insufficient_seasons";
+  days_per_decade?: number | null;
+  pct_per_decade?: number | null;
+  caveat?: string;
+}
+
+export interface SeasonCurrent {
+  season_year: number;
+  status: "in_progress" | "ended" | "not_started";
+  to_date_total?: number;
+  percentile_at_cutoff?: number | null;
+  typical_to_date_total?: number | null;
+  typical_share_by_cutoff?: number | null;
+  data_through?: string;
+}
+
+export interface SeasonInfo {
+  name: string;
+  window: { start_md: string; end_md: string };
+  typical: {
+    n_seasons: number;
+    p10: SeasonTiming | null;
+    p50: SeasonTiming | null;
+    p90: SeasonTiming | null;
+    peak: SeasonTiming | null;
+  } | null;
+  timing_trend: SeasonTrend | null;
+  magnitude_trend: SeasonTrend | null;
+  current: SeasonCurrent | null;
+}
+
+export interface SeasonProfileResponse extends Envelope {
+  area: string | null;
+  as_of: string;
+  data_through: string | null;
+  definition: string;
+  seasons: SeasonInfo[];
+}
+
 export interface ValidationPiece {
   schema_version: string; generated_at: string; producer: string;
   metrics: Record<string, unknown>; limitations: string[];
