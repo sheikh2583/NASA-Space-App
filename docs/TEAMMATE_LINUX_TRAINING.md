@@ -26,7 +26,7 @@ Send your teammate these **2 files** (Google Drive, USB, etc.), plus a link to t
 
 | Send | What it is |
 |---|---|
-| `share/firesense-training-inputs.zip` | All training inputs: FIRMS CSVs, boundaries, land cover, weather (about 1.7 GB) |
+| `share/firesense-training-inputs.zip` | All training inputs: FIRMS CSVs, boundaries, land cover, weather (about 200 MB, 21 files) |
 | `share/firesense-training-inputs.zip.sha256` | Checksum so they can confirm the download isn't broken |
 
 Never send `.venv/`, `.env`, `node_modules/`, or `share/firesense-runtime.zip`.
