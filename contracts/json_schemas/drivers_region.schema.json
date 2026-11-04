@@ -71,6 +71,7 @@
                 "maxItems": 2
               },
               "evidence": {
+                "description": "From the max-over-lags block-permutation p-value (decision 25): the p-value accounts for choosing the best of lags 0-8.",
                 "enum": [
                   "weak",
                   "moderate",

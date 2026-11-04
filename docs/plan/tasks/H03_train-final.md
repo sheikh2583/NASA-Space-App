@@ -5,7 +5,7 @@ kind: human
 owner: Sheikh
 phase: P3
 size: S
-needs: [T34]
+needs: [H02]
 ---
 ## Goal
 One last full run on the frozen code, so that everything shown at the event comes from one reproducible state. The

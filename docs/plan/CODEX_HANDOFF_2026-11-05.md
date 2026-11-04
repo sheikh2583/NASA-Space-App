@@ -5,7 +5,9 @@ Written by Claude after two external audits were reviewed with Sheikh. Pick up f
 ## 0. Read first, and the rules that never bend
 
 1. `AGENTS.md` in full. **No training or fitting, ever** (no `workflow.py` train/all/smoke/test/prepare/gpu-check/
-   validate, no `python -m <package>.run`, no blanket pytest, no CUDA probes). Those are Sheikh's (H03).
+   validate, no `python -m <package>.run`, no blanket pytest, no CUDA probes). **There will be no more training:**
+   H03 is done (see section 1). Pipeline stages that fit nothing (`python -m ws3_anomaly.batch`) are still
+   Sheikh's to run; give him the one-line command.
 2. `CLAUDE.md`, `docs/plan/README.md` section 3 (the loop) and section 4 (rules).
 3. For each card: `python scripts/plan.py show <ID>`, read every file it names, then edit.
 4. Checks: `python scripts/plan.py checks <ID> --run`. Never weaken, skip or delete a test.
@@ -22,9 +24,10 @@ Written by Claude after two external audits were reviewed with Sheikh. Pick up f
 | Licence | Apache-2.0, "the FireSense team". **Done** (T01, `c03cfae`, `a81f1dc`). |
 | AI-use statement | **Do not write `docs/AI_USE.md`.** The team writes it (several AIs were used). |
 | Pre-event rule | Sheikh is handling it. Don't raise it. |
-| Render | Working. `RENDER_URL` is in `.env`. |
+| Render | Working. `RENDER_URL` is in `.env`. **H01 is done.** |
+| Training | **H03 is done: the H02 run (`results/runs/20261104-211232-599349`) is the final training.** No more training runs. Every remaining card must work from the saved outputs in `data/processed/`. Science-code changes that need recomputation use non-fitting stages only (e.g. `ws3_anomaly.batch`), which Sheikh runs. |
 | Cards | **Implement every remaining card. Cut nothing.** Reopen T26 (third region). |
-| T33/T24 | Wait until Sheikh adds `EARTHDATA_TOKEN` to `.env`; `plan.py next` will report SKIPPED until then. |
+| T33/T24 | `EARTHDATA_TOKEN` is now in `.env` (5 Nov). Go ahead. |
 | Commits | Commit **and push** to `main` after each card or work package, one commit per folder owner (authors in `docs/plan/team.yaml`; `plan.py split --card <ID> -m "<ID>: …"` prints the commands). Add your tool's AI co-author trailer. Never force-push. Every push rebuilds Render. |
 
 ## 2. Work packages before the cards (not on the board; Sheikh asked for them directly)
@@ -78,15 +81,12 @@ pass), **T29** (no Bangla in the video). Leave done cards (T08, T10, T12) as his
   neither the log (caplog) nor `gaps`. Fits nothing, so it's agent-safe. T18 must reuse the helper.
 
 ### W5. Scientific wording and statistics (Step 4)
-1. **Weather lag p-values** (`ws3_anomaly/drivers.py`, `driver_associations` and `_assoc`). It tries lags 0..8
-   (`MAX_LAG = 8`), keeps the strongest, and reports that lag's unadjusted permutation p-value. Fix: max-over-lags
-   permutation. For each of `N_PERM` block permutations of the driver series, compute |rho| at every lag and keep the
-   max; p = (1 + #(null_max ≥ observed_max)) / (N_PERM + 1). Keep the bootstrap CI for the chosen lag. Mind the cost
-   (9× the Spearman calls): precompute ranks once per lag. Add a test with pure-noise series showing the
-   false-positive rate at p<0.05 is about 5%, not about 30% (numpy only, no fitting). This changes a scientific
-   output, so per `docs/plan/README.md` section 4 add a decision in `docs/science/decisions.md` and a line in the
-   drivers contract (`contracts/`). **Do not regenerate drivers outputs**; they refresh in Sheikh's H03 run. Note
-   that under "Needs Sheikh".
+1. **Weather lag p-values: DONE by Claude on 5 Nov.** `ws3_anomaly/drivers.py` now uses a max-over-lags
+   block-permutation p-value (`_assoc_over_lags`); decision 25 in `docs/science/decisions.md`; descriptions on
+   `evidence` in `contracts/openapi.yaml` and `contracts/json_schemas/drivers_region.schema.json`; tests
+   `test_lag_search_p_value_keeps_false_positives_near_nominal` and `test_shift_matches_pandas` in
+   `ws3_anomaly/tests/test_anomaly.py`. The saved `drivers_region.json` still has the old p-values until Sheikh
+   reruns `ws3_anomaly.batch` and publishes (section 4). Don't touch drivers.py again unless a test fails.
 2. **Cropland wording**: `ws5_frontend/src/i18n/en.json:139-140` "Agricultural burning likely (…)" → "{{share}}% of
    detections in cropland areas" / "Cropland-associated (season rule)". Keep the API field names. Update tests that
    assert the old text and any method/caveat text that says "agricultural-likely".
@@ -97,7 +97,7 @@ pass), **T29** (no Bangla in the video). Leave done cards (T08, T10, T12) as his
    cover both input configurations, which B1 wins (0.8900 vs 0.8775). Say plainly that the rule changed after the
    first trial and why. Mark B1's Terra-only holdouts (0.80-0.84) as the lower-quality early record.
 
-### W6. T17: run the Render check
+### W6. T17: run the Render check (now unblocked: H01 is done)
 `python scripts/check_render.py` against `RENDER_URL` from `.env` (read it in code; never echo it). Record the result
 on the card, set T17 done (or blocked with the failing line), commit, push. If it passes, keep-warm setup is in
 `docs/guides/deployment.md:88-91`.
@@ -119,12 +119,24 @@ Loop: `git status --short` clean → `git pull --ff-only` → `python scripts/pl
 | T23 | Story mode, 90 seconds, uses T12 share links. |
 | T33, T24 | Only when `EARTHDATA_TOKEN` is in `.env`. MCD64A1 as a qualitative check of seasonality/recurrence; never convert detections to area. |
 | T25 | FRP view, labelled uncalibrated across sensors. |
-| T26 | **Reopened.** `python scripts/plan.py set T26 todo --note "reopened 5 Nov by Sheikh"`. Prepare the region (catalog, boundaries, ingest config, docs) and the human-only commands; the new region's harmonized data comes only from Sheikh's H03 run. Don't claim it in the UI until H03 output exists. |
+| T26 | **Reopened.** `python scripts/plan.py set T26 todo --note "reopened 5 Nov by Sheikh"`. Prepare the region (catalog, boundaries, ingest config, docs). **Problem to raise with Sheikh before coding:** a new region needs its own B1 ratios, which is a fit, and there is no more training. Ask him whether to (a) run one pipeline pass for the new region himself, or (b) ship it prepared but hidden. Never show it in the UI without harmonized output. |
 | T27 | QA sweep, English-only parity (see W1). Snapshot budget: `public/demo/snapshot.json` is 6.97 MB against 1 MB; split per area and lazy-load. |
 | T34 | Device and accessibility review at 360/390/1366 px, keyboard, Lighthouse. English only. Also test fast area/view switching for the Leaflet `_leaflet_pos` error (`MapView.tsx` cleanup; `m.stop()` before `m.remove()` if it shows). |
-| H03 | **Stop.** Sheikh's final training run. Hand over: what changed in science code (W5.1 drivers, T14 flags, T26 region) and the human checks to batch. |
-| T28, T29, T35 | After H03. T29 takes numbers only from the final saved report. T35 includes the 13 Nov rules re-check. |
+| H03 | **Done** (the H02 run is final). Nothing to wait for. |
+| T28 | Do it **last among the code cards** (after T34). Before it, hand Sheikh the single command in section 4 so the drivers (and T14/T15 season flags, if they live in batch outputs) are recomputed, QA'd and published; then report the metrics from the saved outputs and tag `v1.0-event`. |
+| T29, T35 | After T28. T29 takes numbers only from the final saved report. T35 includes the 13 Nov rules re-check. |
 
 ## 4. Hand-over format after each card
 
-Measured (command, date, numbers) · Unit-tested (test names) · Estimated · Needs Sheikh (human checks, H03 items).
+Measured (command, date, numbers) · Unit-tested (test names) · Estimated · Needs Sheikh (human checks, and whether section 5 must be rerun).
+
+## 5. The one command Sheikh runs before T28 (give it to him as one paste, PowerShell)
+
+Recomputes anomalies, critical periods and drivers from the saved outputs (no model fitting), re-runs QA, repacks
+the runtime, and publishes it only if every step passes. `--data-through` must equal `data_through` in
+`deployment/runtime.json` (2026-11-03 unless new data was added). Backups go in `results\`, never in
+`data\processed\` (a QA test checks every file there).
+
+```powershell
+git pull --ff-only; Copy-Item data\processed\drivers_region.json results\drivers_region.before.json -Force; .venv\Scripts\python -m ws3_anomaly.batch; if ($?) { .venv\Scripts\python scripts\workflow.py validate }; if ($?) { .venv\Scripts\python scriptsuntime_bundle.py pack }; if ($?) { .venv\Scripts\python scriptselease_runtime.py --data-through 2026-11-03 --publish }; if ($?) { git add deployment/runtime.json; git commit -m "Publish runtime with recomputed drivers"; git push }
+```

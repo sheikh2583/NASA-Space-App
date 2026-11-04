@@ -8,7 +8,7 @@ Regenerate the other columns from the cards with `python scripts/plan.py board -
 | ID | Kind | Title | Owner | Needs | Status | Note |
 |---|---|---|---|---|---|---|
 | T00 | agent | Finish the plan install (integration permissions and baseline checks) | Sheikh | – | done | plan installed; agent-safe baseline green (147 tests, web 13, both builds) |
-| H01 | human | Sheikh: confirm the Render service, add the FIRMS key there, and note its URL | Sheikh | T00 | todo |  |
+| H01 | human | Sheikh: confirm the Render service, add the FIRMS key there, and note its URL | Sheikh | T00 | done | Sheikh 5 Nov: Render service working; FIRMS key set there; RENDER_URL in .env |
 | T30 | agent | Check the Space Apps rules and record them with quotes | Sheikh | T00 | done | rules recorded 4 Nov; FAQ forbids pre-event work on challenges - Sheikh to decide |
 | T01 | agent | Licence, references and AI-use statement | Sheikh | T30 | done | Apache-2.0 LICENSE + REFERENCES.md (packages, data, maps, article); AI_USE.md left to the team |
 | T31 | agent | Truth checks against FIRMS itself (area API, no viewer) | Samiul | T00 | done | FIRMS vs ours: a 460/455 (-1.1%); outage confirmed; seasons within 0.2% |
@@ -44,7 +44,7 @@ Regenerate the other columns from the cards with `python scripts/plan.py board -
 | T26 | agent | Add a third region (cut by default; reopen only if ahead on 10 Nov) | Sheikh | T40 | cut | one-person team; reopen if all P0-P1 done by 10 Nov |
 | T27 | agent | Automated QA sweep before the freeze (i18n parity, budgets, hard-coded numbers) | Shammo | T08, T09, T11, T12 | todo |  |
 | T34 | agent | Automated device, accessibility and Bangla completeness review | Samiul | T27, T15, T21, T22, T23, T25, T26 | todo |  |
-| H03 | human | Sheikh: final training run for the release (by 12 Nov) | Sheikh | T34 | todo |  |
+| H03 | human | Sheikh: final training run for the release (by 12 Nov) | Sheikh | H02 | done | Sheikh 5 Nov: H02 run 20261104-211232 is the final training; no more training. Non-training stages (ws3_anomaly.batch) rerun as needed |
 | T28 | agent | Validate, export and tag v1.0-event after Sheikh's final training | Sheikh | H03, T16 | todo |  |
 | T29 | agent | Draft the submission text, slide content and video script from measured numbers | Samiul | T28 | todo |  |
 | T35 | agent | Submission assets (slides page, recorded story video) and a 13 Nov rules re-check | Samiul | T29, T30 | todo |  |
