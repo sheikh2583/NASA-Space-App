@@ -9,7 +9,7 @@ Regenerate the other columns from the cards with `python scripts/plan.py board -
 |---|---|---|---|---|---|---|
 | T00 | agent | Finish the plan install (integration permissions and baseline checks) | Sheikh | – | done | plan installed; agent-safe baseline green (147 tests, web 13, both builds) |
 | H01 | human | Sheikh: confirm the Render service, add the FIRMS key there, and note its URL | Sheikh | T00 | todo |  |
-| T30 | agent | Check the Space Apps rules and record them with quotes | Sheikh | T00 | todo |  |
+| T30 | agent | Check the Space Apps rules and record them with quotes | Sheikh | T00 | done | rules recorded 4 Nov; FAQ forbids pre-event work on challenges - Sheikh to decide |
 | T01 | agent | Licence, references and AI-use statement | Sheikh | T30 | todo |  |
 | T31 | agent | Truth checks against FIRMS itself (area API, no viewer) | Samiul | T00 | todo |  |
 | T02 | agent | Confirm that no validation piece still says "synthetic data" (read-only check) | Samin | T00 | todo |  |
