@@ -10,6 +10,8 @@ Updated 4 November 2026, Asia/Dhaka. The current [README](../README.md), [traini
 - Windows: `START_HERE.cmd`; Linux/macOS: `bash start.command`.
 - Shared workflow: `scripts/workflow.py`; training and the low-level pipeline default to CUDA, GPU 0, eight helper threads.
 
+The canonical `docs/TRAINING.md` now starts with copyable Windows/Linux fast paths using the project interpreter directly, separate quick/full steps, and timing estimates for both GPUs. It distinguishes training-only Python checks from Node-dependent smoke/UI workflows, explains input transfer to another GPU host, supplies console logging/recovery commands, and ends with a final-run acceptance checklist. Updating the guide did not launch training or replace scientific artifacts.
+
 ## Initialization and dependencies
 
 Windows `scripts/setup.ps1` and Linux `scripts/setup.sh` create/check the OS-specific Python 3.11 environment and call the shared `scripts/bootstrap.py`. Default setup installs the complete `requirements-cuda.txt` environment (locked base requirements + XGBoost 3.2.0), checks driver/imports/dependencies, runs an actual CUDA probe, installs npm dependencies, preserves `.env`, and creates input folders. Setup never starts a data pipeline.

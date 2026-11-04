@@ -2,6 +2,81 @@
 
 Current workflow: 4 November 2026. Start in the repository root. Training requires NVIDIA Windows/Linux, Python 3.11, the real inputs below, and a passing CUDA probe. The complete project setup also requires Node.js 22.12+; training-only setup does not. Setup installs dependencies only; training is always separate. For UI/API development without a GPU, use `-UiOnly` / `--ui-only` and the mock launch in [README](../README.md).
 
+## Start here: run on your training machine
+
+Use the same procedure on the RTX 4070 Laptop 8 GB or RTX 3090 Desktop 24 GB. GPU 0 means the first CUDA-visible GPU **on that machine**. These examples use the project interpreter directly, so virtual-environment activation is optional. Run one block at a time and resolve any failure before continuing. The commands below use the required downloaded files; setup does not obtain those files for you.
+
+### Windows — either GPU
+
+Open PowerShell and enter the repository. This is the current workspace path; change it on another computer:
+
+```powershell
+Set-Location "X:\Nasa Space Apps Challenge\nasa-modis-viirs"
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\setup.ps1 -TrainingOnly
+if ($LASTEXITCODE -ne 0) { throw 'Setup failed. Resolve the error before continuing.' }
+.venv\Scripts\python scripts\workflow.py prepare --gpu-id 0 --threads 8
+if ($LASTEXITCODE -ne 0) { throw 'Training inputs or CUDA are not ready.' }
+```
+
+When readiness prints `READY: 0 blocking check(s)`, run quick training:
+
+```powershell
+.venv\Scripts\python -u scripts\workflow.py train --backend cuda --gpu-id 0 --threads 8 --quick
+if ($LASTEXITCODE -ne 0) { throw 'Quick training failed. Inspect its failed stage and QA.' }
+```
+
+Inspect `results/latest.md` and confirm QA passes. Then run the final full comparison:
+
+```powershell
+.venv\Scripts\python -u scripts\workflow.py train --backend cuda --gpu-id 0 --threads 8
+if ($LASTEXITCODE -ne 0) { throw 'Full training failed; do not publish this run.' }
+.venv\Scripts\python scripts\workflow.py results
+```
+
+### NVIDIA Linux — either GPU
+
+Clone/extract the source and enter its root. Replace the example path with your checkout. Transfer the required input files first using the layout below. Create a fresh Linux `.venv`; a Windows `.venv` cannot be reused.
+
+```bash
+cd "/path/to/nasa-modis-viirs"
+bash scripts/setup.sh --training-only
+```
+
+Run readiness, then quick training only when readiness succeeds:
+
+```bash
+.venv/bin/python scripts/workflow.py prepare --gpu-id 0 --threads 8
+```
+
+```bash
+.venv/bin/python -u scripts/workflow.py train --backend cuda --gpu-id 0 --threads 8 --quick
+```
+
+After quick training and QA pass, run full training and refresh the report:
+
+```bash
+.venv/bin/python -u scripts/workflow.py train --backend cuda --gpu-id 0 --threads 8
+```
+
+```bash
+.venv/bin/python scripts/workflow.py results
+```
+
+Each command must finish with exit status 0. A successful training run prints `Pipeline complete`; its `execution.json` records `status: passed`. A full run must also show `quick: false` and `start_stage: null` to establish a newly completed whole pipeline. A successful resume is useful validation, but its elapsed time excludes earlier stages.
+
+### Time budget
+
+| Run | RTX 4070 Laptop 8 GB | RTX 3090 Desktop 24 GB |
+|---|---:|---:|
+| Quick training | 12–20 minutes | 10–18 minutes |
+| Full pipeline | 18–25 minutes | 13–22 minutes |
+
+These are planning ranges for the current 4.34-million-detection input, cached weather, local SSD, and a comparable host CPU. Installation and data downloads are additional. The 4070 model stage measured 274 seconds; the first full trial failed QA and required repair. The 3090 has not been benchmarked. Use [GPU timing evidence](GPU_TRAINING_TIMES.md) for the assumptions; do not present either range as a guaranteed successful-run benchmark.
+
+The pipeline trains tree models and evaluates held-out agreement. It is not an epoch-based neural-network training loop. `--quick` reduces holdouts; `--threads` controls host helpers. The selected scientific method may still be B1 after the CUDA candidate has been trained.
+
+Before starting, stop other runs in this checkout, keep the input files unchanged, and reserve space for both new outputs and a copy of the previous outputs. Readiness requires at least 5 GiB free; large existing artifacts/backups can require more. On the laptop, connect power and use adequate cooling. Stop the trained API while replacing its data and restart it after validation.
+
 ## 1. Install the full training environment
 
 Windows, PowerShell:
@@ -60,6 +135,8 @@ Required local inputs:
 | Original MCD12C1 land cover | `data/raw/landcover/MCD12C1*.hdf` |
 | NASA POWER tiles | `data/raw/power/`; weather command creates the regional Parquet caches |
 
+When moving to the 3090 machine, transfer `data/raw/firms/`, `data/raw/boundaries/`, `data/raw/landcover/`, and both regional weather Parquets under `data/interim/monazir/`. Raw POWER JSON tiles are useful for rebuilding/resuming weather acquisition, but existing valid regional Parquets satisfy readiness. Preserve directory names. Downloaded ZIPs must be extracted into CSV/CSV.GZ inputs before training. Recreate dependencies on the destination; keep `.venv`, `node_modules`, and private `.env` files out of the transfer bundle. Archive training does not require copying an API key.
+
 See [data acquisition](SHEIKH_GUIDE.md) for download steps. The training launcher requires land cover even though low-level code permits a degraded fallback. Archive training needs no FIRMS API key. Recent API acquisition uses the private root `.env` key; no key belongs in `VITE_*` variables.
 
 ```sh
@@ -70,6 +147,26 @@ python scripts/workflow.py prepare --gpu-id 0 --threads 8
 Wait for both `data/interim/monazir/weather_BD.parquet` and `weather_PB.parquet`. The cache resumes completed raw tiles when dates are unchanged. Readiness must print **READY: 0 blocking check(s)**. It checks presence/imports, free disk, and an actual CUDA probe; inspect coverage separately. Dates and satellite windows are configured for the November 2026 record.
 
 ## 3. Smoke, quick training, full training
+
+Choose the checks for the setup you installed:
+
+| Installed setup | Before training | After training |
+|---|---|---|
+| Complete project setup, including Node/npm | `python scripts/workflow.py smoke` | `validate`, `results`, then `smoke` and the UI |
+| Training-only setup, no Node/npm | Python-only tests below, then `prepare` | `validate` and `results`; install frontend dependencies separately before UI checks |
+
+The commands in the rest of this guide use activated-environment `python`. Use the explicit Windows/Linux interpreter paths from the fast path if activation is unavailable.
+
+Training-only software checks:
+
+```sh
+python -m pip check
+python -m pytest common ws1_harmonize/tests ws2_platform/tests ws3_anomaly/tests ws4_outlook/tests scripts/tests -q
+```
+
+Hardware integration tests are opt-in; the readiness probe always tests actual CUDA. The Python-only command uses tiny test data and needs neither NASA inputs nor Node. It intentionally excludes the real-output QA suite until training has produced its artifacts.
+
+With complete project setup, the integrated smoke check and training commands are:
 
 ```sh
 # Unit/script tests, fixture API, optional existing-output QA, frontend checks/build.
@@ -97,6 +194,28 @@ The console prints `== <stage>` and stage completion times. Inspect:
 - `cuda-fits.jsonl` beside that report: every verified fit's objective, rows, device, and wall time.
 - `nvidia-smi -l 2` in another terminal: utilization/memory; Ctrl+C exits monitoring.
 
+For a terminal run, save the live console output as well as the automatic execution report. These logging examples start a **full** run; use them instead of launching another full command in parallel.
+
+PowerShell:
+
+```powershell
+New-Item -ItemType Directory -Force results\logs | Out-Null
+$trainingLog = "results\logs\train-full-$(Get-Date -Format yyyyMMdd-HHmmss).log"
+.venv\Scripts\python -u scripts\workflow.py train --backend cuda --gpu-id 0 --threads 8 2>&1 | Tee-Object -FilePath $trainingLog
+if ($LASTEXITCODE -ne 0) { throw "Training failed. Inspect $trainingLog" }
+```
+
+Bash:
+
+```bash
+set -o pipefail
+mkdir -p results/logs
+training_log="results/logs/train-full-$(date +%Y%m%d-%H%M%S).log"
+.venv/bin/python -u scripts/workflow.py train --backend cuda --gpu-id 0 --threads 8 2>&1 | tee "$training_log"
+```
+
+The Bash pipeline's exit status now reflects a failed training command rather than just a successful `tee`. Leave the terminal/process running. Ctrl+C interrupts the current run; it does not create a paused training checkpoint. After an interruption, inspect partial outputs and rerun from the interrupted stage. If power/process termination prevented a final status update, `execution.json` can still say `running`; that does not prove a process is active.
+
 GPU activity is intermittent because CSV/Parquet/geospatial/calibration/anomaly work uses the host CPU and many fits are small. Low utilization during those stages is expected. `--threads` sets model-library/helper workers, not GPU cores. The two GPUs on separate computers do not pool VRAM.
 
 If a stage fails, repair its cause and resume at that stage with the original quick/full setting:
@@ -107,16 +226,40 @@ python scripts/workflow.py train --backend cuda --gpu-id 0 --threads 8 --from in
 
 Include `--quick` only for an originally quick run. If inputs or upstream code changed, restart from the earliest affected stage. Switching a numeric backend requires restarting at `model` or earlier. Avoid the internal `--reuse-metrics` flag: it is only valid when the panel and fit settings are known unchanged. Do not weaken QA to bypass a failure.
 
+| Failure | Resolve before resuming |
+|---|---|
+| Missing imports / pip conflicts | Rerun the training-only installer in the project's Python 3.11 environment; read the first installation/import error. |
+| GPU probe fails | Check the NVIDIA driver and selected GPU ID; install the full CUDA requirements. Every objective must verify the requested CUDA device. |
+| Missing input/cache | Complete the exact file named by readiness, then run readiness again. |
+| Out of GPU memory | Stop other GPU workloads you control, confirm the intended device, and rerun the failed stage. A repeated failure needs a measured model/data change and fresh evaluation; there is no launcher batch-size option. |
+| Scientific QA fails | Inspect validation JSON and the failed scientific check, fix its cause, and rebuild the affected upstream/downstream stages. |
+| Missing Node/npm in `smoke`/`dev` | Use Python-only checks on the training host, or install the complete project environment before frontend workflows. |
+
 ## 5. Review and publish
+
+On either a training-only or complete installation:
 
 ```sh
 python scripts/workflow.py validate
 python scripts/workflow.py results
+```
+
+For UI review, first install the complete project setup if the machine was initialized with training-only mode. Then:
+
+```sh
 python scripts/workflow.py smoke
 python scripts/workflow.py dev --open
 ```
 
 Read `results/latest.md`, `data/processed/validation/`, and `data/interim/sheikh/method.json`. Check held-out agreement, interval coverage, the historical seam, and forecast skill. Current accepted science selects **B1**; GPU harmonization candidates were still trained and evaluated. See [measured CUDA results](CUDA_RESULTS.md).
+
+Accept a final run only after checking:
+
+- The execution report is `passed`, with the intended GPU/device, four verified probe objectives, and the expected full-run stages. Do not mistake setup/probe success for completed training.
+- `method.json` records the selected method and both Terra+Aqua and Terra-only holdout agreement. CCC is an agreement metric, not classification accuracy.
+- All five QA groups pass, including the historical seam. Interval coverage and forecast skill are inspected rather than assumed from a zero exit code.
+- Final outputs exist under `data/processed/`; learned comparison artifacts are under `data/interim/sheikh/`. CUDA models use `xgb_count.ubj`, `xgb_frp.ubj`, and `xgb_metadata.json`; `b1_params.pkl` supplies the baseline if selected.
+- Keep the execution report, CUDA fit log, console log, selected-method record, metrics table, and results summary with the run's Git revision. Preserve the pre-run backup until the new science has been reviewed.
 
 To publish the named-area demo after review:
 
