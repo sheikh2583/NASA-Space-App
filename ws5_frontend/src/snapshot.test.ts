@@ -17,6 +17,10 @@ describe("hosted real-data snapshot", () => {
     expect(() => selectSnapshot(snapshot, "/aoi/summary", { ...DEMOS.bd, start: "2020-01-01" })).toThrow();
     expect(() => selectSnapshot(snapshot, "/aoi/summary", { ...DEMOS.pb, res: "day" })).toThrow();
   });
+  it("serves the season profile for both demo areas", () => {
+    expect((selectSnapshot(snapshot, "/aoi/season", DEMOS.pb) as { seasons: unknown[] }).seasons).toHaveLength(2);
+    expect((selectSnapshot(snapshot, "/aoi/season", DEMOS.bd) as { seasons: unknown[] }).seasons).toHaveLength(1);
+  });
   it("compares demo series and omits unsupported spatial cell products", () => {
     const compare = selectSnapshot(snapshot, "/aoi/compare", { a: DEMOS.bd, b: DEMOS.pb }) as { a: unknown; b: unknown };
     expect(compare.a).toEqual(snapshot.areas.bd.summary);
