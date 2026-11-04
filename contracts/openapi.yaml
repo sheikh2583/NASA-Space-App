@@ -307,7 +307,10 @@ components:
           items: { type: number }
           minItems: 2
           maxItems: 2
-        evidence: { type: string, enum: [weak, moderate, strong] }
+        evidence:
+          type: string
+          enum: [weak, moderate, strong]
+          description: From the max-over-lags block-permutation p-value (decision 25), which accounts for choosing the best of lags 0-8.
     DriversResponse:
       allOf:
         - $ref: '#/components/schemas/Envelope'
