@@ -4,6 +4,8 @@ FireSense turns NASA FIRMS MODIS and VIIRS active-fire observations into a consi
 
 The system uses real FIRMS archives when present and falls back to synthetic development data only when no real files are available. Modeled values and uncertainty are always exposed; associations are not presented as causes.
 
+The full real-data training run completed on 4 November 2026 with all five QA groups passing. See [training results](docs/TRAINING_RESULTS.md) for the selected model, holdouts, interval coverage, and remaining human checks.
+
 ## Quick start
 
 Requirements: Python 3.11, Node.js LTS, npm, and Git.

@@ -9,6 +9,7 @@
 from __future__ import annotations
 
 import datetime as dt
+import glob
 import json
 import os
 import pickle
@@ -107,6 +108,8 @@ def step_v1():
 def step_validation():
     t = pd.read_csv(f"{I}/metrics.csv")
     choice = json.load(open(f"{I}/method.json"))
+    real_data = any("synthetic_" not in os.path.basename(path)
+                    for path in glob.glob("data/raw/firms/*.csv*"))
     piece = {
         "schema_version": "1.0", "generated_at": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
         "producer": "harmonization",
@@ -119,7 +122,8 @@ def step_validation():
             "Terra and Aqua drifted off their designed orbits; the drift-era row shows how far the model degrades after 2021.",
             "Cell-level intervals are indicative only and are never summed; AOI intervals come from interval_table.json.",
             f"The learned model was {'kept' if choice['method'] == 'lgbm' else 'not used: the per-region ratio (B1) agreed better with held-out observations'}; see method_chosen.",
-            "These metrics were computed on SYNTHETIC data while the pipeline was built; rerun on real FIRMS data before quoting.",
+            ("These metrics were computed on downloaded FIRMS observations."
+             if real_data else "These metrics use synthetic development data and do not establish real-world accuracy."),
         ]}
     os.makedirs(f"{P}/validation", exist_ok=True)
     with open(f"{P}/validation/harmonization.json", "w") as f:
