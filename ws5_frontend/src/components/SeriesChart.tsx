@@ -13,10 +13,16 @@ interface Props {
 /** Value line with its 90% band; modeled years shaded; seams marked. */
 export default function SeriesChart({ series, seams, highlight, second }: Props) {
   const { t } = useTranslation();
-  const data = series.map((p, i) => ({
-    t: p.t, value: p.value, band: p.lo !== null && p.hi !== null ? [p.lo, p.hi] : null,
-    b: second?.[i]?.value ?? undefined, drift: p.drift_flag ? p.value : undefined,
-  }));
+  // A partial period (data ends inside it) is drawn as a dot, not as a drop in the line or band.
+  const data = series.map((p, i) => {
+    const partial = p.complete === false;
+    return {
+      t: p.t, value: partial ? null : p.value,
+      band: !partial && p.lo !== null && p.hi !== null ? [p.lo, p.hi] : null,
+      b: second?.[i]?.value ?? undefined, drift: p.drift_flag ? p.value : undefined,
+      partial: partial ? p.value : undefined,
+    };
+  });
   const first = series[0]?.t;
   const last = series[series.length - 1]?.t;
   const inRange = (d: string) => first && last && d >= first && d <= last;
@@ -47,6 +53,7 @@ export default function SeriesChart({ series, seams, highlight, second }: Props)
           <Line type="stepAfter" dataKey="value" name={t("chart.value")} stroke="#8c2a0c" dot={false} strokeWidth={1.4} isAnimationActive={false} />
           {second && <Line type="stepAfter" dataKey="b" name="B" stroke="#1d5fa8" dot={false} strokeWidth={1.2} isAnimationActive={false} />}
           <Line dataKey="drift" name={t("chart.drift")} stroke="none" dot={{ r: 2, fill: "#c27c0e" }} isAnimationActive={false} />
+          <Line dataKey="partial" name={t("chart.partial")} stroke="none" dot={{ r: 3, fill: "#fff", stroke: "#8c2a0c", strokeWidth: 1.4 }} isAnimationActive={false} />
         </ComposedChart>
       </ResponsiveContainer>
     </div>

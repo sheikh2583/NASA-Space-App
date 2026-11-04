@@ -52,8 +52,10 @@ export default function Calendar({ series, selected, onSelect }: Props) {
           const yy = TOP + row(y) * (CELL + GAP);
           const v = p.value;
           const fill = v === null ? "var(--none-cell)" : v <= 0 ? "#f3efe8" : (color(Math.max(v, 1)) as string);
+          const partial = p.complete === false;
           const label = t("calendar.cell", { date: date(p.t), value: num(v, 1), lo: num(p.lo, 1), hi: num(p.hi, 1),
-                                            source: t(`source.${p.source}`) });
+                                            source: t(`source.${p.source}`) })
+                        + (partial ? " · " + t("series.partial", { n: num(p.n_days ?? 0) }) : "");
           return (
             <g key={p.t}>
               <rect className={"cell" + (selected === p.t ? " sel" : "")} x={x} y={yy} width={CELL} height={CELL} rx={2} fill={fill}
@@ -63,6 +65,7 @@ export default function Calendar({ series, selected, onSelect }: Props) {
               </rect>
               {v !== null && p.source === "modeled_from_modis" && <rect x={x} y={yy} width={CELL} height={CELL} rx={2} fill="url(#hatch)" pointerEvents="none" />}
               {v !== null && p.source === "adjusted_from_noaa20" && <rect x={x} y={yy} width={CELL} height={CELL} rx={2} fill="url(#dots)" pointerEvents="none" />}
+              {partial && <rect x={x + 0.5} y={yy + 0.5} width={CELL - 1} height={CELL - 1} rx={2} fill="none" stroke="var(--ink)" strokeDasharray="2 2" pointerEvents="none" />}
               {p.anomaly?.flag && <circle cx={x + CELL / 2} cy={yy + CELL / 2} r={CELL / 2 + 1} fill="none" stroke="#1d5fa8" strokeWidth={1.6} pointerEvents="none" />}
             </g>
           );
@@ -73,6 +76,7 @@ export default function Calendar({ series, selected, onSelect }: Props) {
         <span>{t("calendar.legend_adjusted")}</span>
         <span>{t("calendar.legend_flag")}</span>
         <span>{t("calendar.legend_none")}</span>
+        <span>{t("calendar.legend_partial")}</span>
       </div>
     </div>
   );

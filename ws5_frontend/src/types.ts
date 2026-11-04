@@ -36,6 +36,9 @@ export interface SummaryPoint {
   modeled_share: number;
   drift_flag: boolean;
   anomaly?: Anomaly;
+  /** false when the period runs past the last day with data; missing means complete. */
+  complete?: boolean;
+  n_days?: number;
 }
 
 export interface SummaryResponse extends Envelope {
