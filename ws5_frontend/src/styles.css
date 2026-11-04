@@ -8,6 +8,8 @@
   --accent-soft: #f6dccf;
   --watch: #c27c0e;
   --high: #b0201a;
+  --low: #2f6f9f;
+  --very-low: #1d4f7a;
   --ok: #3d6b4f;
   --none-cell: #d9d4cd;
   --radius: 10px;
@@ -77,6 +79,8 @@ button { cursor: pointer; }
 .level.none { background: var(--ok); }
 .level.watch { background: var(--watch); }
 .level.high { background: var(--high); }
+.level.low { background: var(--low); }
+.level.very_low { background: var(--very-low); }
 
 .calendar { overflow-x: auto; }
 .calendar svg text { font-size: 10px; fill: var(--muted); }
