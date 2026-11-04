@@ -1,6 +1,8 @@
 # Submission checklist (owner: Samiul; Sheikh submits at H46)
 Confirm each item against the organizers' current rules at kickoff.
 
+**Rules, with quotes and sources: [RULES_CHECK.md](../RULES_CHECK.md).** It records a pre-event-work restriction that Sheikh must resolve first.
+
 - [ ] Project page text (what, how, why it matters, limits)
 - [ ] Demo video recorded and uploaded (length per rules)
 - [ ] Repository link; licence file; README current
