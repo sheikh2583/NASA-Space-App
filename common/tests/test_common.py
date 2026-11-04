@@ -142,3 +142,16 @@ def test_series_intervals_only_on_nonobserved_part():
     assert (obs["lo"] == obs["value"]).all() and (obs["hi"] == obs["value"]).all()
     mod = s[s["source"] == "modeled_from_modis"]
     assert (mod["lo"] < mod["value"]).all() and (mod["hi"] > mod["value"]).all()
+
+
+def test_day_sources_fill_an_snpp_outage_from_noaa20_but_not_before_it_existed():
+    from common.series import ADJUSTED, MODELED, day_sources
+    rows = []
+    for d in pd.date_range("2024-11-03", "2024-11-05").date:
+        rows += [(d, "SNPP", d != dt.date(2024, 11, 4)), (d, "NOAA20", True), (d, "Terra", True)]
+    rows += [(dt.date(2015, 6, 1), "SNPP", False), (dt.date(2015, 6, 1), "Terra", True)]   # no NOAA-20 in 2015
+    sd = pd.DataFrame(rows, columns=["date", "sat", "operating"])
+    src = day_sources(sd, "2015-06-01", "2024-11-05")
+    assert src[pd.Timestamp("2024-11-04")] == ADJUSTED
+    assert src[pd.Timestamp("2024-11-03")] == "observed_viirs"
+    assert src[pd.Timestamp("2015-06-01")] == MODELED

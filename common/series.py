@@ -23,7 +23,8 @@ def season_label(month: int) -> str:
 
 
 def day_sources(sensor_days: pd.DataFrame, start, end) -> pd.Series:
-    """Source of each day in [start, end]: observed SNPP, adjusted NOAA-20 after the cutoff, modeled MODIS, or None."""
+    """Source of each day in [start, end]: observed SNPP; adjusted NOAA-20 after the cutoff or on an SNPP outage day
+    when NOAA-20 operates (decision 24); modeled MODIS; or None."""
     days = pd.date_range(start, end, freq="D")
     op = sensor_days[sensor_days["operating"]].copy()
     op["date"] = pd.to_datetime(op["date"])
@@ -34,7 +35,7 @@ def day_sources(sensor_days: pd.DataFrame, start, end) -> pd.Series:
     for d in days:
         if d in snpp:
             out.append(OBSERVED)
-        elif d.date() >= SNPP_CUTOFF and d in n20:
+        elif d in n20:                 # after the SNPP cutoff, or an SNPP outage day while NOAA-20 operates
             out.append(ADJUSTED)
         elif d in modis:
             out.append(MODELED)
