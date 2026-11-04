@@ -4,6 +4,10 @@ FireSense combines NASA FIRMS MODIS and VIIRS observations into a consistent fir
 
 [Live demo](https://sheikh2583.github.io/NASA-Space-App/) · [Training guide](docs/TRAINING.md) · [GPU time estimates](docs/GPU_TRAINING_TIMES.md) · [Claude handoff](docs/CLAUDE_HANDOFF.md)
 
+**Operator guide — updated 4 November 2026.** Start from the repository root and run each command only after the previous one succeeds. Setup, data acquisition, training, and publication are separate steps.
+
+[Initialize](#initialize-a-fresh-checkout) · [CUDA setup](#cuda-training-dependencies) · [Data and keys](#prepare-real-training-data) · [Train](#train-and-validate) · [Debug](#debug-and-test) · [Deploy](#deploy-the-demo) · [Project structure](#project-structure-and-contribution)
+
 ## Choose your starting point
 
 | Goal | What you need | Start here |
@@ -22,7 +26,17 @@ The configured record ends on **2 November 2026**. Pre-2012 activity is modeled,
 
 ## Initialize a fresh checkout
 
-Install **Python 3.11**, **Node.js 22.12+ with npm** (the CI version), and **Git**. Setup installs pinned Python and npm dependencies, creates `.venv`, and copies example environment files only when absent. Allow at least 5 GiB of free space for training intermediates in addition to downloaded inputs and CUDA backups. Internet access is needed for installation, map tiles, and data acquisition.
+Install **64-bit Python 3.11** and **Git**. Install **Node.js 22.12+ with npm** for UI development, smoke checks, and frontend builds. A headless training host does not need Node. Choose one setup mode:
+
+| Setup | Windows PowerShell | Linux Bash | Installs / verifies |
+|---|---|---|---|
+| UI/API development | `scripts\setup.ps1 -UiOnly` | `bash scripts/setup.sh --ui-only` | Locked Python/API dependencies and frontend; no NVIDIA requirement |
+| Complete project | `scripts\setup.ps1` | `bash scripts/setup.sh` | CUDA training dependencies, actual GPU fits, and frontend |
+| Headless training | `scripts\setup.ps1 -TrainingOnly` | `bash scripts/setup.sh --training-only` | Same Python/CUDA environment and GPU verification; skips Node/npm and frontend changes |
+
+Use the complete PowerShell invocation below if script execution is blocked. macOS supports UI/API development only. Full and training-only modes require an NVIDIA driver and `nvidia-smi`; Windows native dependencies also need the [Microsoft Visual C++ x64 runtime](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist). Linux may need `libgomp1` and `python3.11-venv`; see [platform prerequisites](docs/TRAINING.md#1-install-the-full-training-environment).
+
+Setup creates `.venv`, installs pinned dependencies, and copies example environment files only when absent. Training-only setup creates only the root `.env`. Recreate environments on each OS rather than transferring `.venv` or `node_modules`. Allow at least 5 GiB of free space for training intermediates **plus** downloaded inputs and backups of existing outputs. Internet access is needed for installation, map tiles, and data acquisition.
 
 Clone the repository, or extract the source ZIP and open a terminal in its root. To publish your own copy, fork the repository and clone **your fork's URL** instead.
 
@@ -30,6 +44,8 @@ Clone the repository, or extract the source ZIP and open a terminal in its root.
 git clone https://github.com/sheikh2583/NASA-Space-App.git firesense
 cd firesense
 ```
+
+Paths containing spaces must be quoted when changing directories, for example `cd "X:\Nasa Space Apps Challenge\nasa-modis-viirs"` in PowerShell. The commands below work from any checkout location; no drive letter is hardcoded in the scripts.
 
 ### Windows — PowerShell
 
@@ -48,7 +64,7 @@ bash scripts/setup.sh --ui-only
 .venv/bin/python scripts/workflow.py dev --mock --open
 ```
 
-The UI opens at [localhost:5173](http://localhost:5173), with API documentation at [localhost:8000/docs](http://localhost:8000/docs). Choose a demo area to load fixture responses. **Ctrl+C** stops both servers. Setup does not download the scientific datasets.
+Success means setup prints **SETUP COMPLETE**, then the launcher prints **UI ready**. The UI opens at [localhost:5173](http://localhost:5173), with API documentation at [localhost:8000/docs](http://localhost:8000/docs). Choose a named area; mock responses are synthetic fixtures rather than trained administrative totals. **Ctrl+C** stops both servers. Setup does not download the scientific datasets.
 
 For the commands below, activate the environment once in each new terminal, from the repository root:
 
@@ -57,7 +73,7 @@ For the commands below, activate the environment once in each new terminal, from
 | PowerShell | `.\.venv\Scripts\Activate.ps1` |
 | Bash | `source .venv/bin/activate` |
 
-After activation, `python` means the project's interpreter. If PowerShell blocks activation, use `.venv\Scripts\python` in place of `python`; activation is optional. Verify with `python -c "import sys; print(sys.executable)"`.
+After activation, `python` means the project's interpreter. Activation is optional: replace `python` below with `.venv\Scripts\python` on Windows or `.venv/bin/python` on Linux/macOS. Verify with `python -c "import sys; print(sys.executable)"`; its path must point inside this checkout's `.venv`.
 
 Run the integration check after stopping the development servers:
 
@@ -65,7 +81,7 @@ Run the integration check after stopping the development servers:
 python scripts/workflow.py smoke
 ```
 
-Smoke runs unit/script tests, a fixture API request, frontend tests, translations, and a production build. It also validates real outputs when present; it skips that part in a fresh checkout. It does not train or download data. Hardware tests remain skipped unless explicitly enabled.
+Smoke runs unit/script tests, a fixture API request, frontend tests, translations, and a production build. It also validates real outputs when present; it skips that part in a fresh checkout. Success ends with **SMOKE PASSED**. It does not train or download data. Hardware tests remain skipped unless explicitly enabled. For training-only setup, use the Python-only checks under [Debug and test](#debug-and-test) until frontend dependencies are installed.
 
 ### Clickable launchers
 
@@ -75,7 +91,7 @@ Windows: double-click **START_HERE.cmd**. Linux/macOS: `bash start.command`. The
 |---|---|---|
 | 1 / 12 | Setup complete CUDA environment / Verify an actual GPU fit | NVIDIA Windows/Linux |
 | 11 / 7 / 3 | Setup UI development / Mock UI / Smoke | No NASA data or GPU |
-| 2 / 4 / 5 | Prepare / Quick training / Full training | Real inputs; CUDA by default |
+| 2 / 4 / 5 | Prepare / Quick training / Full training | Real inputs and working CUDA required |
 | 6 / 8 / 9 | Trained UI / Results report / Source ZIP | Training needed for real UI/results |
 | 10 | Full CUDA training, tests, and UI build | Real inputs and CUDA |
 
@@ -164,7 +180,9 @@ Detailed acquisition instructions: [data guide](docs/SHEIKH_GUIDE.md), [data lay
 | `VITE_DEMO_MODE` | Empty for live API mode; `snapshot` for static hosting |
 | `VITE_FALLBACK_BASE_URL` | Optional static fallback endpoint; leave empty unless separately configured |
 
-Setup creates both `.env` files from their examples. Vite reads the frontend's environment file and embeds `VITE_*` values at build time. Restart Vite after local configuration changes; rebuild for deployment. Keep the FIRMS key out of frontend variables, Git, screenshots, and handoff ZIPs. The OpenStreetMap basemap requires no FIRMS/CARTO key; follow its [tile usage policy](https://operations.osmfoundation.org/policies/tiles/).
+Full/UI setup creates both `.env` files from their examples; training-only setup creates the root file. The direct FIRMS downloader reads `FIRMS_MAP_KEY` from its **process environment**; saving it in the root `.env` alone does not load it into that command. Load it privately before API acquisition. Archive training, weather acquisition, mock development, and Pages publication need no FIRMS key.
+
+Vite reads the frontend's environment file and embeds `VITE_*` values at build time. Restart Vite after local configuration changes; rebuild for deployment. Keep the FIRMS key out of frontend variables, Git, screenshots, and handoff ZIPs. The OpenStreetMap basemap requires no FIRMS/CARTO key; follow its [tile usage policy](https://operations.osmfoundation.org/policies/tiles/).
 
 ## Train and validate
 
@@ -180,14 +198,23 @@ python scripts/workflow.py train --backend cuda --gpu-id 0 --threads 8
 
 Quick training reduces model holdouts; it still rebuilds downstream science and is separate from `smoke`. The full command runs all six holdouts with both Terra+Aqua and Terra-only checks. Run it before reporting final model comparisons. Selection uses held-out agreement; choosing CUDA does not force selection of the learned model. Never bypass a failing scientific gate to obtain a model or deployment.
 
-After training:
+After training, on either a complete or headless setup:
 
 ```sh
 python scripts/workflow.py validate
 python scripts/workflow.py results
+```
+
+With Node and frontend dependencies installed, also run:
+
+```sh
 python scripts/workflow.py smoke
 python scripts/workflow.py dev --open
 ```
+
+For a headless host, inspect the reports locally or transfer the validated runtime artifacts to a development/deployment machine. Install the complete setup before running workflows that call npm (`smoke`, `test`, `build`, `dev`, or `all`).
+
+Accept a new full run only when the command exits successfully, prints **Pipeline complete**, and `results/runs/<timestamp>/execution.json` records `status: passed`, `quick: false`, and `start_stage: null`. A quick run or successful downstream resume does not establish completion or elapsed time for a fresh full run. Verify the selected method, real-data provenance, both satellite-input combinations, and scientific checks in the result/validation files before publishing.
 
 Successful QA checks data integrity, API contracts, end-to-end queries, shared libraries, and the historical anomaly seam. Inspect numeric validation results as well as the exit status. Human FIRMS comparisons, Bangla review, and browser/phone checks remain in the [QA checklist](docs/QA_CHECKLIST.md).
 
@@ -203,6 +230,16 @@ Successful QA checks data integrity, API contracts, end-to-end queries, shared l
 
 CUDA backups can be large. Inputs, models, backups, and run reports stay outside Git. Scientific evidence is in [CUDA results](docs/CUDA_RESULTS.md). Plan **18–25 minutes** for a full RTX 4070 Laptop run or **13–22 minutes** for an RTX 3090 with a similar host and local files. These are planning ranges, not two measured successful full runs; see [assumptions and estimates](docs/GPU_TRAINING_TIMES.md).
 
+### See training progress
+
+The terminal prints stage names (`== model`, `== drift`, and so on), completion times, and harmonization CUDA fit events. This tree-model pipeline has no neural-network epoch counter or single reliable percentage bar. In a second terminal, run:
+
+```sh
+nvidia-smi -l 2
+```
+
+Press Ctrl+C in that monitoring terminal to stop monitoring. GPU activity is intermittent during file, geospatial, calibration, and statistical work. Inspect `results/runs/<timestamp>/execution.json` for completed stages and `cuda-fits.jsonl` for completed GPU fits. These update at stage/fit boundaries; they are not live per-iteration progress. The menu launchers additionally save console logs in `results/logs/`. For direct-run log capture that preserves failure status, use [training monitoring and recovery](docs/TRAINING.md).
+
 ### Resume after a failure
 
 Read the failed stage's output and fix its cause first. Then resume at that stage using the **same backend, quick/full setting, GPU ID, and thread configuration**, for example:
@@ -211,7 +248,7 @@ Read the failed stage's output and fix its cause first. Then resume at that stag
 python scripts/workflow.py train --backend cuda --gpu-id 0 --threads 8 --from intervals
 ```
 
-Append `--quick` only if the original run was quick. Changing the backend requires restarting at `model` or earlier. Changed inputs or upstream logic require rebuilding from the earliest affected stage. Downstream resumption rejects a mismatched stored model backend. Avoid the internal `--reuse-metrics` flag unless the panel and fitting configuration are known unchanged.
+Append `--quick` only if the original run was quick. To replace historical reference-model results, restart at `model` or earlier using CUDA. Changed inputs or upstream logic require rebuilding from the earliest affected stage. Downstream resumption rejects a mismatched stored model backend. Avoid the internal `--reuse-metrics` flag unless the panel and fitting configuration are known unchanged.
 
 Stage order:
 
@@ -227,7 +264,8 @@ The lower-level runner additionally supports synthetic input generation when no 
 Start with `python scripts/workflow.py smoke`. To isolate a failure:
 
 ```sh
-# CPU-safe unit and script tests; no real training data required.
+# Python-only unit/script checks; no NASA data, Node, or GPU required.
+python -m pip check
 python -m pytest common ws1_harmonize/tests ws2_platform/tests ws3_anomaly/tests ws4_outlook/tests scripts/tests -q
 
 # Full configured Python suite, including real-output QA: run after training.
@@ -253,6 +291,14 @@ python -m uvicorn ws2_platform.api.mock_server:app --host 127.0.0.1 --port 8000 
 
 After training, replace `mock_server` with `app` for the real API. In the second terminal, run `npm run dev --prefix ws5_frontend -- --host 127.0.0.1 --strictPort`. For fixture mode set `VITE_DATA_MODE=synthetic` in `ws5_frontend/.env`; leave `VITE_DEMO_MODE` empty. Open browser DevTools → Console/Network to inspect requests. The real API's `/health` loads its data and reports the method version, cell count, and data-through date; `/docs` documents request bodies. Test a demo-area `/aoi/summary` request there as well.
 
+To check the running mock or trained API from any shell:
+
+```sh
+python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=30).read().decode())"
+```
+
+For a useful bug report, include the failing command, first relevant traceback, OS, `python --version`, `python -m pip check`, and (for frontend issues) `node --version` and `npm --version`. For GPU failures, include `nvidia-smi` and `gpu-check` output; for training failures, include the run's `execution.json`. Redact credentials and credential-bearing request URLs before sharing logs.
+
 Enable actual CUDA integration tests only on a configured NVIDIA machine:
 
 ```powershell
@@ -270,17 +316,28 @@ FIRESENSE_TEST_CUDA=1 python -m pytest ws1_harmonize/tests/test_cuda.py -q
 | Symptom | Next action |
 |---|---|
 | Wrong Python / missing module | Check `sys.executable`; use `.venv` Python and rerun setup. Check dependencies with `python -m pip check`. |
+| Existing `.venv` belongs to another OS/Python | Rename that environment, rerun the appropriate setup, and reactivate the new environment. Do not transfer virtual environments between computers. |
 | Native geospatial/HDF dependency fails to install | Use Python 3.11, keep the error, and follow [training setup](docs/TRAINING.md). Compatible unpinned installation requires an explicit flag. |
 | `NOT READY`, missing files, or real API file-not-found | Complete the named downloads/cache; use `dev --mock` until training is ready. |
 | CUDA unavailable or CPU fallback rejected | Check the NVIDIA driver, install `requirements-cuda.txt`, and rerun `gpu-check`. Use UI-only setup while training prerequisites are unresolved. |
+| `Training requires CUDA` after a direct module command | Remove an old `FIRESENSE_BACKEND=cpu` override from this shell/environment. Use the supported workflow command and repeat GPU verification. |
 | npm EPERM/EBUSY | Stop this project's Vite/test/preview processes before setup. Rerun after the lock is released. |
 | Port 8000/5173 busy | Stop the earlier project server with Ctrl+C before relaunching. The launcher deliberately refuses occupied ports. |
 | UI cannot reach API | Check API terminal/Network errors and `VITE_API_BASE_URL`; clear snapshot mode for live API development and restart Vite. |
+| Headless host reports npm missing | Use Python-only checks, `prepare`, `train`, `validate`, and `results`; install complete setup before UI or integrated workflows. |
 | Stale results or wrong data mode | Restart API after data changes; restart Vite after environment changes. For hosted mode verify the deployed SHA and reload. |
 | QA or historical seam fails | Read `results/latest.md`, validation JSON, and failed-stage output. Repair the data/model and rerun affected stages. |
 | Map tiles fail | Check browser networking and tile-service availability/policy. The FIRMS key does not authenticate basemap tiles. |
 
 ## Deploy the demo
+
+Choose a deployment mode before building:
+
+| Target | What is served | Required artifacts | What updates on push |
+|---|---|---|---|
+| Included GitHub Pages workflow | Static named-area explorer | Committed `areas.json` and `snapshot.json` | Frontend code and committed snapshot; no retraining |
+| Another static host | The same snapshot build | `ws5_frontend/dist/` built in snapshot mode | Depends on that host's configuration |
+| Full API plus frontend | Queries against processed runtime data | Separate API service, processed artifacts, public API URL, frontend build | Backend automation must be provisioned separately |
 
 ### GitHub Pages — automatic updates on pushes
 
@@ -293,6 +350,8 @@ The included `.github/workflows/pages.yml` builds and publishes a **static snaps
 5. Open `<site-url>/version.json` and compare its `commit` with your pushed SHA (`git rev-parse HEAD`). Failed checks prevent that revision from replacing the site.
 
 The workflow runs locked npm installation, frontend tests, translations, type checking/build, and deployment on every push to `main`. It does **not** retrain or fetch NASA data. Pages availability depends on repository visibility and your GitHub plan; see [GitHub's workflow documentation](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).
+
+The separate `ci` workflow checks Python contracts/tests and the frontend. Pages depends on its own frontend checks, not on the separate Python job. Check both workflow results before treating a pushed change as verified. If Pages fails, open its failed job log, fix the reported test/build/permission/environment issue, and push the fix or rerun the workflow. Verify `version.json` again after deployment.
 
 `scripts/github_pages.py` is a maintainer helper hardcoded to `sheikh2583/NASA-Space-App`; use repository Settings/Actions for your own fork. Do not run its `--enable` action expecting it to configure another repository.
 
@@ -336,11 +395,20 @@ python scripts/workflow.py validate
 python scripts/export_hosted_demo.py
 ```
 
-The exporter refreshes both `ws5_frontend/public/demo/areas.json` and `snapshot.json`, with responses for all 11 administrative regions plus two examples. It refuses validation marked as synthetic. Review provenance and the data-through date, which remains **2026-11-02** explicitly. Preview/test the snapshot build above, then commit both files and push to your deployment branch. A normal code push leaves saved scientific data unchanged. Keep raw inputs, `.env`, models, and large processed files outside Git. [Area-selection notes](docs/AREA_SELECTION.md) explain boundary sources, licenses, and supported coverage.
+The exporter refreshes both `ws5_frontend/public/demo/areas.json` and `snapshot.json`, with responses for all 11 administrative regions plus two examples. It refuses validation marked as synthetic. Review provenance and the data-through date, which remains **2026-11-02** explicitly. Preview/test the snapshot build above, then commit both files and push to your deployment branch:
+
+```sh
+git diff --stat -- ws5_frontend/public/demo
+git add ws5_frontend/public/demo/areas.json ws5_frontend/public/demo/snapshot.json
+git commit -m "Refresh validated public demo results"
+git push origin main
+```
+
+Use your deployment branch instead of `main` if you changed the workflow trigger. A normal code push leaves saved scientific data unchanged. Keep raw inputs, `.env`, models, and large processed files outside Git. [Area-selection notes](docs/AREA_SELECTION.md) explain boundary sources, licenses, and supported coverage.
 
 ### Full API hosting
 
-GitHub Pages cannot run FastAPI. Full drawn-area queries need a separate HTTPS API service and a frontend build with `VITE_DEMO_MODE` empty and `VITE_API_BASE_URL` set to that public service. A hosted browser cannot use your laptop's `localhost` URL.
+GitHub Pages cannot run FastAPI. Arbitrary geometry/date queries need a separate HTTPS API service. For that frontend build, set `VITE_DEMO_MODE` empty, `VITE_DATA_MODE=real`, and `VITE_API_BASE_URL` to the public service in `ws5_frontend/.env`, then run `npm run build --prefix ws5_frontend` and publish `ws5_frontend/dist/`. The included Pages workflow explicitly forces snapshot mode; change its build environment if adapting it for a live API. A hosted browser cannot use your laptop's `localhost` URL.
 
 After training and QA, the existing container can be built from the repository root on a Docker-capable machine:
 
@@ -349,12 +417,15 @@ docker build -f ws2_platform/Dockerfile -t firesense-api .
 docker run --rm -p 7860:7860 firesense-api
 ```
 
-The Dockerfile copies processed runtime files into the image. These are ignored by Git, so a repository-only cloud build will fail unless you supply the artifacts. Validate `http://localhost:7860/health` and a demo-area summary before exposing it. The container path has not been freshly verified by the current Windows setup; platform dependency installation may need adjustment. Provider provisioning, HTTPS, artifact delivery, capacity, and automatic backend deployment are separate work. The current API allows all CORS origins and has no authentication/rate limiting; configure access controls for your hosting context. Read [hosting operations](docs/HOSTING.md) for the current boundaries.
+The Dockerfile expects these paths under `data/processed/`: `cells.parquet`, `harmonized.parquet`, `sensor_days.parquet`, `interval_table.json`, `drivers_region.json`, `outlook_region.json`, and `validation/`. They are ignored by Git, so a repository-only cloud build will fail unless you supply the artifacts. The serving container uses processed outputs; it does not train models.
+
+Validate `http://localhost:7860/health` and a demo-area summary through `http://localhost:7860/docs` before exposing it. Restart the API after replacing runtime data. The container path has not been freshly verified by the current Windows setup; platform dependency installation may need adjustment. Provider provisioning, HTTPS, artifact delivery, capacity, and automatic backend deployment are separate work. The current API allows all CORS origins and has no authentication/rate limiting; configure access controls for your hosting context. Read [hosting operations](docs/HOSTING.md) for the current boundaries.
 
 ## Project structure and contribution
 
 ```text
-common/                 Shared science utilities and CPU/CUDA backend
+.github/workflows/      Python/frontend CI and push-to-main Pages deployment
+common/                 Shared science utilities, CUDA fits, reference test helpers
 contracts/              OpenAPI, data schemas, and bundled API fixtures
 data/                   Local raw/interim/processed data and CUDA backups
 docs/                   Method, acquisition, training, hosting, and handoff guides
@@ -367,9 +438,12 @@ ws3_anomaly/            FIRMS ingestion, weather, anomalies, periods, drivers
 ws4_outlook/            Intervals, drift checks, and seasonal forecasts
 ws5_frontend/           React/Vite bilingual geospatial UI and public snapshot
 ws6_validation/         Data QA, API contracts, end-to-end flows, scientific gates
+START_HERE.cmd          Windows workflow menu
+start.command           Linux/macOS workflow menu
+requirements-cuda.txt   Complete locked training environment plus CUDA learner
 ```
 
-Generate a source handoff with `python scripts/workflow.py share`: it writes `share/firesense-source.zip`, including documentation, fixtures, deployment workflow, optional CUDA requirements, and the public demo snapshot. It excludes raw data, trained models, secrets, dependencies, Git history, and local run logs. Reinitialize an extracted ZIP using the same setup commands above.
+Generate a source handoff with `python scripts/workflow.py share`: it writes `share/firesense-source.zip`, including documentation, fixtures, deployment workflow, CUDA requirements, and the public demo snapshot. It excludes raw data, trained models, secrets, dependencies, Git history, and local run logs. Reinitialize an extracted ZIP using the same setup commands above. To train elsewhere, separately transfer the input directories and weather Parquets in [the training transfer guide](docs/TRAINING.md#2-activate-and-prepare-the-inputs); to serve existing results, transfer the processed runtime files listed above.
 
 Before contributing, run `smoke`; after numerical changes, also run quick/full training and scientific QA as appropriate. Inspect generated fixture changes before committing. Record contract changes in [CONTRACT_CHANGES.md](docs/CONTRACT_CHANGES.md), follow [file ownership](docs/FILE_OWNERSHIP.md) and [Git workflow](docs/GIT_WORKFLOW.md), and keep large datasets out of commits.
 
