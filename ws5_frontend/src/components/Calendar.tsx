@@ -3,6 +3,8 @@ import { burnScale } from "../lib/colour";
 import { useTranslation } from "react-i18next";
 import type { SummaryPoint } from "../types";
 import { date, isoYear, monthDay, num, weekColumn, weekOfYear } from "../lib/format";
+import { monthColumns } from "../lib/months";
+import HelpButton from "./Help";
 
 export interface SeasonBand {
   label: string;
@@ -52,8 +54,8 @@ export default function Calendar({ series, selected, onSelect, bands = [] }: Pro
             <circle cx="2" cy="2" r="0.8" fill="#fff" fillOpacity="0.85" />
           </pattern>
         </defs>
-        {[1, 14, 27, 40].map((w) => (
-          <text key={w} x={LEFT + (w - 1) * (CELL + GAP)} y={10}>{num(w)}</text>
+        {monthColumns().map(({ month, col }) => (
+          <text key={month} x={LEFT + (col - 1) * (CELL + GAP)} y={10}>{t(`months.short.${month}`)}</text>
         ))}
         {bands.map((band, i) => {
           const from = weekColumn(band.from);
@@ -104,6 +106,7 @@ export default function Calendar({ series, selected, onSelect, bands = [] }: Pro
         <span>{t("calendar.legend_flag")}</span>
         <span>{t("calendar.legend_none")}</span>
         <span>{t("calendar.legend_partial")}</span>
+        <HelpButton topic="sources" />
       </div>
     </div>
   );

@@ -1,13 +1,14 @@
 import { useTranslation } from "react-i18next";
 import type { CriticalPeriod, DriversResponse, OutlookResponse } from "../types";
 import { date, num } from "../lib/format";
+import HelpButton from "./Help";
 
 export function StatusCard({ o }: { o: OutlookResponse }) {
   const { t } = useTranslation();
   const cs = o.current_status;
   return (
     <section className="card" aria-labelledby="status-h">
-      <h2 id="status-h">{t("status.title")}</h2>
+      <div className="card-title"><h2 id="status-h">{t("status.title")}</h2><HelpButton topic="status" /></div>
       <div className="status">
         <div className={`level ${cs.level}`}>{t(`status.level_${cs.level}`)}</div>
         <div>{t("status.percentile", { p: num(cs.week_percentile) })}</div>
@@ -23,7 +24,7 @@ export function PeriodsPanel({ periods, selected, onSelect }: { periods: Critica
   const top = Math.max(1, ...periods.map((p) => p.severity));
   return (
     <section className="card" aria-labelledby="periods-h">
-      <h2 id="periods-h">{t("periods.title")}</h2>
+      <div className="card-title"><h2 id="periods-h">{t("periods.title")}</h2><HelpButton topic="severity" /></div>
       {periods.length === 0 && <p className="note">{t("periods.none")}</p>}
       <ol className="periods">
         {periods.slice(0, 12).map((p) => (
@@ -46,11 +47,10 @@ export function PeriodsPanel({ periods, selected, onSelect }: { periods: Critica
   );
 }
 
-export function DriversPanel({ d }: { d: DriversResponse }) {
+export function DriversPanel({ d, collapsible = false }: { d: DriversResponse; collapsible?: boolean }) {
   const { t } = useTranslation();
-  return (
-    <section className="card" aria-labelledby="drivers-h">
-      <h2 id="drivers-h">{t("drivers.title")}</h2>
+  const content = <>
+      {!collapsible && <div className="card-title"><h2 id="drivers-h">{t("drivers.title")}</h2><HelpButton topic="drivers" /></div>}
       <p className="meta">{t("drivers.region", { region: d.region.region_name })}</p>
       {d.status === "insufficient_data" && <p className="note">{t("state.insufficient")}</p>}
       {d.status === "ok" && d.items.length === 0 && <p className="note">{t("drivers.none")}</p>}
@@ -67,8 +67,10 @@ export function DriversPanel({ d }: { d: DriversResponse }) {
         ))}
       </ul>
       <ul className="note">{d.caveats.map((c) => <li key={c}>{c}</li>)}</ul>
-    </section>
-  );
+    </>;
+  return collapsible
+    ? <details className="card collapsible"><summary>{t("drivers.title")}<HelpButton topic="drivers" /></summary>{content}</details>
+    : <section className="card" aria-labelledby="drivers-h">{content}</section>;
 }
 
 export function OutlookPanel({ o }: { o: OutlookResponse }) {
@@ -77,7 +79,7 @@ export function OutlookPanel({ o }: { o: OutlookResponse }) {
   const ci = o.skill.ci;
   return (
     <section className="card" aria-labelledby="outlook-h">
-      <h2 id="outlook-h">{t("outlook.title")}</h2>
+      <div className="card-title"><h2 id="outlook-h">{t("outlook.title")}</h2><HelpButton topic="outlook" /></div>
       <p>{t("outlook.std", { p: num(o.season_to_date_percentile) })}</p>
       <p className="meta">{t("outlook.range", { q10: num(r.q10), q50: num(r.q50), q90: num(r.q90) })}</p>
       <p>{o.status === "skill" && ci

@@ -24,7 +24,7 @@ Regenerate the other columns from the cards with `python scripts/plan.py board -
 | T17 | agent | Render deploy check: a script that verifies the live service, run once and recorded | Sheikh | H01 | blocked | script + 6 offline tests committed; the one recorded run waits for RENDER_URL (H01) |
 | T07 | agent | Season profile in the API, mock server, fixtures and snapshot | Sattyam | T00 | done | season in API, mock, fixtures and snapshot (13 areas, +2%); PB paddy 21 Oct-12 Nov, BD p50 16 Mar; verify_files validates bd/pb |
 | T08 | agent | Season card and typical-window strip on the calendar (en/bn) | Shammo | T07 | done | Season card, current status, trends and accessible calendar bands verified at 390px/1366px in en/bn |
-| T09 | agent | Plain-language help, month labels and a phone-first layout | Shammo | T00 | todo |  |
+| T09 | agent | Plain-language help, month labels and a phone-first layout | Shammo | T00 | done | Localized help, month labels and mobile collapsibles verified at 360px/390px/1366px |
 | T10 | agent | Caveats and "how we checked" on the method page (en, bn draft) | Samiul | T31 | todo |  |
 | T11 | agent | Retired: region picker (done on main by the named-area explorer) | Sattyam | T07 | cut | retired 4 Nov: named-area explorer on main (04adbc4, 0c9241d) |
 | T12 | agent | Shareable links (view, area, period, language in the URL) | Shammo | T00 | todo |  |

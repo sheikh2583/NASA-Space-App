@@ -8,6 +8,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import LoadingNote from "./components/LoadingNote";
 import AnalysisControls from "./components/AnalysisControls";
 import AreaFilters from "./components/AreaFilters";
+import HelpButton from "./components/Help";
 import { areaLabel, defaultArea, loadAreaCatalog, type AreaOption } from "./areas";
 import { DATA_MODE, RECORD_END, RECORD_START } from "./config";
 import { STATIC_DEMO } from "./snapshot";
@@ -24,6 +25,43 @@ const MapView = lazy(() => import("./components/MapView"));
 const SeriesChart = lazy(() => import("./components/SeriesChart"));
 const ValidationPage = lazy(() => import("./components/Pages").then((module) => ({ default: module.ValidationPage })));
 const MethodPage = lazy(() => import("./components/Pages").then((module) => ({ default: module.MethodPage })));
+
+function useMediaQuery(query: string): boolean {
+  const [matches, setMatches] = useState(false);
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") return;
+    const media = window.matchMedia(query);
+    const update = () => setMatches(media.matches);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, [query]);
+  return matches;
+}
+
+function CompareCard({ compact, areas, selectedId, value, onChange, onCompare }: {
+  compact: boolean;
+  areas: AreaOption[];
+  selectedId: string | null;
+  value: string;
+  onChange: (value: string) => void;
+  onCompare: () => void;
+}) {
+  const { t, i18n } = useTranslation();
+  const body = <div className="controls">
+    <label>{t("compare.with")}
+      <select value={value} onChange={(event) => onChange(event.target.value)}>
+        <option value="">–</option>
+        {areas.filter((candidate) => candidate.id !== selectedId).map((candidate) =>
+          <option key={candidate.id} value={candidate.id}>{areaLabel(candidate, i18n.language)}</option>)}
+      </select>
+    </label>
+    <button className="chip" onClick={onCompare} disabled={!value || value === selectedId}>{t("compare.run")}</button>
+  </div>;
+  return compact
+    ? <details className="card collapsible"><summary>{t("compare.title")}</summary>{body}</details>
+    : <section className="card"><h2>{t("compare.title")}</h2>{body}</section>;
+}
 
 export default function App() {
   const { t, i18n } = useTranslation();
@@ -60,6 +98,7 @@ export default function App() {
   const [compareWith, setCompareWith] = useState<string>("");
   const [compare, setCompare] = useState<CompareResponse | null>(null);
   const [fallbackNote, setFallbackNote] = useState<string | null>(null);
+  const phone = useMediaQuery("(max-width: 640px)");
 
   const req: AOIRequest | null = useMemo(() => area ? { ...area, start, end, res } : null, [area, start, end, res]);
 
@@ -166,7 +205,7 @@ export default function App() {
                 {season && <ErrorBoundary><SeasonCard profile={season} /></ErrorBoundary>}
                 <ErrorBoundary>
                   <section className="card">
-                    <h2>{t("calendar.title")}</h2>
+                    <div className="card-title"><h2>{t("calendar.title")}</h2><HelpButton topic="calendar" /></div>
                     <p className="meta">{t("calendar.hint")}</p>
                     {res === "week" && <Calendar series={summary.series} selected={period?.key ?? null}
                       bands={(season?.seasons ?? []).flatMap((item) => {
@@ -181,7 +220,7 @@ export default function App() {
                 </ErrorBoundary>
                 <ErrorBoundary>
                   <section className="card">
-                    <h2>{t("chart.title")}</h2>
+                    <div className="card-title"><h2>{t("chart.title")}</h2><HelpButton topic="bands" /></div>
                     <SeriesChart series={summary.series} seams={summary.seams ?? []} highlight={period}
                                  second={compare?.b.series} />
                   </section>
@@ -189,20 +228,9 @@ export default function App() {
                 {periods && <ErrorBoundary><PeriodsPanel periods={periods.periods} selected={period?.key ?? null}
                   onSelect={(p) => setPeriod({ start: p.start, end: p.end, key: p.start })} /></ErrorBoundary>}
                 {outlook && <ErrorBoundary><OutlookPanel o={outlook} /></ErrorBoundary>}
-                {drivers && <ErrorBoundary><DriversPanel d={drivers} /></ErrorBoundary>}
-                <section className="card">
-                  <h2>{t("compare.title")}</h2>
-                  <div className="controls">
-                    <label>{t("compare.with")}
-                      <select value={compareWith} onChange={(e) => setCompareWith(e.target.value)}>
-                        <option value="">–</option>
-                        {areas.filter((candidate) => candidate.id !== selectedId).map((candidate) =>
-                          <option key={candidate.id} value={candidate.id}>{areaLabel(candidate, i18n.language)}</option>)}
-                      </select>
-                    </label>
-                    <button className="chip" onClick={runCompare} disabled={!compareWith || compareWith === selectedId}>{t("compare.run")}</button>
-                  </div>
-                </section>
+                {drivers && <ErrorBoundary><DriversPanel d={drivers} collapsible={phone} /></ErrorBoundary>}
+                <CompareCard compact={phone} areas={areas} selectedId={selectedId} value={compareWith}
+                  onChange={setCompareWith} onCompare={() => void runCompare()} />
                 <section className="card">
                   <h2>{t("export.title")}</h2>
                   <div className="exportrow">
