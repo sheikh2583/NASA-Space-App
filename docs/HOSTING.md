@@ -2,7 +2,9 @@
 
 Repository: https://github.com/sheikh2583/NASA-Space-App
 
-Expected Pages URL after deployment: https://sheikh2583.github.io/NASA-Space-App/
+Live Pages URL: https://sheikh2583.github.io/NASA-Space-App/
+
+Verified functional deployment `a4dc92d`: workflow succeeded, public `version.json` matched the commit, and the served MapView asset contained the OpenStreetMap endpoint with the old CARTO endpoint removed. Later documentation pushes will update `version.json` to their own revision.
 
 On 4 November 2026, repository Pages was enabled with `build_type=workflow` using the existing local Git credential helper. No separate hosting provider or deployment secret is needed for the snapshot site.
 
