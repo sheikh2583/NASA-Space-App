@@ -5,7 +5,7 @@
   python scripts/run_pipeline.py --from v1  # resume from a step
 
 Steps: synth, ingest, grid, sensors, cells, panel, v0, model, intervals, drift, v1, anomalies, outlook,
-validation, fixtures, fallback, qa.
+validation, fixtures, fallback, qa, results.
 """
 from __future__ import annotations
 
@@ -56,6 +56,7 @@ def steps(quick: bool):
         ("fixtures", ["-m", "ws2_platform.api.make_fixtures"]),
         ("fallback", ["-m", "ws2_platform.api.static_export"]),
         ("qa", ["-m", "ws6_validation.qa"]),
+        ("results", [os.path.join("scripts", "results.py")]),
     ]
 
 

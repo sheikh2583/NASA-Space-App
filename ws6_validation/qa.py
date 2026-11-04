@@ -63,7 +63,9 @@ def main(argv=None):
                                             "ws6_validation/tests/test_e2e.py")]
     checks.append(run_pytest("common ws1_harmonize ws2_platform ws3_anomaly ws4_outlook".split()[0]))
     fr = flag_rates()
-    pl = planted()
+    real_data = any(name.startswith("FIRMS_") and (name.endswith(".csv") or ".csv." in name)
+                    for name in os.listdir("data/raw/firms")) if os.path.isdir("data/raw/firms") else False
+    pl = [] if real_data else planted()
     checks.append({"check": "flag rate before vs after 2012 (decision 21)", "result": "pass" if fr["decision_21_ok"] else "fail",
                    "detail": f"before {fr['before_2012']:.3f}, after {fr['after_2012']:.3f}"})
     n_pass = sum(c["result"] == "pass" for c in checks)
@@ -75,14 +77,19 @@ def main(argv=None):
         f"and the demo path for Bangladesh and Punjab ({n_pass} of {len(checks)} passed).",
         f"How well it held up: the {'per-region ratio (B1)' if hv.get('method') == 'b1' else 'learned model'} was chosen by held-out agreement "
         f"(mean Lin's CCC {hv.get('mean_ccc', {})}); the 90% bands covered {cov.get('week', 'n/a')} of held-out weekly totals.",
-        "Where it is weak: values before 2012 are modeled, whole unusually-strong seasons are flagged only at their edges, "
-        "and every number here comes from synthetic data until real FIRMS data is loaded.",
+        "Where it is weak: values before 2012 are modeled and whole unusually-strong seasons may be flagged only at their edges. "
+        + ("This run uses downloaded FIRMS observations." if real_data else "This development run uses synthetic FIRMS-like observations."),
     ]
+    limitations = [
+        "Values before VIIRS began in 2012 are modeled from MODIS and include calibrated uncertainty.",
+        "The manual FIRMS web-viewer comparison (QA_CHECKLIST) must be done by a person on real data.",
+        "Bangla text has not yet been reviewed by a fluent reader.",
+    ]
+    if not real_data:
+        limitations.insert(0, "Synthetic data: the checks prove the pipeline and contracts, not real-world accuracy.")
     piece = {"schema_version": "1.0", "generated_at": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
              "producer": "qa", "metrics": {"summary": summary, "checks": checks, "seam_flag_rates": fr, "planted_anomalies": pl},
-             "limitations": ["Synthetic data: the checks prove the pipeline runs and keeps its contracts, not that the numbers are true.",
-                             "The manual FIRMS web-viewer comparison (QA_CHECKLIST) must be done by a person on real data.",
-                             "Bangla text has not yet been reviewed by a fluent reader."]}
+             "limitations": limitations}
     os.makedirs(f"{P}/validation", exist_ok=True)
     with open(f"{P}/validation/qa.json", "w") as f:
         json.dump(piece, f, indent=1)

@@ -14,4 +14,4 @@ A week is **unusual** when it is clearly above the same week in other years. The
 
 **Associated conditions** are weather patterns that tend to occur alongside burning. They are associations, not proof of what started a fire.
 
-**Limits.** Values before 2012 are estimates. Detection depends on cloud and overpass time, so it is not a full count of fires. The demo covers Bangladesh and Punjab–Haryana–Delhi. Until real data is loaded, all numbers shown are synthetic.
+**Limits.** Values before 2012 are estimates. Detection depends on cloud and overpass time, so it is not a full count of fires. The current real-data build covers Bangladesh and Punjab–Haryana–Delhi.

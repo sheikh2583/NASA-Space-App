@@ -1,53 +1,103 @@
-# MODIS + VIIRS Harmonization (NASA Space Apps 2026)
+# FireSense — MODIS + VIIRS Burning Activity
 
-> **3 Nov 2026: the code for all six workstreams is built and tested on synthetic data. Start with docs/ONBOARDING.md;
-> Sheikh's copy-paste guide (datasets, ML training, deploy, push) is docs/SHEIKH_GUIDE.md.**
-> (status, how to run, what is still manual). Suomi NPP stopped on 2 Nov 2026: see docs/DECISIONS.md decisions 17-23.
->
-> Quick start: `bash scripts/setup.sh --quick` (Linux/macOS) or `powershell -ExecutionPolicy Bypass -File scripts\setup.ps1 -Quick`
-> (Windows), then `scripts/start.sh` / `scripts\start.ps1` and open http://localhost:5173.
+FireSense turns NASA FIRMS MODIS and VIIRS active-fire observations into a consistent 2000–present record for Bangladesh and Punjab–Haryana–Delhi. It harmonizes satellite eras, quantifies uncertainty, flags unusual periods, describes associated weather conditions, and presents the results in a bilingual web application.
 
-> Start with docs/GUIDE.md (the end-to-end guide). Read docs/KNOWN_GAPS.md: this kit was written without the official challenge text and without running any project code; several facts are unverified and have H0 checks (docs/H0_VERIFICATION.md).
+The system uses real FIRMS archives when present and falls back to synthetic development data only when no real files are available. Modeled values and uncertainty are always exposed; associations are not presented as causes.
 
-We build a web app that merges MODIS and VIIRS fire detections into one consistent burning-activity
-calendar for any area a user draws: harmonized history with uncertainty bands, flagged unusual
-periods (including agricultural burns), associated drivers (never causes) and a current-season outlook.
+## Quick start
 
-The starter kit's plans, contracts and prompt packs are now implemented (see docs/ONBOARDING.md); real-data runs,
-hosting and the human checks are still to do.
+Requirements: Python 3.11, Node.js LTS, npm, and Git.
 
-## Start here
-Git commands and scripts (clone, branch, save, ship): docs/GIT_WORKFLOW.md. Do its section 0 first.
-0. Everyone: open docs/instructions/ and read the file with your name. It tells you what to do, hour by hour, and who to talk to. docs/TALK_TO.md lists every conversation in one table.
-1. Sheikh: follow prompts/ws1_sheikh.md, prompt P1.1 (repo setup, 60 minutes).
-2. Everyone: read docs/PIPELINE.md (5 minutes), then your folder's README.md.
-3. Open your AI tool. For each phase, paste prompts/phases/00_agent_loop.md and your phase prompt from prompts/phases/ (one agent prompt per phase, seven per person). Paste docs/AI_PREAMBLE.md first, then the prompts in your pack, one at a time,
-   in order (prompts/ws1_sheikh.md to ws6_samiul.md). Start the next prompt only when the previous one passes its test.
-4. When a deliverable passes its test, post a HANDOFF message (docs/HANDOFF_TEMPLATE.md).
+### Windows
 
-## Who owns what
-| Slot | Person | Folder | Workstream |
-|---|---|---|---|
-| 1 | Sheikh | ws1_harmonize/, contracts/parquet_schemas.json, contracts/json_schemas/ | harmonization, repo, integration |
-| 2 | Sattyam | ws2_platform/, contracts/openapi.yaml, contracts/fixtures/ | data platform and API |
-| 3 | Monazir | ws3_anomaly/ | ingestion, anomalies, drivers |
-| 4 | Samin | common/, ws4_outlook/ | shared library, conformal and drift, outlook |
-| 5 | Shammo | ws5_frontend/ | web app |
-| 6 | Samiul | ws6_validation/, docs/ | QA, validation content, method text, slides, video |
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\init.ps1 -Workflow setup
+powershell -ExecutionPolicy Bypass -File scripts\init.ps1 -Workflow train -Quick
+powershell -ExecutionPolicy Bypass -File scripts\init.ps1 -Workflow dev
+```
 
-Manual tasks (accounts, downloads, calls, device checks, recording, submitting) are in docs/MANUAL_TASKS.md; a coding agent cannot do these for you.
+### Linux or macOS
 
-## How we work
-- Stack: docs/TECH_STACK.md. Where things live and run: docs/WHERE_TO_WORK.md.
-- No stepping on each other: docs/WORKING_TOGETHER.md and docs/FILE_OWNERSHIP.md (one writer per path).
-- How to check a deliverable: docs/VERIFY.md.
+```bash
+bash scripts/init.sh setup
+bash scripts/init.sh train --quick
+bash scripts/init.sh dev
+```
 
-## Gates
-G0 H3 contracts frozen | G1 H8 gridded data | G2 H24 floor works | G3 H30 core integrated |
-H36 feature freeze | H42 code freeze | H46 submit. Full timeline: docs/TIMELINE.md.
+Open the application at <http://localhost:5173> and API documentation at <http://localhost:8000/docs>.
 
-## Rules
-- Edit only your own folder. Changes to contracts/ and common/ need Sheikh's OK (log them in docs/CONTRACT_CHANGES.md).
-- Large files live in the shared drive mirror of data/, never in git. One line per hand-off in data/MANIFEST.md.
-- Keys in .env only. Never commit data or secrets.
-- Never claim causes. Never hide that a value is modeled.
+## Workflows
+
+After setup, the same Python command works on every operating system:
+
+```bash
+python scripts/workflow.py train --quick   # real-data smoke training
+python scripts/workflow.py train           # full training
+python scripts/workflow.py validate        # QA and contract checks
+python scripts/workflow.py results         # results/latest.{md,json}
+python scripts/workflow.py test            # Python and frontend tests
+python scripts/workflow.py build           # production frontend build
+python scripts/workflow.py dev             # API + Vite development servers
+python scripts/workflow.py dev --mock      # UI against contract fixtures
+python scripts/workflow.py all --quick     # train, summarize, test, build
+```
+
+Resume a failed stage with `python scripts/workflow.py train --quick --from <stage>`. Stages and artifacts are documented in [docs/PIPELINE.md](docs/PIPELINE.md).
+
+## Project structure
+
+```text
+common/                 Shared grids, time splits, intervals, and metrics
+contracts/              OpenAPI, JSON/Parquet schemas, and API fixtures
+data/                   Local raw/interim/processed data (ignored by Git)
+docs/                   Architecture, method, operations, and submission guides
+results/                Generated run summaries (latest files ignored by Git)
+scripts/                Cross-platform setup, workflows, pipeline, and Git helpers
+tools/                  Verification and synthetic-data utilities
+ws1_harmonize/          MODIS → VIIRS harmonization and model selection
+ws2_platform/           Gridding, land cover, boundaries, FastAPI service
+ws3_anomaly/            FIRMS ingestion, anomalies, periods, and drivers
+ws4_outlook/            Intervals, drift checks, and seasonal outlook
+ws5_frontend/           React/Vite bilingual geospatial application
+ws6_validation/         Data, contract, end-to-end, and QA gates
+```
+
+## Data setup
+
+Place local inputs under:
+
+```text
+data/raw/firms/         FIRMS CSV or compressed CSV files
+data/raw/boundaries/    ADM1 GeoJSON files
+data/raw/landcover/     MCD12C1 HDF file
+data/raw/power/         NASA POWER weather cache
+```
+
+Copy `.env.example` to `.env` and set `FIRMS_MAP_KEY` only when recent FIRMS API updates are required. Never commit `.env`, downloaded datasets, processed Parquet files, model outputs, or frontend build artifacts. See [data/README.md](data/README.md) and [docs/SHEIKH_GUIDE.md](docs/SHEIKH_GUIDE.md) for acquisition details.
+
+## Pipeline
+
+```text
+FIRMS archives → normalize → daily grid → admin/land-cover cells
+              → weekly panel → baseline/model selection → intervals
+              → drift correction → harmonized series → anomalies/outlook
+              → API fixtures/static fallback → QA → result summary
+```
+
+The trained record is written to `data/processed/harmonized.parquet`; validation artifacts go to `data/processed/validation/`; the readable run report is generated at `results/latest.md`.
+
+## Quality gates
+
+The project verifies:
+
+- satellite identity, confidence mapping, temporal coverage, and grid conservation;
+- held-out model agreement and leakage-safe splits;
+- uncertainty coverage and cross-sensor seam behavior;
+- OpenAPI response contracts and complete API flows;
+- frontend type checking, unit tests, translations, and production builds.
+
+Run everything with `python scripts/workflow.py all --quick`. Human checks, limitations, and submission tasks are in [docs/QA_CHECKLIST.md](docs/QA_CHECKLIST.md), [docs/KNOWN_GAPS.md](docs/KNOWN_GAPS.md), and [docs/SUBMISSION_CHECKLIST.md](docs/SUBMISSION_CHECKLIST.md).
+
+## Team development
+
+Workstream ownership is documented in [docs/FILE_OWNERSHIP.md](docs/FILE_OWNERSHIP.md). Contract changes must be recorded in [docs/CONTRACT_CHANGES.md](docs/CONTRACT_CHANGES.md). Use [docs/GIT_WORKFLOW.md](docs/GIT_WORKFLOW.md) for branch, review, and release conventions.

@@ -55,3 +55,18 @@ def test_cells_admin1_covers_borders(tmp_path):
     c = cellsmod.build_cells(str(p), None)
     assert c["admin1_id"].notna().all() and c["cropland_frac"].isna().all()
     assert set(c["admin1_id"]) == {"A", "B", "P"}
+
+
+def test_india_boundaries_keep_only_project_admins(tmp_path):
+    fc = {"type": "FeatureCollection", "features": [
+        {"type": "Feature", "properties": {"shapeID": "P", "shapeName": "Punjab", "shapeGroup": "IND", "shapeISO": "IN-PB"},
+         "geometry": {"type": "Polygon", "coordinates": [[[74, 29], [76, 29], [76, 31], [74, 31], [74, 29]]]}},
+        {"type": "Feature", "properties": {"shapeID": "R", "shapeName": "Rajasthan", "shapeGroup": "IND", "shapeISO": "IN-RJ"},
+         "geometry": {"type": "Polygon", "coordinates": [[[76, 29], [78, 29], [78, 31], [76, 31], [76, 29]]]}},
+    ]}
+    path = tmp_path / "india.geojson"
+    path.write_text(json.dumps(fc), encoding="utf-8")
+    sample = pd.DataFrame({"cell_id": [1, 2], "lat_c": [30.0, 30.0], "lon_c": [75.0, 77.0]})
+    found = cellsmod.admin1_lookup(sample, str(path))
+    assert found.loc[0, "admin1_id"] == "P"
+    assert pd.isna(found.loc[1, "admin1_id"])

@@ -1,7 +1,7 @@
 # Demo script (3 minutes) and slide outline
 
 Owner: Samiul. Draft written with an AI assistant; time it aloud and edit. Every number on a slide must come from a
-file in data/processed/validation/ (rerun on real data first; today's numbers are synthetic).
+file in data/processed/validation/ (rerun the pipeline before recording so every number matches the latest real-data build).
 
 ## Demo path (2:30)
 | Time | Screen | Say |

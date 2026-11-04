@@ -24,6 +24,10 @@ def week_start(dates) -> pd.Series:
 
 def build_panel(grid: pd.DataFrame, cells: pd.DataFrame, sensor_days: pd.DataFrame, start=None, end=None) -> pd.DataFrame:
     g = grid[grid["sat"].isin(SAT_PREFIX)].copy()
+    # cells.parquet defines the actual administrative AOI. Country downloads
+    # and their broad request boxes can contain detections from neighbouring
+    # states or offshore cells, which must not enter model training.
+    g = g[g["cell_id"].isin(cells["cell_id"])]
     g["date"] = pd.to_datetime(g["date"]).dt.date
     sd = sensor_days.copy()
     sd["date"] = pd.to_datetime(sd["date"]).dt.date

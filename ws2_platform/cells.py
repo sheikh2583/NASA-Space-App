@@ -27,11 +27,16 @@ SCHEMA = pa.schema([("cell_id", pa.int32()), ("lat_c", pa.float32()), ("lon_c", 
                     ("admin1_id", pa.string()), ("admin1_name", pa.string()), ("country", pa.string())])
 # IGBP classes in MCD12C1 Land_Cover_Type_1_Percent: 12 croplands, 14 cropland/natural mosaic (half), 1-5 forests.
 CROP_CLASSES, MOSAIC_CLASS, FOREST_CLASSES = [12], 14, [1, 2, 3, 4, 5]
+# The India country archive is clipped to the actual project AOI, rather than
+# every state that happens to intersect the broad download rectangle.
+TARGET_ADMIN_ISOS = {"IND": {"IN-PB", "IN-HR", "IN-DL"}}
 
 
 def admin1_lookup(cells: pd.DataFrame, geojson_paths) -> pd.DataFrame:
     paths = [geojson_paths] if isinstance(geojson_paths, str) else list(geojson_paths)
-    feats = [ft for p in paths for ft in json.load(open(p))["features"]]
+    feats = [ft for p in paths for ft in json.load(open(p, encoding="utf-8"))["features"]]
+    feats = [ft for ft in feats if ft["properties"].get("shapeGroup") not in TARGET_ADMIN_ISOS
+             or ft["properties"].get("shapeISO") in TARGET_ADMIN_ISOS[ft["properties"]["shapeGroup"]]]
     geoms = [shape(ft["geometry"]) for ft in feats]
     tree = STRtree(geoms)
     pts = points(cells["lon_c"].values, cells["lat_c"].values)
@@ -45,6 +50,18 @@ def admin1_lookup(cells: pd.DataFrame, geojson_paths) -> pd.DataFrame:
         props = feats[g]["properties"]
         ids[p], names[p] = props.get("shapeID"), props.get("shapeName")
         groups[p] = props.get("shapeGroup")
+    # A fire can lie inside a boundary while its containing 0.1-degree cell
+    # centre falls just outside. Assign only those edge cells to the nearest
+    # admin polygon; cells farther outside the real AOI remain excluded.
+    missing = np.flatnonzero(ids == None)  # noqa: E711
+    if len(missing):
+        nearest = tree.nearest(pts[missing])
+        for p, g in zip(missing, nearest):
+            if pts[p].distance(geoms[g]) > 0.08:
+                continue
+            props = feats[g]["properties"]
+            ids[p], names[p] = props.get("shapeID"), props.get("shapeName")
+            groups[p] = props.get("shapeGroup")
     # country = demo region code (BD, PB), not the boundary file's ISO code, so season rules and weather match.
     demo = np.full(len(cells), None, dtype=object)
     for code, meta in DEMO_REGIONS.items():
@@ -71,6 +88,7 @@ def build_cells(admin1_path, landcover: pd.DataFrame | None) -> pd.DataFrame:
     lat, lon = cell_center(ids)
     cells = pd.DataFrame({"cell_id": ids.astype("int32"), "lat_c": lat, "lon_c": lon}).drop_duplicates("cell_id")
     cells = admin1_lookup(cells, admin1_path)
+    cells = cells[cells["admin1_id"].notna()].copy()
     if landcover is not None:
         cells = cells.merge(landcover[["cell_id", "cropland_frac", "forest_frac"]], on="cell_id", how="left")
         cells["cropland_frac"] = cells["cropland_frac"].fillna(0.0)

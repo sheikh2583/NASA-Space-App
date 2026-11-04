@@ -16,6 +16,10 @@ MODIS_CSV = """latitude,longitude,brightness,scan,track,acq_date,acq_time,satell
 30.1,75.2,320,1.2,1.1,2001-11-01,520,Terra,MODIS,85,6.1SP,295,20.0,D,0
 """
 
+SNPP_ARCHIVE_CSV = """latitude,longitude,brightness,scan,track,acq_date,acq_time,satellite,instrument,confidence,version,bright_t31,frp,daynight,type
+23.1,90.2,330,0.4,0.4,2012-01-20,730,SNPP,SNPP,n,2,290,5.1,D,0
+"""
+
 
 def test_normalize_maps_sats_confidence_and_drops_static_sources():
     df, st = normalize.normalize_frame(pd.read_csv(io.StringIO(VIIRS_CSV)))
@@ -24,6 +28,8 @@ def test_normalize_maps_sats_confidence_and_drops_static_sources():
     assert df["conf"].tolist() == [90, 90, 20]
     m, _ = normalize.normalize_frame(pd.read_csv(io.StringIO(MODIS_CSV)))
     assert m.loc[0, "sensor"] == "MODIS" and m.loc[0, "conf"] == 85 and m.loc[0, "acq_date"] == dt.date(2001, 11, 1)
+    snpp, _ = normalize.normalize_frame(pd.read_csv(io.StringIO(SNPP_ARCHIVE_CSV)))
+    assert snpp.loc[0, "sensor"] == "VIIRS" and snpp.loc[0, "sat"] == "SNPP" and snpp.loc[0, "conf"] == 60
 
 
 def test_unknown_satellite_code_is_an_error():

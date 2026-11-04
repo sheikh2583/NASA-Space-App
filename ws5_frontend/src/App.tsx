@@ -1,30 +1,32 @@
-import { useCallback, useEffect, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { AOIError, api } from "./api";
-import MapView from "./components/MapView";
 import Calendar from "./components/Calendar";
-import SeriesChart from "./components/SeriesChart";
 import { DriversPanel, OutlookPanel, PeriodsPanel, StatusCard } from "./components/Panels";
-import { ErrorBoundary, MethodPage, ValidationPage } from "./components/Pages";
+import ErrorBoundary from "./components/ErrorBoundary";
+import AnalysisControls from "./components/AnalysisControls";
+import { DATA_MODE, DEMOS, RECORD_END, RECORD_START } from "./config";
 import { addDays, num } from "./lib/format";
 import type {
   AOIRequest, CellsResponse, CompareResponse, CriticalPeriodsResponse, DriversResponse, OutlookResponse, Res, SummaryResponse,
 } from "./types";
 
-const DEMOS: Record<string, AOIRequest> = {
-  bd: { bbox: [89.5, 23.0, 90.5, 24.0], start: "2000-11-01", end: "2026-11-02" },
-  pb: { geometry: { type: "Polygon", coordinates: [[[74.6, 29.8], [76.4, 29.8], [76.4, 31.2], [74.6, 31.2], [74.6, 29.8]]] }, start: "2000-11-01", end: "2026-11-02" },
-};
 type View = "explore" | "validation" | "method";
 type Status = "idle" | "loading" | "ok" | "empty" | "oversized" | "error";
+type DemoKey = keyof typeof DEMOS;
+
+const MapView = lazy(() => import("./components/MapView"));
+const SeriesChart = lazy(() => import("./components/SeriesChart"));
+const ValidationPage = lazy(() => import("./components/Pages").then((module) => ({ default: module.ValidationPage })));
+const MethodPage = lazy(() => import("./components/Pages").then((module) => ({ default: module.MethodPage })));
 
 export default function App() {
   const { t, i18n } = useTranslation();
   const [view, setView] = useState<View>("explore");
   const [area, setArea] = useState<Pick<AOIRequest, "geometry" | "bbox"> | null>(null);
-  const [demo, setDemo] = useState<string | null>(null);
-  const [start, setStart] = useState("2000-11-01");
-  const [end, setEnd] = useState("2026-11-02");
+  const [demo, setDemo] = useState<DemoKey | null>(null);
+  const [start, setStart] = useState(RECORD_START);
+  const [end, setEnd] = useState(RECORD_END);
   const [res, setRes] = useState<Res>("week");
   const [status, setStatus] = useState<Status>("idle");
   const [summary, setSummary] = useState<SummaryResponse | null>(null);
@@ -72,7 +74,7 @@ export default function App() {
       .then(setCells).catch(() => setCells(null));
   }, [area, period]);
 
-  const pickDemo = (k: string) => { setDemo(k); const { geometry, bbox } = DEMOS[k]; setArea({ geometry, bbox }); };
+  const pickDemo = (k: DemoKey) => { setDemo(k); const { geometry, bbox } = DEMOS[k]; setArea({ geometry, bbox }); };
   const onDraw = (g: GeoJSON.Polygon) => { setDemo(null); setArea({ geometry: g }); };
   const runCompare = async () => {
     if (!req || !compareWith) return;
@@ -81,9 +83,13 @@ export default function App() {
     setCompare(await api.post<CompareResponse>("/aoi/compare", { a: req, b: { ...other, start, end, res } }).catch(() => null));
   };
   const toggleLang = () => void i18n.changeLanguage(i18n.language === "bn" ? "en" : "bn");
+  const reset = () => {
+    setArea(null); setDemo(null); setStatus("idle"); setSummary(null); setPeriods(null);
+    setDrivers(null); setOutlook(null); setCells(null); setPeriod(null); setCompare(null);
+  };
 
   return (
-    <>
+    <Suspense fallback={<p className="note page-loading">{t("state.loading")}</p>}>
       <header className="topbar">
         <div>
           <h1>{t("app.title")}</h1>
@@ -96,7 +102,9 @@ export default function App() {
         </nav>
         <button className="lang" onClick={toggleLang} lang={i18n.language === "bn" ? "en" : "bn"}>{t("lang.toggle")}</button>
       </header>
-      <div className="banner">{t("app.scope")} {t("app.synthetic")}</div>
+      <div className={`banner ${DATA_MODE}`}>
+        <span className="data-badge">{t(`app.data_${DATA_MODE}`)}</span> {t("app.scope")}
+      </div>
       {view === "validation" && <ErrorBoundary><ValidationPage /></ErrorBoundary>}
       {view === "method" && <ErrorBoundary><MethodPage /></ErrorBoundary>}
       {view === "explore" && (
@@ -110,18 +118,10 @@ export default function App() {
             <MapView aoi={req} cells={cells?.cells ?? null} period={period} onDraw={onDraw} />
           </div>
           <div className="panels">
-            <section className="card controls" aria-label={t("controls.res")}>
-              <label>{t("controls.start")}<input type="date" value={start} min="2000-11-01" max={end} onChange={(e) => setStart(e.target.value)} /></label>
-              <label>{t("controls.end")}<input type="date" value={end} min={start} onChange={(e) => setEnd(e.target.value)} /></label>
-              <label>{t("controls.res")}
-                <select value={res} onChange={(e) => setRes(e.target.value as Res)}>
-                  <option value="week">{t("controls.res_week")}</option>
-                  <option value="month">{t("controls.res_month")}</option>
-                  <option value="day">{t("controls.res_day")}</option>
-                </select>
-              </label>
-              {summary && status === "ok" && <span className="meta">{t("aoi.summary", { cells: num(summary.aoi.n_cells), area: num(summary.aoi.area_km2) })}</span>}
-            </section>
+            <AnalysisControls start={start} end={end} res={res} canRun={Boolean(req)}
+              onStart={setStart} onEnd={setEnd} onRes={setRes}
+              onRefresh={() => req && void load(req)} onReset={reset}
+              summary={summary && status === "ok" ? t("aoi.summary", { cells: num(summary.aoi.n_cells), area: num(summary.aoi.area_km2) }) : undefined} />
             {status === "idle" && <p className="note">{t("map.draw_hint")}</p>}
             {status === "loading" && <p className="note" aria-live="polite">{t("state.loading")}</p>}
             {status === "empty" && <p className="warn">{t("state.empty")}</p>}
@@ -177,6 +177,6 @@ export default function App() {
           </div>
         </main>
       )}
-    </>
+    </Suspense>
   );
 }

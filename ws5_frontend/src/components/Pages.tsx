@@ -1,19 +1,8 @@
-import { Component, useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import i18n from "i18next";
 import { api } from "../api";
 import type { ValidationPiece, ValidationResponse } from "../types";
 import { date, num } from "../lib/format";
-
-export class ErrorBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
-  state = { failed: false };
-  static getDerivedStateFromError() {
-    return { failed: true };
-  }
-  render() {
-    return this.state.failed ? <section className="card"><p className="warn">{i18n.t("error.panel")}</p></section> : this.props.children;
-  }
-}
 
 type Row = Record<string, unknown>;
 

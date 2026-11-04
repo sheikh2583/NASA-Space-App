@@ -21,6 +21,28 @@ Limits we state in the app: pre-2012 values are modeled; values after 2 Nov 2026
 8. Web app (Shammo): the product users see
 Across all (Samiul): QA, validation content, method text, slides, video
 
+## Run the workflows
+
+`scripts/workflow.py` is the operating-system-neutral entry point after setup:
+
+```bash
+python scripts/workflow.py train --quick
+python scripts/workflow.py validate
+python scripts/workflow.py results
+python scripts/workflow.py test
+python scripts/workflow.py build
+python scripts/workflow.py dev
+```
+
+Windows can bootstrap and dispatch any workflow with `scripts\init.ps1`; Linux and macOS use
+`scripts/init.sh`. A successful pipeline now ends by writing local summaries to
+`results/latest.json` and `results/latest.md`.
+
+Pipeline stages are resumable with `python scripts/workflow.py train --quick --from <stage>`.
+The ordered stages are: `synth`, `ingest`, `grid`, `sensors`, `cells`, `panel`, `v0`, `model`,
+`intervals`, `drift`, `v1`, `anomalies`, `outlook`, `validation`, `fixtures`, `fallback`, `qa`,
+and `results`.
+
 ## What each person contributes
 - Sheikh: science core and glue; builds the harmonized series, sets up the repo, keeps hand-offs and gates on time.
 - Sattyam: turns raw detections into a fast service: grid, API for any area, static fallback.

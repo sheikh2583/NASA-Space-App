@@ -36,7 +36,10 @@ def normalize_frame(raw: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
     if sat.isna().any():
         bad = sorted(raw.loc[sat.isna(), "satellite"].astype(str).unique())
         raise ValueError(f"unknown satellite codes {bad}")
-    viirs = raw["instrument"].astype(str).str.upper().eq("VIIRS")
+    # FIRMS archive exports currently label Suomi-NPP's instrument as "SNPP"
+    # while NOAA-20/21 exports use "VIIRS".  Satellite identity is therefore
+    # the reliable discriminator; keep the instrument check for API variants.
+    viirs = sat.isin(["SNPP", "NOAA20", "NOAA21"]) | raw["instrument"].astype(str).str.upper().eq("VIIRS")
     conf_raw = raw["confidence"].astype(str).str.strip().str.lower()
     conf = np.where(viirs, conf_raw.map(VIIRS_CONF), pd.to_numeric(conf_raw, errors="coerce"))
     stype = pd.to_numeric(raw["type"], errors="coerce") if "type" in raw else pd.Series(np.nan, index=raw.index)

@@ -1,17 +1,15 @@
-# Onboarding: where the project stands (3 Nov 2026)
+# Onboarding: where the project stands (4 Nov 2026)
 
 Read this first, then your own file in docs/instructions/. Ten minutes. Sheikh's step-by-step guide (datasets,
 commands, ML training, deployment, push) is docs/SHEIKH_GUIDE.md.
 
 ## 1. The short version
-- **Every workstream has working code.** The whole chain runs end to end: ingest → grid → harmonize → intervals and drift →
-  anomalies and drivers → outlook → API → web app. 70 Python tests and 3 web tests pass, every output file passes the contract check, and the app was checked in a
-  real browser (desktop, phone width, Bangla).
-- **All numbers so far are synthetic.** We built and tested on invented FIRMS-like data with known answers (tools/synth_firms.py).
-  The pipeline recovers what was planted: sensor ratios within 5%, planted Punjab 2016 season ranked #3 in all four regions,
-  the planted Terra drift flagged from 2023, the rainfall association found at the right lag, the 2012 seam exact. None of this is a result about real fires yet.
-- **What is left is mostly manual:** real data downloads, rerunning on real data, hosting, checks on phones, the Bangla review,
-  the video and the submission (section 5).
+- **Every workstream has working code.** The real-data chain runs end to end: ingest → grid → harmonize → intervals and drift →
+  anomalies and drivers → outlook → API → web app. The current smoke run passes all data, contract, end-to-end, and shared-library QA groups.
+- **Real inputs are loaded.** FIRMS archives, geoBoundaries ADM1, MCD12C1 land cover, and the NASA POWER weather cache are present locally.
+  The 4 Nov smoke run selected B1 by held-out agreement (mean CCC 0.9401 versus LightGBM 0.9219), with 91.6% weekly coverage for nominal 90% bands.
+- **What remains:** full (non-quick) training, the manual FIRMS viewer comparison, hosting, device checks, fluent Bangla review,
+  video, and submission tasks (section 5).
 - The code was written with an AI assistant (Claude) at Sheikh's direction and committed under each workstream owner's name,
   with the AI use stated in every commit message and in each NOTES.md. **Review your own folder before you build on it.**
 

@@ -28,6 +28,8 @@ button { cursor: pointer; }
 .topbar nav button, .topbar .lang { background: transparent; border: 1px solid #5b524b; color: #f6f3ee; border-radius: 6px; padding: 5px 10px; }
 .topbar nav button[aria-current="page"] { background: #f6f3ee; color: var(--ink); }
 .banner { background: var(--accent-soft); color: #5a1d06; padding: 6px 16px; font-size: 13px; border-bottom: 1px solid #ebc4b2; }
+.banner.real { background: #e2efe7; color: #234c32; border-bottom-color: #bad6c4; }
+.data-badge { display: inline-block; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; margin-right: 6px; }
 
 .layout { display: grid; grid-template-columns: minmax(360px, 44%) minmax(0, 1fr); height: calc(100% - 92px); }
 .mapcol { position: relative; border-right: 1px solid var(--line); display: flex; flex-direction: column; }
@@ -48,7 +50,10 @@ button { cursor: pointer; }
 .controls { display: flex; gap: 10px; flex-wrap: wrap; align-items: end; }
 .controls label { display: grid; font-size: 12px; color: var(--muted); gap: 2px; }
 .controls input, .controls select { border: 1px solid var(--line); border-radius: 6px; padding: 4px 6px; background: #fff; }
+.control-actions { display: flex; gap: 6px; }
+.controls button:disabled { cursor: not-allowed; opacity: .5; }
 .note { font-size: 13px; color: var(--muted); }
+.page-loading { padding: 20px; }
 .warn { font-size: 13px; color: #7a2b06; background: var(--accent-soft); border-radius: 6px; padding: 6px 8px; }
 
 .status { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; align-items: center; }

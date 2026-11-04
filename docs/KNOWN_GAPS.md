@@ -1,12 +1,11 @@
 # Known gaps and disclaimers (read this first)
 
-This kit was first written from the team's own brief; the official challenge description was added later (docs/CHALLENGE_ALIGNMENT.md), but the official rules, resources and hardware notes have still not been seen and without running any
-project code. Treat it as a carefully checked plan, not as a tested system. Everything below is either something I could not close
-or something you should double-check. Each gap has an H0 check in docs/H0_VERIFICATION.md.
+This project began as a plan and now runs end to end on downloaded NASA data. The table is retained as a risk register: some early
+items are closed by the 4 Nov 2026 smoke run, while rules, hosting, human review, and scientific interpretation still need manual checks.
 
 ## What was checked, and how
 - The JSON Schemas accept valid sample documents and reject an invalid one; contracts/openapi.yaml validates as OpenAPI; parquet_schemas.json loads.
-- The DuckDB queries in docs/VERIFY.md ran correctly on tiny synthetic tables (sum versus count, duplicate keys, lo/hi order, the 2012 seam, split counts). They were not run on real data.
+- Automated data, schema, seam, leakage, API-contract, and end-to-end checks pass on the current real-data outputs.
 - Every docs/, prompts/ and contracts/ file named in the text exists in the zip (except files that are meant to be created at the event). Every prompt number used in the phase prompts and instructions is defined (54 prompts).
 - Each person's phase file has seven phases and a manual-task block per phase.
 
