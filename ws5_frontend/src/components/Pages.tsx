@@ -54,8 +54,8 @@ export function ValidationPage() {
       <PieceCard title={t("validation.harmonization")} p={P.harmonization}>
         {h?.method_chosen && (
           <p className="meta">
-            {t("validation.method_chosen", { method: h.method_chosen.method === "b1" ? "B1" : "LightGBM" })}{" "}
-            {Object.entries(h.method_chosen.mean_ccc as Record<string, number>).map(([k, v]) => `${k} ${num(v, 3)}`).join(" · ")}
+            {t("validation.method_chosen", { method: h.method_chosen.method === "b1" ? "B1" : h.method_chosen.method === "xgb" ? "XGBoost CUDA" : "LightGBM" })}{" "}
+            {Object.entries((h.method_chosen.selection_mean_ccc ?? h.method_chosen.mean_ccc) as Record<string, number>).map(([k, v]) => `${k} ${num(v, 3)}`).join(" · ")}
           </p>
         )}
         {h?.region_week && <Table rows={h.region_week} cols={["holdout", "method", "rel_bias", "rmse_log1p", "spearman", "lins_ccc", "n"]} />}

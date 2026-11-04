@@ -14,6 +14,7 @@ import numpy as np
 import pandas as pd
 
 from common.climatology import cumulative_by_season, percentile_of, season_of, week_of_year
+from common import compute
 
 WATCH, HIGH = 80.0, 90.0
 LEVEL_WORDS = {"none": "within the normal range", "watch": "higher than usual", "high": "much higher than usual"}
@@ -89,9 +90,14 @@ def evaluate_forecast(weekly, weather=None, seed=2):
     losses = []
     for s in sorted(w["season"].unique())[3:]:
         tr, te = w[w["season"] != s], w[w["season"] == s]
-        m = lgb.LGBMRegressor(objective="quantile", alpha=0.5, n_estimators=150, learning_rate=0.05, num_leaves=15,
-                              min_child_samples=20, verbose=-1, n_jobs=2).fit(tr[feats], tr["target"])
-        pred = m.predict(te[feats])
+        if compute.backend() == "cuda":
+            m = compute.train_cuda(tr[feats], tr["target"], objective="reg:quantileerror", quantile_alpha=0.5,
+                                   rounds=150, learning_rate=0.05, max_leaves=15, purpose="outlook-quantile")
+            pred = compute.predict_cuda(m, te[feats])
+        else:
+            m = lgb.LGBMRegressor(objective="quantile", alpha=0.5, n_estimators=150, learning_rate=0.05, num_leaves=15,
+                                  min_child_samples=20, verbose=-1, n_jobs=compute.threads()).fit(tr[feats], tr["target"])
+            pred = m.predict(te[feats])
         y = te["target"].values
         losses.append({"season": int(s), "model": np.mean(np.abs(y - pred)) / 2,
                        "clim": np.mean(np.abs(y - np.log1p(te["target_clim"].values))) / 2,

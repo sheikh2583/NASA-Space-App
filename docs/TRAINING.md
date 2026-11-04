@@ -1,5 +1,7 @@
 # Clickable workflows and training guide
 
+CUDA update: training and readiness workflows now default to the NVIDIA CUDA backend. Choose menu 11 to install optional GPU dependencies, 12 to verify an actual GPU fit, 4/5 for quick/full CUDA training, or 13 for CPU training. Use `--backend cpu` for CPU-only machines. Read [CUDA_PIPELINE.md](CUDA_PIPELINE.md) for exact stage placement, backups, and execution logs.
+
 On Windows, double-click **START_HERE.cmd** at the project root. The menu keeps the window open after success or failure. Choose Setup once on a new machine; all other choices use `.venv` without reinstalling packages.
 
 On Linux/macOS run `bash start.command`. macOS can also launch it from Finder after `chmod +x start.command`. Linux double-click behavior depends on the file manager; the terminal command always works. Windows requires Python 3.11 and Node.js/npm; a source ZIP does not require Git.
@@ -44,7 +46,7 @@ Readiness checks confirm presence and imports, not scientific completeness. Insp
 5. Full training for the final model comparison.
 6. Smoke again, then open the trained UI and inspect Bangladesh, Punjab, Validation, and Method views.
 
-The measured full run on the current i7-14650HX took about 12 minutes, with 6 minutes 39 seconds in the model stage. This is an observation from one run, not a runtime guarantee. The current LightGBM build is CPU-only and model training uses two CPU threads; GPU hardware alone does not accelerate it.
+The original CPU full run on the current i7-14650HX took about 12 minutes, with 6 minutes 39 seconds in the model stage. This is an observation from one run, not a runtime guarantee. The installed LightGBM build remains CPU-only; the new CUDA path uses XGBoost with its own holdout evaluation. GPU hardware alone does not accelerate the legacy CPU path.
 
 ## Outputs and resume
 

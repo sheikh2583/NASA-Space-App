@@ -29,4 +29,5 @@ ws5_frontend/public/method_*.md
 results/latest.json
 results/latest.md
 results/logs/
+results/runs/
 share/

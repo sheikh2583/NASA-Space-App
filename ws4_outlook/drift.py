@@ -11,6 +11,9 @@ import lightgbm as lgb
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import StratifiedKFold
+from sklearn.metrics import roc_auc_score
+from common import compute
 
 from ws1_harmonize.features import build_features
 
@@ -55,8 +58,16 @@ def applicability_flags(panel: pd.DataFrame, years=range(2001, 2012)) -> pd.Data
             refs = ref_r.sample(min(len(ref_r), 3 * len(cur)), random_state=y)
             X = pd.concat([cur, refs])
             lab = np.r_[np.ones(len(cur)), np.zeros(len(refs))]
-            clf = lgb.LGBMClassifier(n_estimators=60, num_leaves=15, verbose=-1, n_jobs=2)
-            auc = float(np.mean(cross_val_score(clf, X, lab, cv=3, scoring="roc_auc")))
+            if compute.backend() == "cuda":
+                aucs = []
+                for train, test in StratifiedKFold(n_splits=3).split(X, lab):
+                    clf = compute.train_cuda(X.iloc[train], lab[train], objective="binary:logistic", rounds=60,
+                                             purpose="drift-classifier", max_leaves=15)
+                    aucs.append(roc_auc_score(lab[test], compute.predict_cuda(clf, X.iloc[test])))
+                auc = float(np.mean(aucs))
+            else:
+                clf = lgb.LGBMClassifier(n_estimators=60, num_leaves=15, verbose=-1, n_jobs=compute.threads())
+                auc = float(np.mean(cross_val_score(clf, X, lab, cv=3, scoring="roc_auc")))
             flag = auc > AUC_MAX
             rows.append((region, y, flag, f"MODIS inputs differ from 2012-2020 (AUC {auc:.2f})" if flag else "", auc))
     return pd.DataFrame(rows, columns=["region_id", "year", "drift_flag", "reason", "auc"])

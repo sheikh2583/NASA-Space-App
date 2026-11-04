@@ -7,7 +7,7 @@ import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
 DIRS = {".github", "common", "contracts", "docs", "scripts", "tools", "ws1_harmonize", "ws2_platform", "ws3_anomaly", "ws4_outlook", "ws5_frontend", "ws6_validation"}
-FILES = {"README.md", "START_HERE.cmd", "start.command", ".gitignore", ".gitattributes", ".env.example", "requirements.txt", "requirements.lock.txt", "pytest.ini", "CLAUDE.md", "data/README.md", "data/MANIFEST.md", "results/README.md"}
+FILES = {"README.md", "START_HERE.cmd", "start.command", ".gitignore", ".gitattributes", ".env.example", "requirements.txt", "requirements.lock.txt", "requirements-cuda.txt", "pytest.ini", "CLAUDE.md", "data/README.md", "data/MANIFEST.md", "results/README.md"}
 SKIP = {"node_modules", "dist", "__pycache__", ".pytest_cache", "static_fallback", ".venv"}
 SUFFIXES = {".py", ".md", ".json", ".yaml", ".yml", ".ts", ".tsx", ".css", ".html", ".svg", ".mjs", ".sh", ".ps1", ".cmd", ".txt"}
 

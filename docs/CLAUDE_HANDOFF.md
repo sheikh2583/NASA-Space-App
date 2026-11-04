@@ -28,9 +28,11 @@ Do not place FIRMS_MAP_KEY in Vite environment variables, Git, the share ZIP, or
 
 FireSense is a React/Vite + FastAPI application backed by Python MODIS/VIIRS harmonization, anomaly detection, and seasonal outlook workflows. Source folders remain divided into six workstreams; `common/` and `contracts/` define shared behavior.
 
-The full real-data run on 4 November 2026 passed all five QA groups. It processed 4,336,082 detections into 778,256 harmonized rows, using 2,354 active cells. All 2,098,157 SNPP rows normalize to VIIRS with valid confidence. Retained cells have no missing administrative IDs.
+The full CPU real-data run on 4 November 2026 passed all five QA groups. It processed 4,336,082 detections into 778,256 harmonized rows, using 2,354 active cells. All 2,098,157 SNPP rows normalize to VIIRS with valid confidence. Retained cells have no missing administrative IDs.
 
 B1 mean held-out CCC: 0.9417; LightGBM: 0.9351. Nominal 90% bands covered 91.6% weekly and 93.7% monthly held-out totals. The complete metrics are in local `data/processed/validation/` and the dated summary is `docs/TRAINING_RESULTS.md`.
+
+Subsequent CUDA implementation and accepted local outputs: read `docs/CUDA_RESULTS.md` and `docs/CUDA_PIPELINE.md`. Selection now includes Terra-only and Terra+Aqua holdouts; B1 scores 0.8855 versus XGBoost CUDA 0.8696 and remains selected. A first GPU trial failed the historical seam gate and was rejected. The repaired model selection plus a downstream run passed all five QA groups. That resumed run recorded 399 verified CUDA fits (135 drift, 264 outlook). Local validation/latest reports describe this newer run; the hosted snapshot still represents the earlier CPU baseline. No total-pipeline speedup or RTX 3090 benchmark is claimed.
 
 ## Entry points
 
@@ -59,9 +61,11 @@ The hosted build sets `VITE_DEMO_MODE=snapshot` and `VITE_DATA_MODE=real`. Norma
 
 ## Known constraints
 
+CUDA update: see `docs/CUDA_PIPELINE.md`. The user subsequently requested CUDA implementation, so the earlier GPU-audit-only scope is superseded. The optional XGBoost path accelerates harmonization, drift classifiers, and quantile forecast fitting on native Windows/Linux; the legacy LightGBM installation remains CPU-only. Training launchers now default to CUDA and require the GPU probe, while direct modules and the lower-level pipeline retain CPU defaults. GPU results are evaluated independently; the dated CPU training report remains a historical benchmark.
+
 - The installed LightGBM 4.7.0 is CPU-only. GPU probe failed with “GPU Tree Learner was not enabled in this build.”
-- Current model code caps training at two CPU threads. RTX 4070 Laptop is detected locally; RTX 3090 was discussed but not benchmarked or accessed.
-- Full run observed: about 12 minutes total, model stage 399 seconds. Do not claim estimated GPU times as measured results.
+- The historical CPU run used two training threads. The new workflow exposes `--threads` and defaults to eight CPU helper threads for CUDA training. RTX 4070 Laptop is detected locally; RTX 3090 was discussed but not benchmarked or accessed.
+- Historical CPU run: about 12 minutes total, model stage 399 seconds. The rejected CUDA trial's model stage took 274 seconds, but its many small outlook fits were slower. The accepted downstream resume took 586 seconds; this is not a fresh full-run benchmark.
 - Fixed output paths mean concurrent pipeline runs in one checkout are unsafe.
 - Pipeline fixture generation modifies tracked examples; inspect those changes and preserve the intended fixture baseline unless the task explicitly calls for updating it.
 - Manual FIRMS viewer comparison, fluent Bangla review, and device checks remain presentation/science tasks.
@@ -73,12 +77,14 @@ The clickable Windows `smoke` workflow completed successfully: 44 unit/packaging
 
 Use `smoke` for routine integration checks, `train --quick` for a changed ingestion/model path, and full `train` before reporting final comparisons. Inspect QA JSON as well as exit status. UI launch checks server startup, and browser rendering should be checked on both demo areas and at phone width after interface changes.
 
-Potential follow-up work, only if requested: verified historical outage/coverage handling (see review), configurable CPU threads, cached feature construction, measured OpenCL/CUDA experiments, improved run provenance, automatic date discovery, stronger input completeness validation, and separate full FastAPI hosting. Static website hosting is already complete. Preserve leakage-safe spatial/time holdouts and rerun method selection after any numeric backend change.
+CUDA regression verification: 77 Python tests with hardware tests enabled, four separate script tests, all six frontend tests, translations, and production build passed. GPU dependencies and execution logging are implemented; compute configuration is in `common/compute.py` and `requirements-cuda.txt`. Missing CUDA raises an error instead of silently switching to CPU. Geospatial/I/O/statistical stages remain CPU. Run profiles and CUDA backups stay local, and the source ZIP includes the optional dependency file and CUDA documents.
+
+Potential follow-up work, only if requested: verified historical outage/coverage handling (see review), cached feature construction, batching tiny GPU forecasts, automatic date discovery, stronger input completeness validation, and separate full FastAPI hosting. Static website hosting is already complete. Preserve leakage-safe spatial/time holdouts and rerun method selection after any numeric backend change.
 
 ## Files to send to Claude
 
 Primary: `docs/CLAUDE_HANDOFF.md` and `docs/CLAUDE_REVIEW.md`.
 
-Supporting: `CLAUDE.md`, `docs/TRAINING.md`, `docs/TRAINING_RESULTS.md`, and `docs/HOSTING.md`.
+Supporting: `CLAUDE.md`, `docs/TRAINING.md`, `docs/TRAINING_RESULTS.md`, `docs/CUDA_PIPELINE.md`, `docs/CUDA_RESULTS.md`, and `docs/HOSTING.md`.
 
 Whole source handoff: `share/firesense-source.zip`, regenerated with `python scripts/workflow.py share`. The ZIP includes these documents, code, deployment workflow, fixtures, and the public snapshot. The local `codex/` folder is excluded and remains unchanged.

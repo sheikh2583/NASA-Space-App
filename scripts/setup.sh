@@ -4,8 +4,8 @@
 #   3. installs the web app; 4. runs the pipeline on synthetic data (unless --no-pipeline).
 set -euo pipefail
 cd "$(dirname "$0")/.."
-QUICK=""; RUN=1
-for a in "$@"; do case "$a" in --quick) QUICK="--quick";; --no-pipeline) RUN=0;; esac; done
+QUICK=""; RUN=1; CUDA=0
+for a in "$@"; do case "$a" in --quick) QUICK="--quick";; --no-pipeline) RUN=0;; --cuda) CUDA=1;; esac; done
 
 say() { printf '\n== %s\n' "$*"; }
 need() { command -v "$1" >/dev/null 2>&1 || { echo "Missing $1. $2"; exit 1; }; }
@@ -29,6 +29,10 @@ if ! python -m pip install -q -r requirements.lock.txt; then
   python -m pip install -q -r requirements.txt
 fi
 python -c "import pandas, pyarrow, duckdb, lightgbm, geopandas, fastapi, pyhdf; print('imports OK')"
+if [ "$CUDA" = 1 ]; then
+  python -m pip install -r requirements-cuda.txt
+  python scripts/workflow.py gpu-check
+fi
 
 say "Web app (ws5_frontend)"
 [ -f ws5_frontend/.env ] || cp ws5_frontend/.env.example ws5_frontend/.env

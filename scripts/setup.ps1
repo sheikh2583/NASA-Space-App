@@ -1,7 +1,7 @@
 # One-time setup on Windows (PowerShell):  powershell -ExecutionPolicy Bypass -File scripts\setup.ps1 [-Quick] [-NoPipeline]
 #   1. checks git, Python 3.11 and Node; 2. creates .venv and installs the pinned packages;
 #   3. installs the web app; 4. runs the pipeline on synthetic data (unless -NoPipeline).
-param([switch]$Quick, [switch]$NoPipeline)
+param([switch]$Quick, [switch]$NoPipeline, [switch]$Cuda)
 $ErrorActionPreference = "Stop"
 Set-Location (Join-Path $PSScriptRoot "..")
 
@@ -34,6 +34,12 @@ if ($LASTEXITCODE -ne 0) {
 }
 & $vpy -c "import pandas, pyarrow, duckdb, lightgbm, geopandas, fastapi, pyhdf; print('imports OK')"
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+if ($Cuda) {
+  & $vpy -m pip install -r requirements-cuda.txt
+  if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+  & $vpy scripts\workflow.py gpu-check
+  if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+}
 
 Say "Web app (ws5_frontend)"
 if (-not (Test-Path ws5_frontend\.env)) { Copy-Item ws5_frontend\.env.example ws5_frontend\.env }

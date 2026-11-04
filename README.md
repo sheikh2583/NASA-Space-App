@@ -8,6 +8,10 @@ The full real-data training run completed on 4 November 2026 with all five QA gr
 
 ## Quick start
 
+CUDA training is available for NVIDIA GPUs on native Windows/Linux. The clickable training workflows now default to CUDA; install option 11 and verify option 12 first. See [CUDA pipeline](docs/CUDA_PIPELINE.md) for CPU fallback commands, device selection, and measured execution reports. CUDA mode uses a separately validated XGBoost candidate while preserving the CPU LightGBM baseline.
+
+The [measured CUDA results](docs/CUDA_RESULTS.md) include 399 verified downstream GPU fits and passing scientific QA. B1 remains selected after evaluating both satellite configurations. Small GPU fits currently increase total runtime; an end-to-end speedup is not established.
+
 For hosting and automatic demo updates on pushes to `main`, see [GitHub Pages hosting](docs/HOSTING.md). The hosted build uses a labeled real-data snapshot; local development retains the full FastAPI query workflow.
 
 **Windows: double-click `START_HERE.cmd`.** Choose Setup, then Smoke or Mock UI. Use Prepare before Quick/Full Training. Linux/macOS users can run `bash start.command` for the same menu. Read the [training and launcher guide](docs/TRAINING.md) for all workflows and [Claude handoff](docs/CLAUDE_HANDOFF.md) for agent continuation.
@@ -17,20 +21,22 @@ Requirements: Python 3.11, Node.js LTS, npm, and Git.
 ### Windows
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts\init.ps1 -Workflow setup
-powershell -ExecutionPolicy Bypass -File scripts\init.ps1 -Workflow train -Quick
-powershell -ExecutionPolicy Bypass -File scripts\init.ps1 -Workflow dev
+powershell -ExecutionPolicy Bypass -File scripts\setup.ps1 -NoPipeline -Cuda
+.venv\Scripts\python scripts\workflow.py train --quick
+.venv\Scripts\python scripts\workflow.py dev --open
 ```
 
 ### Linux or macOS
 
 ```bash
 bash scripts/init.sh setup
-bash scripts/init.sh train --quick
-bash scripts/init.sh dev
+.venv/bin/python scripts/workflow.py train --backend cpu --quick
+.venv/bin/python scripts/workflow.py dev --open
 ```
 
 Open the application at <http://localhost:5173> and API documentation at <http://localhost:8000/docs>.
+
+The Windows example enables NVIDIA CUDA. For CPU-only Windows omit `-Cuda` and add `--backend cpu` to training. For NVIDIA Linux install `requirements-cuda.txt` and use `--backend cuda`; macOS uses CPU mode.
 
 ## Workflows
 

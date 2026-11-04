@@ -12,3 +12,4 @@ Read `docs/CLAUDE_HANDOFF.md`, `docs/CLAUDE_REVIEW.md`, `docs/TRAINING.md`, and 
 - Use the task's explicit scope for commits/pushes. Do not overwrite local NASA inputs to recreate a demo.
 - Hosting is already live on GitHub Pages; successful pushes to main redeploy the static real-data snapshot. Full arbitrary-area queries still require FastAPI.
 - The basemap uses OpenStreetMap tiles. Do not restore unauthenticated CARTO URLs or send the NASA FIRMS key to a tile provider or frontend.
+- CUDA training is now authorized and implemented using an optional XGBoost backend; read `docs/CUDA_PIPELINE.md`. Keep CPU LightGBM and CUDA metric identities separate, verify actual device placement, and preserve B1 model selection. Older statements that all project training is CPU-only are historical.

@@ -24,9 +24,10 @@ def run(*command: str, cwd: Path = ROOT, env: dict | None = None) -> None:
     subprocess.run(command, cwd=cwd, env=env, check=True)
 
 
-def train(quick: bool, start: str | None) -> None:
+def train(quick: bool, start: str | None, backend: str = "cuda", gpu_id: int = 0, threads: int = 2) -> None:
+    os.environ.update(FIRESENSE_BACKEND=backend, FIRESENSE_GPU_ID=str(gpu_id), FIRESENSE_THREADS=str(threads))
     run(PY, "scripts/prepare_training.py")
-    command = [PY, "scripts/run_pipeline.py"]
+    command = [PY, "scripts/run_pipeline.py", "--backend", backend, "--gpu-id", str(gpu_id), "--threads", str(threads)]
     if quick:
         command.append("--quick")
     if start:
@@ -99,21 +100,30 @@ def serve(mock: bool, open_browser: bool = False) -> None:
 
 def main(argv=None) -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("workflow", choices=["prepare", "smoke", "share", "train", "validate", "results", "test", "build", "dev", "all"])
+    parser.add_argument("workflow", choices=["gpu-check", "prepare", "smoke", "share", "train", "validate", "results", "test", "build", "dev", "all"])
     parser.add_argument("--quick", action="store_true")
     parser.add_argument("--from", dest="start")
     parser.add_argument("--mock", action="store_true")
     parser.add_argument("--open", action="store_true", help="Open browser when both servers are ready")
+    parser.add_argument("--backend", choices=["cpu", "cuda"], default="cuda", help="Training backend; CUDA is explicit and cannot fall back silently")
+    parser.add_argument("--gpu-id", type=int, default=0)
+    parser.add_argument("--threads", type=int, default=8, help="CPU workers for model libraries and matrix construction")
     args = parser.parse_args(argv)
 
     if args.workflow == "prepare":
+        os.environ.update(FIRESENSE_BACKEND=args.backend, FIRESENSE_GPU_ID=str(args.gpu_id), FIRESENSE_THREADS=str(args.threads))
         run(PY, "scripts/prepare_training.py")
+    elif args.workflow == "gpu-check":
+        os.environ.update(FIRESENSE_BACKEND="cuda", FIRESENSE_GPU_ID=str(args.gpu_id), FIRESENSE_THREADS=str(args.threads))
+        sys.path.insert(0, str(ROOT))
+        from common.compute import probe_cuda
+        print(probe_cuda())
     elif args.workflow == "smoke":
         run(PY, "scripts/smoke.py")
     elif args.workflow == "share":
         run(PY, "scripts/share_zip.py")
     elif args.workflow == "train":
-        train(args.quick, args.start)
+        train(args.quick, args.start, args.backend, args.gpu_id, args.threads)
     elif args.workflow == "validate":
         run(PY, "-m", "ws6_validation.qa")
     elif args.workflow == "results":
@@ -125,7 +135,7 @@ def main(argv=None) -> None:
     elif args.workflow == "dev":
         serve(args.mock, args.open)
     else:
-        train(args.quick, args.start)
+        train(args.quick, args.start, args.backend, args.gpu_id, args.threads)
         run(PY, "scripts/results.py")
         test()
         build_ui()

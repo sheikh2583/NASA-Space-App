@@ -12,7 +12,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from common import metrics, splits
+from common import compute, metrics, splits
 from ws1_harmonize import baselines, model
 from ws1_harmonize.baselines import overlap
 
@@ -30,14 +30,14 @@ def _score(panel, train_mask, test_mask, label):
     params = baselines.fit(panel[tr])
     preds = {"B0": baselines.predict_b0(params, panel), "B1": baselines.predict_b1(params, panel)}
     m = model.fit(panel, tr, rounds=ROUNDS)
-    preds["LightGBM"], _ = model.predict(m, panel)
+    preds[compute.learner_name()], _ = model.predict(m, panel)
     out = []
     for name, pr in preds.items():
         rw = _region_week(panel, pr, te)
         out.append({"holdout": label, "method": name, **metrics.summary(rw["snpp_n"], rw["pred"])})
         # Terra-only inputs on the same test rows (how well Nov 2000 - Jul 2002 is reconstructed)
     pr_t = {"B1": baselines.predict_b1(params, panel.assign(sat_combo="terra_only")),
-            "LightGBM": model.predict(m, panel, "terra_only")[0]}
+            compute.learner_name(): model.predict(m, panel, "terra_only")[0]}
     for name, pr in pr_t.items():
         rw = _region_week(panel, pr, te)
         out.append({"holdout": label + " (terra_only inputs)", "method": name, **metrics.summary(rw["snpp_n"], rw["pred"])})
@@ -63,11 +63,17 @@ def evaluate(panel: pd.DataFrame, quick: bool = False) -> pd.DataFrame:
 
 
 def select_method(table: pd.DataFrame) -> dict:
-    t = table[~table["holdout"].str.contains("terra_only") & table["method"].isin(["B1", "LightGBM"])]
-    score = t.groupby("method")["lins_ccc"].mean()
-    best = "lgbm" if score.get("LightGBM", -1) > score.get("B1", -1) else "b1"
+    candidates = {"B1": "b1", "LightGBM": "lgbm", "XGBoost CUDA": "xgb"}
+    t = table[table["method"].isin(candidates)]
+    score = t[~t["holdout"].str.contains("terra_only")].groupby("method")["lins_ccc"].mean()
+    selection_score = t.groupby("method")["lins_ccc"].mean()
+    # Prefer B1 on ties; never select a GPU model merely because CUDA is enabled.
+    best_name = max(candidates, key=lambda name: selection_score.get(name, -np.inf))
+    best = candidates[best_name]
     return {"method": best, "mean_ccc": {k: round(float(v), 4) for k, v in score.items()},
-            "rule": "highest mean Lin's CCC on region-week sums across spatial, temporal, backward and drift-era holdouts"}
+            "selection_mean_ccc": {k: round(float(v), 4) for k, v in selection_score.items()},
+            "compute_backend": compute.backend(), "learned_candidate": compute.learner_name(),
+            "rule": "highest mean Lin's CCC across both terra_aqua and terra_only region-week holdouts; both combinations matter for the historical record"}
 
 
 def oof(panel: pd.DataFrame, method: str = "lgbm"):

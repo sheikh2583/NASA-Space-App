@@ -1,5 +1,7 @@
 # Full real-data training — 4 November 2026
 
+This is the historical **CPU baseline**. See [CUDA verification](CUDA_RESULTS.md) for the later GPU implementation, corrected selection rule, accepted resumed run, and measured limitations. Local `results/latest.*` now describes that later run.
+
 Completed at 12:29 Asia/Dhaka with:
 
 ```powershell

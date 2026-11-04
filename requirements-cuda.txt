@@ -1,0 +1,2 @@
+# Optional native Windows/Linux NVIDIA training backend. CPU environment stays usable without this.
+xgboost==3.2.0

@@ -76,7 +76,7 @@ def main(argv=None):
         f"What was checked: {len(checks)} groups of automated checks on the data files, every API endpoint against the contract, "
         f"and the demo path for Bangladesh and Punjab ({n_pass} of {len(checks)} passed).",
         f"How well it held up: the {'per-region ratio (B1)' if hv.get('method') == 'b1' else 'learned model'} was chosen by held-out agreement "
-        f"(mean Lin's CCC {hv.get('mean_ccc', {})}); the 90% bands covered {cov.get('week', 'n/a')} of held-out weekly totals.",
+        f"(selection mean Lin's CCC {hv.get('selection_mean_ccc', hv.get('mean_ccc', {}))}); the 90% bands covered {cov.get('week', 'n/a')} of held-out weekly totals.",
         "Where it is weak: values before 2012 are modeled and whole unusually-strong seasons may be flagged only at their edges. "
         + ("This run uses downloaded FIRMS observations." if real_data else "This development run uses synthetic FIRMS-like observations."),
     ]

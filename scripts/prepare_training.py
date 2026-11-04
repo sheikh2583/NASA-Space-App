@@ -10,6 +10,8 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def main() -> int:
+    sys.path.insert(0, str(ROOT))
+    from common import compute
     failures = []
 
     def check(label, ok, hint=""):
@@ -34,7 +36,13 @@ def main() -> int:
         check(f"Weather cache {region}", path.is_file() and path.stat().st_size > 0,
               "Run python -m ws3_anomaly.loaders.weather --start 2000-11-01 --end 2026-11-03")
     check("Free disk >= 5 GiB", shutil.disk_usage(ROOT).free >= 5 * 1024**3, "Free space for intermediate outputs.")
-    print("INFO CPU training; a GPU and FIRMS_MAP_KEY are not required for local archive training.")
+    if compute.backend() == "cuda":
+        try:
+            print("CUDA:", compute.probe_cuda())
+            check("Actual CUDA training/prediction", True)
+        except Exception as error:
+            check("Actual CUDA training/prediction", False, f"{error}; run pip install -r requirements-cuda.txt and check the NVIDIA driver.")
+    print(f"INFO {compute.backend()} backend. FIRMS_MAP_KEY is not required for local archive training.")
     print("INFO Presence/import checks only; smoke QA validates processed data. Keep inputs unchanged during a run.")
     print(f"{'READY' if not failures else 'NOT READY'}: {len(failures)} blocking check(s).")
     return int(bool(failures))

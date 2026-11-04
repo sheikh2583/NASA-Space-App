@@ -19,6 +19,7 @@ import numpy as np
 import pandas as pd
 
 from ws1_harmonize import baselines, evaluate, model, panel as panelmod, write_harmonized as wh
+from common import compute
 
 P = "data/processed"
 I = "data/interim/sheikh"
@@ -66,6 +67,13 @@ def step_model():
     p = _panel()
     if os.path.exists(f"{I}/metrics.csv") and "--reuse-metrics" in sys.argv:
         table = pd.read_csv(f"{I}/metrics.csv")
+        previous = json.load(open(f"{I}/method.json"))
+        if previous.get("compute_backend", "cpu") != compute.backend() or compute.learner_name() not in set(table["method"]):
+            raise RuntimeError("Cannot reuse evaluation metrics across compute backends.")
+        expected = 2 if "--quick" in sys.argv else 6
+        if table.loc[~table["holdout"].str.contains("terra_only"), "holdout"].nunique() != expected:
+            raise RuntimeError("Reused metrics do not match quick/full holdout coverage.")
+        print("Reusing existing holdout table; valid only while panel and fit configuration are unchanged.")
     else:
         table = evaluate.evaluate(p, quick="--quick" in sys.argv)
         table.to_csv(f"{I}/metrics.csv", index=False)
@@ -78,7 +86,7 @@ def step_model():
     from tools.verify_files import write_parquet_contract
     write_parquet_contract(oof, f"{P}/predictions_oof.parquet", "predictions_oof")
     full = model.fit(p)  # final model on all overlap rows
-    model.save(full, f"{I}/lgbm")
+    model.save(full, f"{I}/{'xgb' if full.get('backend') == 'cuda' else 'lgbm'}")
     print(f"predictions_oof: {len(oof)} rows; splits {oof['split'].value_counts().to_dict()}")
 
 
@@ -88,8 +96,8 @@ def step_v1():
     with open(f"{I}/b1_params.pkl", "rb") as f:
         params = pickle.load(f)
     choice = json.load(open(f"{I}/method.json"))
-    if choice["method"] == "lgbm":
-        m = model.load(f"{I}/lgbm")
+    if choice["method"] in {"lgbm", "xgb"}:
+        m = model.load(f"{I}/{choice['method']}")
         pc, pf = model.predict(m, p)
     else:
         pc, pf = baselines.predict_b1(params, p), baselines.predict_b0_frp(params, p)
@@ -121,10 +129,18 @@ def step_validation():
             "After 2 Nov 2026 values are NOAA-20 detections scaled to SNPP terms by a region x month ratio.",
             "Terra and Aqua drifted off their designed orbits; the drift-era row shows how far the model degrades after 2021.",
             "Cell-level intervals are indicative only and are never summed; AOI intervals come from interval_table.json.",
-            f"The learned model was {'kept' if choice['method'] == 'lgbm' else 'not used: the per-region ratio (B1) agreed better with held-out observations'}; see method_chosen.",
+            f"The learned model was {'kept' if choice['method'] in {'lgbm', 'xgb'} else 'not used: the per-region ratio (B1) agreed better with held-out observations'}; see method_chosen.",
             ("These metrics were computed on downloaded FIRMS observations."
              if real_data else "These metrics use synthetic development data and do not establish real-world accuracy."),
         ]}
+    if choice["method"] in {"lgbm", "xgb"}:
+        terra = t[t["holdout"] == "spatial blocks (terra_only inputs)"].set_index("method")["lins_ccc"]
+        label = choice.get("learned_candidate", "LightGBM")
+        if label in terra and "B1" in terra and terra[label] < terra["B1"]:
+            piece["limitations"].append(
+                f"Terra-only spatial holdout agreement is weaker for the selected {label} candidate "
+                f"(CCC {terra[label]:.3f}) than B1 ({terra['B1']:.3f}). Selection averages Terra+Aqua and Terra-only holdouts; "
+                "early Terra-only reconstruction requires separate scientific review.")
     os.makedirs(f"{P}/validation", exist_ok=True)
     with open(f"{P}/validation/harmonization.json", "w") as f:
         json.dump(piece, f, indent=1)

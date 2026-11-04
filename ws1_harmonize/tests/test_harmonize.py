@@ -38,6 +38,27 @@ def test_baselines_recover_known_ratios():
     assert params["b0_n20"] == pytest.approx(1 / 0.9, rel=0.03)
 
 
+def test_method_selection_reports_cuda_candidate_and_keeps_better_baseline(monkeypatch):
+    from ws1_harmonize.evaluate import select_method
+    monkeypatch.setenv("FIRESENSE_BACKEND", "cuda")
+    table = pd.DataFrame({"holdout": ["spatial blocks"] * 2, "method": ["B1", "XGBoost CUDA"], "lins_ccc": [0.95, 0.9]})
+    assert select_method(table)["method"] == "b1"
+    table.loc[1, "lins_ccc"] = 0.99
+    assert select_method(table)["method"] == "xgb"
+
+
+def test_selection_cannot_ignore_failed_terra_only_reconstruction(monkeypatch):
+    from ws1_harmonize.evaluate import select_method
+    monkeypatch.setenv("FIRESENSE_BACKEND", "cuda")
+    table = pd.DataFrame({"holdout": ["spatial blocks", "spatial blocks", "spatial blocks (terra_only inputs)", "spatial blocks (terra_only inputs)"],
+                          "method": ["B1", "XGBoost CUDA", "B1", "XGBoost CUDA"],
+                          "lins_ccc": [0.9, 0.95, 0.85, 0.3]})
+    choice = select_method(table)
+    assert choice["mean_ccc"]["XGBoost CUDA"] > choice["mean_ccc"]["B1"]
+    assert choice["selection_mean_ccc"]["B1"] > choice["selection_mean_ccc"]["XGBoost CUDA"]
+    assert choice["method"] == "b1"
+
+
 def test_b1_uses_terra_only_ratio_for_terra_only_weeks():
     p = toy_panel()
     params = baselines.fit(p)

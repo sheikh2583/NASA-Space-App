@@ -10,11 +10,13 @@ import datetime as dt
 import json
 import os
 import sys
+import glob
 
 import numpy as np
 import pandas as pd
 
 from common.series import weekly_series
+from common import compute
 from tools.verify_files import write_parquet_contract
 from ws1_harmonize import model as lgbm
 from ws3_anomaly.loaders.weather import load_weather
@@ -27,6 +29,11 @@ NOW = lambda: dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
 def piece(producer, metrics, limitations):
     os.makedirs(f"{P}/validation", exist_ok=True)
     with open(f"{P}/validation/{producer}.json", "w") as f:
+        metrics = {**metrics, "training_backend": compute.backend()}
+        real = any("synthetic_" not in os.path.basename(path) for path in glob.glob("data/raw/firms/*.csv*"))
+        if real:
+            limitations = [text.replace("Built on SYNTHETIC data; rerun on real data before quoting.",
+                                         "Computed from downloaded FIRMS observations.") for text in limitations]
         json.dump({"schema_version": "1.0", "generated_at": NOW(), "producer": producer, "metrics": metrics,
                    "limitations": limitations}, f, indent=1)
 
@@ -49,8 +56,8 @@ def step_intervals():
 def step_drift():
     p = pd.read_parquet(f"{I}/panel.parquet")
     choice = json.load(open(f"{I}/method.json"))
-    if choice["method"] == "lgbm":
-        pred, _ = lgbm.predict(lgbm.load(f"{I}/lgbm"), p)
+    if choice["method"] in {"lgbm", "xgb"}:
+        pred, _ = lgbm.predict(lgbm.load(f"{I}/{choice['method']}"), p)
     else:
         import pickle
         from ws1_harmonize import baselines
