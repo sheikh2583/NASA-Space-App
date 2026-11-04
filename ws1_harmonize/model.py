@@ -1,4 +1,4 @@
-"""CPU LightGBM / CUDA XGBoost: MODIS inputs -> SNPP-equivalent Poisson count and Tweedie FRP.
+"""CUDA XGBoost harmonization, with an internal reference learner for tests.
 
 Training rows: full overlap weeks (Terra, Aqua and SNPP operating all 7 days). Each row is used twice:
 once with Terra + Aqua inputs and once with Aqua zeroed (terra_only), so the model can be applied to
@@ -39,6 +39,7 @@ def fit(panel: pd.DataFrame, mask: np.ndarray | None = None, rounds: int = 300) 
         count = compute.train_cuda(X, y, objective="count:poisson", rounds=rounds, purpose="harmonize-count")
         frp = compute.train_cuda(X, yf, objective="reg:tweedie", rounds=rounds, purpose="harmonize-frp", tweedie_variance_power=1.3)
     else:
+        # Internal reference/test path. Public training entrypoints require CUDA.
         count = lgb.train({**PARAMS, "num_threads": compute.threads(), "objective": "poisson"}, lgb.Dataset(X, y), num_boost_round=rounds)
         frp = lgb.train({**PARAMS, "num_threads": compute.threads(), "objective": "tweedie", "tweedie_variance_power": 1.3}, lgb.Dataset(X, yf),
                         num_boost_round=rounds)

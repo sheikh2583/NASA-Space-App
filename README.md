@@ -116,7 +116,7 @@ python scripts/workflow.py gpu-check --gpu-id 0 --threads 8
 
 The check fits and predicts with all four pipeline objectives (Poisson, Tweedie, binary classification, and quantile regression), then verifies the CUDA device for each. It reports the wheel's CUDA build version and keeps probe fits out of training audit logs. A missing/unusable GPU raises an error; a CUDA request cannot silently switch to CPU.
 
-`workflow.py prepare`, `train`, and `all`, and `scripts/run_pipeline.py` default to CUDA with eight CPU helper threads. Scientific baselines and CPU test paths remain internal for comparison and CI. The supported training instructions use CUDA throughout; data preparation still uses the host CPU.
+`workflow.py prepare`, `train`, and `all`, and `scripts/run_pipeline.py` require CUDA with eight helper threads by default. Direct model, drift, outlook, and readiness commands also select CUDA and reject CPU overrides. Scientific baselines and reference implementations remain internal for comparison and CI; data preparation still uses the host CPU.
 
 Harmonization models, drift classifiers, and quantile forecasts use CUDA. File I/O, geospatial operations, baselines, calibration, anomaly statistics, and QA remain on the CPU. B1 can still win model selection. The RTX 4070 Laptop path is verified; RTX 3090 performance has not been measured. Hundreds of small GPU fits currently add overhead, so **an end-to-end speedup has not been established**. Read [CUDA operations](docs/CUDA_PIPELINE.md) and [measured results](docs/CUDA_RESULTS.md) before comparing runtimes.
 

@@ -51,7 +51,7 @@ For Python/CUDA dependencies without frontend installation or a Node/npm require
 
 Both the lower-level `scripts/run_pipeline.py` and workflow training/prepare default to CUDA with eight CPU helper threads. `--threads` controls host-side/library workers; it does not select a number of GPU cores.
 
-For direct module execution, set `FIRESENSE_BACKEND=cuda`, `FIRESENSE_GPU_ID=0`, and `FIRESENSE_THREADS=8` first. Modules without these variables retain CPU behavior. Set all three consistently when resuming; do not mix a CPU method-selection record with CUDA-generated downstream results.
+Public workflow and pipeline commands accept only CUDA. Direct model, drift, outlook, and readiness entrypoints also select CUDA, default to eight helper threads, and reject an inherited `FIRESENSE_BACKEND=cpu`. Set `FIRESENSE_GPU_ID` and `FIRESENSE_THREADS` consistently when resuming. Internal reference functions remain available to regression tests; they are not a supported training workflow. Do not mix historical method-selection records with CUDA-generated downstream results.
 
 ## Models, provenance, and recovery
 

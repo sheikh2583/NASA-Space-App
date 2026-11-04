@@ -1,4 +1,4 @@
-"""Explicit CPU/CUDA execution, GPU verification, and measured model-fit events."""
+"""CUDA training, device verification, and internal reference/test execution."""
 from __future__ import annotations
 
 import json
@@ -15,6 +15,17 @@ def backend() -> str:
     if value not in {"cpu", "cuda"}:
         raise ValueError("FIRESENSE_BACKEND must be cpu or cuda")
     return value
+
+
+def configure_cuda_training() -> None:
+    """Select CUDA for a training entrypoint; reject an inherited CPU override."""
+    requested = os.environ.get('FIRESENSE_BACKEND', 'cuda')
+    if requested != 'cuda':
+        raise RuntimeError('Training requires CUDA. Remove the FIRESENSE_BACKEND override and run the GPU readiness check.')
+    os.environ['FIRESENSE_BACKEND'] = 'cuda'
+    os.environ.setdefault('FIRESENSE_THREADS', '8')
+    threads()
+    device()
 
 
 def threads() -> int:

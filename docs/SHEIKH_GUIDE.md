@@ -259,9 +259,9 @@ into their own `data/` instead of downloading again, and add a line to `data/MAN
 | Problem | Fix |
 |---|---|
 | `pip install` fails on Windows for the pinned versions | setup falls back to requirements.txt; if `pyhdf` still fails, skip land cover (cropland stays empty, agri tag uses the season rule) |
-| LightGBM import error on macOS (`libomp`) | `brew install libomp` |
+| UI/reference dependency import error on macOS (`libomp`) | `brew install libomp`; CUDA training requires an NVIDIA Windows/Linux host |
 | `Python 3.11 not found` | install from python.org (Windows: tick "Add to PATH"), or `pyenv install 3.11` |
-| Out of memory in the model step | close other apps; use `--quick`; or run the model step on Kaggle (5.2) |
+| Out of memory in the model step | stop concurrent runs; inspect GPU/RAM usage and follow [CUDA recovery](TRAINING.md). Transfer to a suitable NVIDIA host with the same inputs if needed; `--quick` reduces evaluation folds, not necessarily peak fit memory |
 | `guard: blocked` when committing | you changed a file outside your folder; see docs/WORKING_TOGETHER.md section 7 |
 | GitHub says the PR has conflicts in data/MANIFEST.md | run `bash scripts/git/ship.sh` again (it rebases and keeps both lines) |
 | FIRMS API returns errors | check https://firms.modaps.eosdis.nasa.gov (outage notices); rerun: cached windows are skipped |

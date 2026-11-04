@@ -8,7 +8,7 @@ Keep selected ideas, revise the state/backlog and scientific acceptance criteria
 
 ## Replace obsolete state claims
 
-The repository is pushed, real inputs are loaded, full training is complete, and Pages is live. Full-run selection was B1 CCC 0.9417 versus LightGBM 0.9351; held-out coverage was 91.6% weekly and 93.7% monthly for nominal 90% intervals. These are agreement/coverage statistics, not classification accuracy. The UI already has two demo-selection buttons. Use `CLAUDE_HANDOFF.md` and `TRAINING_RESULTS.md` for current facts, rather than synthetic-run scores or old feature estimates.
+The repository is pushed, real inputs are loaded, and Pages is live. Training now uses CUDA XGBoost and selection checks both Terra+Aqua and Terra-only inputs; B1 remains the selected method. The inspector now has named ADM1 selection with search and map boundaries. Use [CLAUDE_HANDOFF.md](CLAUDE_HANDOFF.md), [CUDA_RESULTS.md](CUDA_RESULTS.md), and [TRAINING_RESULTS.md](TRAINING_RESULTS.md) for current results and the distinction between a failed full trial and accepted downstream recovery. Agreement and interval coverage are not classification accuracy. Do not reuse historical reference-model scores as current CUDA evidence.
 
 ## Revisions required before implementation
 
@@ -37,7 +37,7 @@ The repository is pushed, real inputs are loaded, full training is complete, and
 | Priority | Items |
 |---|---|
 | Next | Verified coverage/outage handling I8; explanatory wording I4/I15; carefully specified season profile I1 |
-| Small UI improvements | Correctly named ADM1 picker I3; optional Compare collapse I7 |
+| Small UI improvements | ADM1 picker I3 implemented; assess optional Compare collapse I7 |
 | Infrastructure design first | NRT refresh I2; separate full FastAPI hosting if arbitrary hosted AOIs are required |
 | Validation/contract design first | FRP I5; recurrence I10; GeoJSON I12; interval improvements I13; seasonal flags I14 |
 | Reassess on current system | Day-view speed I6; config-driven regions I11 |

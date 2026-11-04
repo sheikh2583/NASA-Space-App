@@ -25,6 +25,8 @@ def run(*command: str, cwd: Path = ROOT, env: dict | None = None) -> None:
 
 
 def train(quick: bool, start: str | None, backend: str = "cuda", gpu_id: int = 0, threads: int = 8) -> None:
+    if backend != 'cuda':
+        raise ValueError('Training requires the CUDA backend; run gpu-check before training.')
     os.environ.update(FIRESENSE_BACKEND=backend, FIRESENSE_GPU_ID=str(gpu_id), FIRESENSE_THREADS=str(threads))
     run(PY, "scripts/prepare_training.py")
     command = [PY, "scripts/run_pipeline.py", "--backend", backend, "--gpu-id", str(gpu_id), "--threads", str(threads)]
@@ -105,7 +107,7 @@ def main(argv=None) -> None:
     parser.add_argument("--from", dest="start")
     parser.add_argument("--mock", action="store_true")
     parser.add_argument("--open", action="store_true", help="Open browser when both servers are ready")
-    parser.add_argument("--backend", choices=["cpu", "cuda"], default="cuda", help="Training backend; CUDA is explicit and cannot fall back silently")
+    parser.add_argument("--backend", choices=["cuda"], default="cuda", help="Training uses CUDA and cannot fall back silently")
     parser.add_argument("--gpu-id", type=int, default=0)
     parser.add_argument("--threads", type=int, default=8, help="CPU workers for model libraries and matrix construction")
     args = parser.parse_args(argv)

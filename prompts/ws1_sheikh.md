@@ -25,26 +25,26 @@ Prompt: "Write write_harmonized.py that produces harmonized.parquet exactly per 
 Output: harmonized.parquet v0, interval_table.json v0. HANDOFF: to Sattyam, Monazir, Samin.
 Test: lo <= value <= hi, no nulls or negatives, source on every row, on SNPP operating days weekly totals equal observed SNPP totals, JSON validates.
 
-## P1.5 Features and LightGBM (H14-20)
+## P1.5 Features and CUDA XGBoost (H14-20)
 Inputs: panel; common/splits (H12).
-Prompt: "Write features.py and model.py. Features, MODIS-derived or static only: MODIS counts, high-confidence counts, FRP sum/max/mean, mean confidence, mean scan and track (day and night separately), the same for the 3x3 neighbourhood and the previous 7 days, sin/cos of day of year, coarse lat/lon, land-cover and cropland fractions, active-satellite flag. Forbidden: any VIIRS-derived feature and the year. Train LightGBM with a Poisson objective for counts and Tweedie for FRP sum. Add a test that fails if a forbidden column is in the feature list, and a leakage test that shuffles all VIIRS columns and checks predictions do not change."
+Prompt: "Maintain features.py and model.py using the CUDA setup in docs/TRAINING.md and common/compute.py. Features must be MODIS-derived or static, never VIIRS-derived or year. Train XGBoost CUDA with Poisson for counts and Tweedie for FRP sum; verify actual CUDA placement and reject fallback. Preserve forbidden-column and leakage tests. This is an experiment template; inspect current features and validation before proposing changes."
 Output: features.py, model.py, tests.
 Test: both tests pass; training runs on a one-region slice.
 
 ## P1.6 Holdout evaluation and out-of-fold file (H20-24)  HANDOFF
 Inputs: model; common/splits and metrics.
-Prompt: "Write evaluate.py: evaluate B0, B1 and LightGBM on AOI-week sums under (a) spatial-block CV, (b) rolling temporal folds, (c) backward holdout (train 2015-2020, test 2012-2014), plus a drift-era check (train 2015-2020, test 2021 onward) reported separately because Terra and Aqua drifted off their designed orbits. Report signed relative bias, RMSE on log1p, Spearman and Lin's CCC in one table. Then write predictions_oof.parquet (columns per contracts) with split labels from common/splits; calibration rows are never used for training."
+Prompt: "Maintain evaluate.py: evaluate B0, B1 and XGBoost CUDA on AOI-week sums across every configured holdout, for both Terra+Aqua and Terra-only inputs. Preserve spatial, temporal, backward, and drift-era checks and calibration separation in common/splits. Report signed relative bias, RMSE on log1p, Spearman and Lin's CCC, and write predictions_oof.parquet per contract. Select using both satellite configurations; do not force the learned candidate to win."
 Output: metrics table; predictions_oof.parquet. HANDOFF: to Samin.
 Test: no calib or test row appears in training; file validates against the schema.
 
 ## P1.7 Harmonized v1 (H28-30)  HANDOFF
 Inputs: model; drift_flags.parquet and interval_table.json v1 from Samin.
-Prompt: "Write assemble_v1.py: produce harmonized.parquet v1 with the same value rule (observed SNPP on operating days, NOAA-20 adjusted after the cutoff, else LightGBM), method_version 'v1', drift_flag filled from drift_flags.parquet by region and year, and source flags correct. Run the seam checks: modeled share drops to zero at 20 Jan 2012, and source switches to adjusted_from_noaa20 after 2 Nov 2026. Validate against the contract."
+Prompt: "Maintain assemble_v1.py: produce harmonized.parquet v1 using observed SNPP on operating days, adjusted NOAA-20 after the cutoff, and the method selected in method.json for reconstruction. B1 can win against XGBoost CUDA. Preserve method version, drift flags, provenance, contract validation, and scientific seam checks; account for operating-day gaps rather than assuming every post-2012 day is observed."
 Output: harmonized.parquet v1. HANDOFF: to Sattyam.
 Test: same checks as P1.4 plus the seam check.
 
 ## P1.8 Validation JSON and method notes (H32-34)  HANDOFF
-Prompt: "Write validation/harmonization.json per contracts/json_schemas/validation_piece.schema.json with the metrics table for B0, B1 and LightGBM on all three holdouts, plus a limitations list (modeled before 2012; extrapolation; cell-level intervals indicative). Also write one page of method notes in plain language for Samiul: what was done, what is modeled, limits."
+Prompt: "Write validation/harmonization.json per contracts/json_schemas/validation_piece.schema.json with B0, B1 and XGBoost CUDA metrics across all configured holdouts and both satellite-input combinations. Record compute backend and selected method, and limitations for pre-2012 modeling, extrapolation, and indicative cell-level intervals. Keep quick-run metrics distinct from full evaluation. Explain what was modeled and the limits in plain language."
 Output: harmonization.json, docs/method_notes_sheikh.md. HANDOFF: to Sattyam, Samiul.
 Test: JSON validates; every number appears in the metrics table.
 

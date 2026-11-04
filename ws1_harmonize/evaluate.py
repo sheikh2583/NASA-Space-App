@@ -1,6 +1,6 @@
-"""Holdout evaluation of B0, B1 and LightGBM on region-week sums, and predictions_oof.parquet.
+"""Holdout evaluation of B0, B1 and the learned candidate on region-week sums.
 
-select_method() picks B1 or LightGBM by mean Lin's CCC over the holdouts (Terra+Aqua inputs); the OOF file,
+select_method() picks B1 or the CUDA candidate using both satellite-input configurations; the OOF file,
 the conformal intervals and harmonized v1 all use the chosen method (RISKS.md: "ship B1 with honest wording").
 
 Holdouts: (a) spatial blocks (train blocks -> test blocks), (b) rolling temporal folds, (c) backward

@@ -44,18 +44,18 @@ MANUAL (you do these yourself; the agent cannot):
 
 ## PHASE 3: Floor (H8-24)
 ```
-GOAL: harmonized v0 at H14; LightGBM prototype; out-of-fold file at H24; G2 called at H24.
+GOAL: harmonized v0 at H14; CUDA XGBoost candidate; out-of-fold file at H24; G2 called at H24. Use docs/TRAINING.md for current setup and commands.
 INPUTS: grid_daily, cells; common/splits and metrics (Samin, H12).
 STEPS:
 1. Agree split labels with Samin (block_id % 5: 0 calib, 1 test) before H12.
 2. Run P1.4. Validate both files against the contracts. Post the HANDOFF to Sattyam, Monazir, Samin by H14.
-3. Run P1.5 (features and LightGBM) with the forbidden-feature and leakage tests.
+3. Run P1.5 (features and CUDA XGBoost) with forbidden-feature, leakage, and actual CUDA placement checks.
 4. Run P1.6 (three holdouts and predictions_oof.parquet). Post the HANDOFF to Samin by H24.
 5. Run check-ins at H12, H18, H24; run the G2 checklist with Samiul's end-to-end report.
 DELIVER: harmonized v0 + interval_table v0 (H14); predictions_oof.parquet (H24).
 DONE WHEN: all contract checks pass; leakage test passes; G2 passes.
 DO NOT: use VIIRS-derived features or the year; sum cell-level lo/hi.
-IF BLOCKED: ship B1 only for v0; tell Samin the out-of-fold file will come from B1 if LightGBM slips.
+IF BLOCKED: ship B1 only for v0; tell Samin if the CUDA candidate cannot be evaluated. Do not silently substitute CPU training.
 MANUAL (you do these yourself; the agent cannot):
 - Run the check-ins at H12, H18 and H24
 - At G2 open the live app yourself on a laptop and a phone and try the demo path by hand
@@ -67,7 +67,7 @@ GOAL: harmonized v1 integrated and live; G3 called at H30.
 INPUTS: drift_flags.parquet and interval_table.json v1 (Samin, H30).
 STEPS:
 1. Ask Samin at H26 whether conformal and drift are on track.
-2. Finish LightGBM; rerun P1.6 if features changed.
+2. Finish CUDA candidate evaluation across both Terra+Aqua and Terra-only inputs; rerun P1.6 if features changed. B1 remains eligible for selection.
 3. Run P1.7: assemble v1 with the value rule, merge drift flags, run the seam check.
 4. Post the HANDOFF to Sattyam. Confirm with Sattyam that the API serves v1.
 5. Run the G3 checklist.

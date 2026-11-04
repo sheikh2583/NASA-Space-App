@@ -40,7 +40,7 @@ Folder: ws1_harmonize/. Prompt pack: prompts/ws1_sheikh.md. Always paste docs/AI
 Things an AI agent cannot do for you are listed under your name in docs/MANUAL_TASKS.md, and repeated inside each of your phase prompts (prompts/phases/).
 
 ## Your workspace, what you may write, how to verify
-- Work in: your laptop with your own venv (python3.11 -m venv .venv). Use a Kaggle notebook for LightGBM only if the laptop is too slow; save outputs to the shared drive. Branch prefix: ws1/.
+- Work in: an NVIDIA Windows/Linux machine with the project CUDA environment; follow [TRAINING.md](../TRAINING.md) for readiness, quick/full runs, and saved reports. Branch prefix: ws1/.
 - You may write: ws1_harmonize/; data/processed/harmonized.parquet, predictions_oof.parquet, interval_table.json (v0 only), validation/harmonization.json; contracts/parquet_schemas.json and json_schemas/; docs/ (except Samiul's files). You merge pull requests into contracts/ and common/.
 - You must not write: any other folder, or any data file another person owns (docs/FILE_OWNERSHIP.md).
 - Verify before each HANDOFF: run tools/verify_files.py on the file; run the DuckDB checks for your stage in docs/VERIFY.md; run pytest ws1_harmonize/tests.

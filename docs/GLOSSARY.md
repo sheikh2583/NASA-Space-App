@@ -5,14 +5,15 @@
 - **Sensor days**: the table of which satellite was operating on which day; a day without its sensor is missing, not zero.
 - **Hot spot / detection**: one satellite pixel flagged as a likely fire.
 - **FRP (fire radiative power)**: how intensely a detected fire is radiating; a measure of intensity.
-- **AOI**: area of interest; the area the user draws.
+- **AOI**: area of interest; a named administrative boundary selected in the explorer, or a geometry supplied to the API.
 - **Cell**: one 0.1 degree square of the map grid (about 11 km); every detection belongs to one cell (formula: docs/DECISIONS.md decision 22).
 - **Local solar date**: the day as the sun sees it at that longitude (UTC + lon/15 hours); used for grid_daily so night fires count on the right day.
 - **Harmonization**: making the two records read as one consistent series.
 - **Observed, adjusted, modeled**: observed values come from SNPP VIIRS directly (2012 to 2 Nov 2026); adjusted values come from NOAA-20 VIIRS scaled to SNPP terms (after 2 Nov 2026); modeled values are estimated from MODIS (before 2012).
 - **Seam**: a visible change in the series where the source changes: at 2012 (modeled to observed) and at 2 Nov 2026 (observed to adjusted).
 - **B0 / B1**: simple baselines: one global ratio (B0) and a ratio per region and month (B1).
-- **LightGBM**: a gradient-boosting library; our learned model.
+- **XGBoost CUDA**: the project's GPU-trained tree-model candidate for harmonization, drift classification, and quantile forecasts.
+- **LightGBM**: retained internally for reference/unit tests and reading historical experiments; not the production training entrypoint.
 - **Interval / uncertainty band**: a range around a value that we expect to contain the truth most of the time (we aim for 90 percent).
 - **Conformal prediction**: a way to turn model errors on held-out data into intervals; coverage is the share of truths inside the interval.
 - **Drift**: the relationship between the two sensors changing over time.

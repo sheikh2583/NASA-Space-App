@@ -1,10 +1,9 @@
 # Technology stack
 
-> Disclaimer: the choices are my recommendations; versions, free-tier limits and installs were not checked (docs/KNOWN_GAPS.md items 6 and 7). Verify at H0 (docs/H0_VERIFICATION.md).
+Current implementation, 4 November 2026. See [training](TRAINING.md) for the supported CUDA setup and [hosting](HOSTING.md) for the deployed demo.
 
 Principle: boring, widely documented tools, so AI agents write correct code; free tiers only.
-Versions: Python 3.11 and the current Node LTS. I could not check current release numbers, so at H0 install the current stable
-releases, then pin them (`pip freeze > requirements.lock.txt`, commit `package-lock.json`). Everyone installs from the same files.
+Versions: Python 3.11, Node.js 22.12+ for frontend work, and XGBoost 3.2.0 for training. Install the complete pinned training environment from `requirements-cuda.txt`; frontend packages use `package-lock.json`. UI-only initialization is available without NVIDIA.
 
 | Layer | Choice | Why | Owner |
 |---|---|---|---|
@@ -12,13 +11,13 @@ releases, then pin them (`pip freeze > requirements.lock.txt`, commit `package-l
 | Tables and files | pandas, pyarrow, Parquet files | compact, typed, fast to read; matches contracts/parquet_schemas.json | all |
 | Queries over files | DuckDB (SQL on Parquet) | fast AOI aggregation without running a database server | Sattyam, Sheikh |
 | Maths | NumPy, SciPy, statsmodels (STL) | baselines, tests, seasonal decomposition | Sheikh, Monazir, Samin |
-| ML | scikit-learn, LightGBM | gradient boosting (Poisson, Tweedie, quantile), classifier tests | Sheikh, Samin |
+| ML | XGBoost CUDA, scikit-learn | Poisson/Tweedie harmonization, binary drift tests, quantile forecast fitting; verified CUDA placement | Sheikh, Samin |
 | Geometry | shapely 2, geopandas | polygons, cell-in-polygon lookup | Sattyam |
 | Contracts | OpenAPI 3, JSON Schema, jsonschema, pyyaml | one source of truth for shapes | Sattyam, Sheikh |
 | API | FastAPI, Uvicorn, Pydantic; Docker for deploy | typed, quick to write, easy to test | Sattyam |
 | Tests (Python) | pytest, httpx | contract, data and end-to-end tests | all, Samiul |
-| Web app | React 18, Vite, TypeScript, Tailwind CSS | fast dev loop, very well known to AI tools | Shammo |
-| Map | Leaflet with leaflet-draw (or react-leaflet) | polygon and rectangle drawing, free tiles | Shammo |
+| Web app | React, Vite, TypeScript, project CSS | versions locked in package-lock.json | Shammo |
+| Map | Leaflet, OSM tiles, geoBoundaries ADM1 | country/name/administrative filters and clickable named boundaries | Shammo |
 | Charts | D3 (calendar heatmap), Recharts (line with band) | each fits its job | Shammo |
 | i18n | i18next + react-i18next; Noto Sans Bengali (bundled with @fontsource) | English/Bangla toggle; font works offline | Shammo |
 | Tests (web) | Vitest for logic; real phone for layout | small, quick | Shammo |
@@ -26,7 +25,7 @@ releases, then pin them (`pip freeze > requirements.lock.txt`, commit `package-l
 | API hosting | Hugging Face Spaces (Docker) or Render free tier | free containers; may sleep, so the fallback exists | Sattyam |
 | Source control | GitHub: PRs, CODEOWNERS, branch protection | clear ownership; reviews | Sheikh |
 | Large files | shared drive (Google Drive) or a private Kaggle dataset | git stays small | Sheikh |
-| Notebook compute | laptop first; Kaggle notebooks if training is slow (Colab disconnects) | free, CPU is enough | Sheikh, Samin |
+| Training compute | NVIDIA Windows/Linux, RTX 4070 Laptop or RTX 3090 Desktop | single-device CUDA training; the 3090 timing remains an estimate | Sheikh, Samin |
 | Team channel | the team's existing chat (WhatsApp or Discord) | already in use | Sheikh |
 
 ## Version notes for AI agents (checked 3 Nov 2026)
@@ -41,5 +40,5 @@ releases, then pin them (`pip freeze > requirements.lock.txt`, commit `package-l
 - Stretch: OpenAQ (PM2.5) and MODIS MCD64A1 burned area (needs an Earthdata login).
 
 ## What we deliberately do not use
-- No database server, no message queue, no paid cloud, no GPU. Not needed for this scale and each adds ways to break.
+- No database server or message queue is required. Training requires a working NVIDIA CUDA environment; file/geospatial/statistical work still uses host resources.
 - No private SaaS that needs a card.

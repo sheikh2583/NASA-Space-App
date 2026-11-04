@@ -28,7 +28,7 @@ Folders: common/ and ws4_outlook/. Prompt pack: prompts/ws4_samin.md. Paste docs
 Things an AI agent cannot do for you are listed under your name in docs/MANUAL_TASKS.md, and repeated inside each of your phase prompts (prompts/phases/).
 
 ## Your workspace, what you may write, how to verify
-- Work in: your laptop; a Kaggle notebook for conformal sampling or the forecast if the laptop is slow (save outputs to the shared drive). Branch prefix: ws4/.
+- Work in: an NVIDIA Windows/Linux training host using [TRAINING.md](../TRAINING.md) for drift and forecast fitting. Calibration sampling uses host resources. Transfer inputs and outputs through the shared drive; do not assume a notebook has the required CUDA environment. Branch prefix: ws4/.
 - You may write: common/; ws4_outlook/; data/processed/drift_flags.parquet, outlook_region.json, interval_table.json (v1 only), validation/intervals.json, drift.json, outlook_skill.json, mcd64a1.json.
 - You must not write: other folders. Others import common/ and never edit it; tell them to ask you.
 - Verify before each HANDOFF: pytest common/ and ws4_outlook/tests; read your own coverage table; tools/verify_files.py on every file; the splits test (no calib or test row in training).

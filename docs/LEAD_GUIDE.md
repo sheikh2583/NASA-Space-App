@@ -53,7 +53,7 @@ If a gate fails: cut by the agreed order (Bangla polish, forecast alerts, PM2.5,
 4. Offer a pairing: for example Samin takes a defined piece of evaluation; Monazir helps Sattyam with data.
 
 ## Watch your own load
-H14 to H24 is the heaviest stretch (harmonized v0, LightGBM, the out-of-fold file, and a gate). Hand off any evaluation work you can, and keep check-ins to ten minutes.
+H14 to H24 is the heaviest stretch (harmonized v0, CUDA candidate evaluation, the out-of-fold file, and a gate). Hand off any evaluation work you can, and keep check-ins to ten minutes.
 
 ## Manual gate checks (things only people can do)
 - G0: every teammate has pushed a hello-world PR; accounts exist (GitHub, Earthdata, FIRMS key, hosting); the organizers' answers are shared.

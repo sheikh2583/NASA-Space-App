@@ -88,7 +88,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--quick", action="store_true")
     ap.add_argument("--from", dest="start", default=None, choices=[name for name, _ in steps(False)])
-    ap.add_argument("--backend", choices=["cpu", "cuda"], default="cuda")
+    ap.add_argument("--backend", choices=["cuda"], default="cuda")
     ap.add_argument("--gpu-id", type=int, default=0)
     ap.add_argument("--threads", type=int, default=8)
     a = ap.parse_args()
@@ -96,7 +96,8 @@ def main():
     os.environ.update(FIRESENSE_BACKEND=a.backend, FIRESENSE_GPU_ID=str(a.gpu_id), FIRESENSE_THREADS=str(a.threads))
     os.environ.pop("FIRESENSE_COMPUTE_LOG", None)  # preflight must not append to a previous run's audit log
     from common import compute
-    hardware = compute.probe_cuda() if a.backend == "cuda" else {"backend": "cpu", "threads": compute.threads()}
+    compute.configure_cuda_training()
+    hardware = compute.probe_cuda()
     validate_resume_backend(a.start, a.backend)
     todo = steps(a.quick)
     names = [n for n, _ in todo]

@@ -16,7 +16,7 @@ The canonical `docs/TRAINING.md` now starts with copyable Windows/Linux fast pat
 
 Windows `scripts/setup.ps1` and Linux `scripts/setup.sh` create/check the OS-specific Python 3.11 environment and call the shared `scripts/bootstrap.py`. Default setup installs the complete `requirements-cuda.txt` environment (locked base requirements + XGBoost 3.2.0), checks driver/imports/dependencies, runs an actual CUDA probe, installs npm dependencies, preserves `.env`, and creates input folders. Setup never starts a data pipeline.
 
-`-UiOnly` / `--ui-only` supports mock/UI development without NVIDIA, including macOS. Menu 1 is full CUDA setup, 11 is UI-only setup, 12 verifies CUDA, 4/5 run quick/full CUDA training. The obsolete CPU training menu is removed. Base CPU implementations remain internal for tests and scientific comparison.
+`-UiOnly` / `--ui-only` supports mock/UI development without NVIDIA, including macOS. Menu 1 is full CUDA setup, 11 is UI-only setup, 12 verifies CUDA, 4/5 run quick/full CUDA training. Workflow/pipeline CLIs now accept only CUDA; direct model/drift/outlook/readiness entrypoints select CUDA and reject inherited CPU overrides. Base reference implementations remain internal for tests and scientific comparison. Guard tests cover these boundaries without launching training.
 
 Unpinned fallback requires explicit `-AllowCompatible` / `--allow-compatible`. Do not silently bypass installation errors or CUDA failures. Stop the project's Vite/test/preview processes before setup on Windows; native npm file locks can otherwise cause EPERM. Init wrappers bootstrap only when needed rather than reinstalling dependencies on each command. Read [TRAINING.md](TRAINING.md) for all options and runtime prerequisites.
 
@@ -30,7 +30,7 @@ The first CUDA trial slightly improved Terra+Aqua CCC, but the candidate's Terra
 
 The corrected downstream resume passed all five QA groups and recorded 399 verified CUDA fits (135 drift, 264 quantile outlook). Weekly/monthly coverage is 0.916/0.937. There are 14,927 anomaly rows, 442 critical periods, and demonstrated forecast skill in 4 of 11 regions. The accepted downstream time of 586 seconds excludes earlier stages and repair; it is not a fresh full-run benchmark.
 
-Read [CUDA_RESULTS.md](CUDA_RESULTS.md) for exact local evidence and failed-trial artifacts. The earlier CPU experiment is archived under `docs/archive/`; it is not the current operating guide. No fresh full training was run for the subsequent setup/UI/documentation work. [GPU_TRAINING_TIMES.md](GPU_TRAINING_TIMES.md) gives labeled planning estimates: 4070 Laptop 18–25 minutes full, 3090 13–22 minutes assuming a comparable host. The 3090 has not been measured. Small GPU fits add overhead; no end-to-end speedup is established.
+Read [CUDA_RESULTS.md](CUDA_RESULTS.md) for exact local evidence, historical comparisons, and failed-trial artifacts. The obsolete standalone CPU training report has been removed; Git retains its history. No fresh full training was run for the subsequent setup/UI/documentation work. [GPU_TRAINING_TIMES.md](GPU_TRAINING_TIMES.md) gives labeled planning estimates: 4070 Laptop 18–25 minutes full, 3090 13–22 minutes assuming a comparable host. The 3090 has not been measured. Small GPU fits add overhead; no end-to-end speedup is established.
 
 ## Named-area explorer
 
@@ -51,6 +51,8 @@ Full API hosting is not provisioned. `ws2_platform/Dockerfile` requires local pr
 Generate `share/firesense-source.zip` with `python scripts/workflow.py share`. It contains source, current docs, fixtures, optional-platform requirements, named boundaries, and the public snapshot, and excludes raw data, trained models, dependencies, credentials, run logs, and `codex/`.
 
 ## Verification and remaining work
+
+The CPU-training cleanup passed the full Python suite: **76 passed, 2 hardware tests skipped**. New entrypoint guards were tested without launching scientific training. CLI help exposes only CUDA, changed documents have no broken local links, and the rebuilt source ZIP includes guard tests and excludes the removed CPU report. Historical timing evidence and internal reference tests remain intact.
 
 The Windows CUDA dependency installer was executed successfully on the RTX 4070 Laptop, including `pip check`, scientific imports, real GPU fit/prediction, and clean npm install. Both shell families were syntax-checked; a fresh native Linux installation and RTX 3090 execution remain unverified.
 

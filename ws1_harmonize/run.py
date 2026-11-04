@@ -147,5 +147,12 @@ def step_validation():
     print("validation/harmonization.json written")
 
 
+def main(command=None):
+    command = command or sys.argv[1]
+    if command == 'model':
+        compute.configure_cuda_training()
+    {"panel": step_panel, "v0": step_v0, "model": step_model, "v1": step_v1, "validation": step_validation}[command]()
+
+
 if __name__ == "__main__":
-    {"panel": step_panel, "v0": step_v0, "model": step_model, "v1": step_v1, "validation": step_validation}[sys.argv[1]]()
+    main()

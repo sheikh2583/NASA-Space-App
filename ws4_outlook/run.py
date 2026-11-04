@@ -102,5 +102,12 @@ def step_outlook():
         "Built on SYNTHETIC data; rerun on real data before quoting."])
 
 
+def main(command=None):
+    command = command or sys.argv[1]
+    if command in {'drift', 'outlook'}:
+        compute.configure_cuda_training()
+    {"intervals": step_intervals, "drift": step_drift, "outlook": step_outlook}[command]()
+
+
 if __name__ == "__main__":
-    {"intervals": step_intervals, "drift": step_drift, "outlook": step_outlook}[sys.argv[1]]()
+    main()

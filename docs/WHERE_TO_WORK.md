@@ -16,15 +16,15 @@
 ## Per person
 | Person | Main place | Heavy jobs | Deploy target |
 |---|---|---|---|
-| Sheikh | laptop, own venv | LightGBM on laptop; Kaggle notebook if slow, save outputs to the shared drive | none (integration) |
+| Sheikh | NVIDIA training machine, project venv | CUDA harmonization/evaluation through scripts/workflow.py; preserve reports and QA | none (integration) |
 | Sattyam | laptop (venv, Docker if available) | gridding and aggregates on laptop | API host; static fallback site |
 | Monazir | laptop | downloads and ingestion on laptop; big files straight to the shared drive | none |
-| Samin | laptop; Kaggle notebook for conformal sampling if slow | conformal and forecast runs | none |
+| Samin | NVIDIA training machine, project venv | interval calibration plus CUDA drift/forecast fitting | none |
 | Shammo | laptop with Node; dev server on port 5173 pointing at the hosted mock | builds locally | web app host |
 | Samiul | laptop | tests run against hosted URLs | none |
 
 ## Running things
-- Python: create your own virtual environment (`python3.11 -m venv .venv`), activate it, `pip install -r requirements.txt` (or the lock file once it exists).
+- Training: use `scripts/setup.ps1 -TrainingOnly` or `bash scripts/setup.sh --training-only`, then the CUDA readiness and quick/full commands in [TRAINING.md](TRAINING.md). Public training commands reject CPU mode.
 - Web app: `npm install` then `npm run dev`; copy `ws5_frontend/.env.example` to `ws5_frontend/.env` and set `VITE_API_BASE_URL` (hosted mock, then live API) and `VITE_FALLBACK_BASE_URL`.
 - API locally: `uvicorn` on port 8000 from ws2_platform/api/; everyone else uses the hosted mock or live API, not Sattyam's laptop.
 - Tests: `pytest <your folder>/tests`. Samiul's tests take a base URL (`API_BASE_URL=... pytest ws6_validation/tests`).

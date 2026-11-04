@@ -24,7 +24,7 @@ Test: determinism and no-leakage tests pass.
 
 ## P4.5 Conformal intervals (H24-28)
 Inputs: predictions_oof.parquet (Sheikh, H24).
-Prompt: "Write ws4_outlook/conformal.py: (1) fit a second LightGBM on absolute residuals (log1p) as the local scale; (2) normalized split conformal calibrated only on rows with split == calib; (3) AOI-sampling: draw random rectangles and weeks from the calibration blocks, aggregate to week and month, bin by predicted magnitude, take the 90% quantile of normalized scores per bin, and write interval_table.json v1 with strata landcover x season and entries (res, stratum, max_value, lo_mult, hi_mult, hi_add); (4) report empirical coverage by land cover and season on test blocks next to the nominal 90%."
+Prompt: "Inspect current ws4_outlook/conformal.py before modifying it. Preserve calibration-only interval fitting, AOI aggregation semantics, held-out coverage, and interval contracts. A learned residual-scale model is a proposed experiment, not the current implementation; if justified, use common/compute.py with verified CUDA and separately compare held-out coverage and interval scores. Do not sum indicative cell intervals or impose arbitrary width targets. Use docs/TRAINING.md for execution."
 Output: conformal.py, interval_table.json v1, coverage table.
 Test: JSON validates; coverage within about 3 points of 90 percent, or the gap is reported plainly.
 
@@ -41,7 +41,7 @@ Test: as_of never uses later data; schema validates.
 
 ## P4.8 Forecast, skill and alerts (H24-34)  HANDOFF
 Inputs: weather anomalies (Monazir, H26).
-Prompt: "Extend outlook.py: a 2 to 4 week ahead quantile LightGBM (log1p totals) from season-to-date anomaly, last 4 weeks, day of season and weather anomalies available at as_of. Evaluate leave-one-season-out with the held-out season excluded from training and from climatology; report skill vs climatology and vs persistence with bootstrap CIs and pinball loss; status = no_demonstrated_skill when the CI includes zero or below. Then alerts.py (first to cut): none/watch/high from percentile thresholds (enter at the 90th, leave at the 80th), only when the harmonized lower bound supports it, with the rule as plain text. Write outlook_region.json per the schema."
+Prompt: "Maintain CUDA XGBoost quantile fitting in outlook.py via common/compute.py with verified device placement. Evaluate leave-one-season-out, excluding the held-out season from training and climatology; report skill against climatology and persistence, bootstrap CIs, and pinball loss. Preserve no_demonstrated_skill when the CI fails to establish improvement, current-season context, alert gating, and outlook_region.json contracts. Check current feature availability at as_of before adding predictors; use docs/TRAINING.md for execution."
 Output: outlook.py, alerts.py, outlook_region.json. HANDOFF: to Sattyam, Shammo.
 Test: no leakage test; schema validates; status reflects the CI.
 

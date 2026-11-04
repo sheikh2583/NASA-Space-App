@@ -9,7 +9,7 @@
   so flags use the value; exceeds_lower_bound is kept and shown. Switch back with anomaly.FLAG_RULE = "lower_bound".
 - A season-long anomaly of about 2x is flagged only at its edges (per-week noise is larger); the outlook's season-to-date
   percentile is the tool for whole seasons.
-- drivers: Spearman + 8-week block permutation and bootstrap; LightGBM permutation importance from P3.8 not built (time).
+- drivers: Spearman + 8-week block permutation and bootstrap; learned-model permutation importance from P3.8 is not implemented.
   Run in batch per region only. Caveat strings are English; the app shows them untranslated for now.
 - ingest/firms.py refuses VIIRS_SNPP_NRT (ended 2 Nov 2026).
 

@@ -12,6 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 def main() -> int:
     sys.path.insert(0, str(ROOT))
     from common import compute
+    compute.configure_cuda_training()
     failures = []
 
     def check(label, ok, hint=""):
