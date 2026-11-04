@@ -56,6 +56,11 @@
       "date",
       "sat"
     ],
+    "coverage_days": [
+      "sat",
+      "region",
+      "date"
+    ],
     "sensor_days": [
       "date",
       "sat"
@@ -179,5 +184,14 @@
     "sat": "string",
     "operating": "bool",
     "note": "string"
+  },
+  "coverage_days": {
+    "sat": "string",
+    "region": "string",
+    "date": "date32",
+    "overlap_D": "float32",
+    "overlap_N": "float32",
+    "event_ids": "string",
+    "verification": "string"
   }
 }

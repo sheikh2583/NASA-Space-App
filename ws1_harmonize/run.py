@@ -21,6 +21,17 @@ import pandas as pd
 from ws1_harmonize import baselines, evaluate, model, panel as panelmod, write_harmonized as wh
 from common import compute
 
+
+def registry_hash() -> str:
+    """Git blob of common/outages.yaml at HEAD, recorded with the selected method; "unknown" outside git."""
+    import subprocess
+    try:
+        r = subprocess.run(["git", "rev-parse", "HEAD:common/outages.yaml"], capture_output=True, text=True,
+                           cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    except OSError:
+        return "unknown"
+    return r.stdout.strip() if r.returncode == 0 and r.stdout.strip() else "unknown"
+
 P = "data/processed"
 I = "data/interim/sheikh"
 
@@ -79,6 +90,7 @@ def step_model():
         table.to_csv(f"{I}/metrics.csv", index=False)
     print(table.round(3).to_string(index=False))
     choice = evaluate.select_method(table)
+    choice["outage_registry"] = registry_hash()
     with open(f"{I}/method.json", "w") as f:
         json.dump(choice, f, indent=1)
     print("method chosen:", choice)
@@ -101,7 +113,7 @@ def step_v1():
         pc, pf = model.predict(m, p)
     else:
         pc, pf = baselines.predict_b1(params, p), baselines.predict_b0_frp(params, p)
-    version = "v1-" + choice["method"]
+    version = "v1-" + choice["method"] + "-cov1"
     with open(f"{P}/interval_table.json") as f:
         table = json.load(f)
     drift = pd.read_parquet(f"{P}/drift_flags.parquet") if os.path.exists(f"{P}/drift_flags.parquet") else None

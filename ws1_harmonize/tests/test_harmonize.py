@@ -91,3 +91,20 @@ def test_leakage_shuffling_viirs_columns_changes_nothing():
         shuffled[c] = rng.permutation(shuffled[c].values)
     b, _ = model.predict(m, shuffled)
     assert np.allclose(a, b)
+
+
+def test_snpp_outage_day_is_filled_from_noaa20_times_the_ratio():
+    """Plan card T06: assemble() fills an SNPP outage day from NOAA-20; no model is fitted here."""
+    import datetime as dt
+    from ws1_harmonize import write_harmonized as wh
+    days = pd.date_range("2024-11-03", "2024-11-05").date
+    sd = pd.DataFrame([(d, s, not (s == "SNPP" and d == dt.date(2024, 11, 4))) for d in days for s in ("SNPP", "NOAA20")],
+                      columns=["date", "sat", "operating"])
+    grid = pd.DataFrame({"cell_id": [1, 1], "date": [dt.date(2024, 11, 4), dt.date(2024, 11, 3)], "sat": ["NOAA20", "SNPP"],
+                         "n_det": [10, 3], "frp_sum": [5.0, 1.0]})
+    panel = pd.DataFrame({"cell_id": [1], "week_start": [pd.Timestamp("2024-10-28")], "sat_combo": ["terra_aqua"]})
+    cells = pd.DataFrame({"cell_id": [1], "admin1_id": ["X"], "landcover_dom": [12]})
+    out = wh.assemble(panel, np.array([0.0]), np.array([0.0]), grid, cells, sd,
+                      lambda adm, month: np.full(len(adm), 0.8), {"level": 0.9}, "test")
+    row = out[out["date"] == dt.date(2024, 11, 4)].iloc[0]
+    assert row["source"] == "adjusted_from_noaa20" and row["value_count"] == pytest.approx(10 * 0.8)
