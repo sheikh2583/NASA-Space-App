@@ -21,7 +21,7 @@ Regenerate the other columns from the cards with `python scripts/plan.py board -
 | T16 | agent | Render data releases: publish a new runtime data version with one command | Sheikh | T00 | done | release_runtime.py + 8 offline tests; dry run proposes runtime-20261104-render-v2; runtime.json unchanged |
 | H02 | human | Sheikh: full training run with the outage handling | Sheikh | T06 | todo |  |
 | T40 | agent | Report the outage-corrected training run and publish it to Render | Sheikh | H02, T16 | todo |  |
-| T17 | agent | Render deploy check: a script that verifies the live service, run once and recorded | Sheikh | H01 | todo |  |
+| T17 | agent | Render deploy check: a script that verifies the live service, run once and recorded | Sheikh | H01 | blocked | script + 6 offline tests committed; the one recorded run waits for RENDER_URL (H01) |
 | T07 | agent | Season profile in the API, mock server, fixtures and snapshot | Sattyam | T00 | todo |  |
 | T08 | agent | Season card and typical-window strip on the calendar (en/bn) | Shammo | T07 | todo |  |
 | T09 | agent | Plain-language help, month labels and a phone-first layout | Shammo | T00 | todo |  |
