@@ -31,3 +31,10 @@ results/latest.md
 results/logs/
 results/runs/
 share/
+# Local-only: personal notes/proposals, editor and agent settings.
+codex/
+.claude/settings.local.json
+.vscode/
+.idea/
+*.swp
+Thumbs.db
