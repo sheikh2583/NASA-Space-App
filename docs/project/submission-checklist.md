@@ -10,3 +10,10 @@ Confirm each item against the organizers' current rules at kickoff.
 - [ ] Data and tool sources credited (NASA FIRMS and others used)
 - [ ] AI-tool use disclosed as the rules require (see AI assistance logs in each NOTES.md)
 - [ ] Team members listed; submission made before the deadline with a two-hour buffer
+
+## References and AI use
+
+- Licence: [LICENSE](../../LICENSE) (Apache-2.0).
+- Every external data product, map, package and article: [REFERENCES.md](../REFERENCES.md). Paste it into the
+  submission's References field.
+- AI use: the team writes this statement itself (`docs/AI_USE.md`), because several AI tools were used.
