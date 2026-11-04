@@ -5,7 +5,7 @@ import { RAMP_CSS, burnScale } from "../lib/colour";
 import { useTranslation } from "react-i18next";
 import type { AOIRequest, Cell } from "../types";
 import { date } from "../lib/format";
-import type { AreaOption } from "../areas";
+import { areaLabel, type AreaOption } from "../areas";
 
 interface Props {
   aoi: AOIRequest | null;
@@ -17,7 +17,7 @@ interface Props {
 }
 
 export default function MapView({ aoi, cells, period, areas, selectedId, onSelect }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const el = useRef<HTMLDivElement>(null);
   const map = useRef<L.Map | null>(null);
   const aoiLayer = useRef<L.FeatureGroup | null>(null);
@@ -39,10 +39,10 @@ export default function MapView({ aoi, cells, period, areas, selectedId, onSelec
     tiles.on("tileerror", () => setTileError(true));
     tiles.on("tileload", () => setTileError(false));
     tiles.addTo(m);
-    const drawn = new L.FeatureGroup().addTo(m);
+    const selection = new L.FeatureGroup().addTo(m);
     cellLayer.current = L.layerGroup().addTo(m);
     regionLayer.current = L.layerGroup().addTo(m);
-    aoiLayer.current = drawn;
+    aoiLayer.current = selection;
     map.current = m;
     return () => {
       tiles.off();
@@ -63,24 +63,38 @@ export default function MapView({ aoi, cells, period, areas, selectedId, onSelec
       const layer = L.geoJSON(area.request.geometry!, { style: {
         color: selected ? "#b4380f" : "#3d6b4f", weight: selected ? 2 : 1,
         fillColor: selected ? "#b4380f" : "#3d6b4f", fillOpacity: selected ? 0.15 : 0.04,
+      }, onEachFeature: (_feature, featureLayer) => {
+        featureLayer.on("add", () => {
+          const path = (featureLayer as L.Path).getElement();
+          if (!path) return;
+          path.setAttribute("role", "button"); path.setAttribute("tabindex", "0");
+          path.setAttribute("aria-label", t("area.map_select", { name: areaLabel(area, i18n.language) }));
+          path.setAttribute("aria-pressed", String(selected));
+          path.addEventListener("keydown", (event) => {
+            const key = (event as KeyboardEvent).key;
+            if (key === "Enter" || key === " ") { event.preventDefault(); selectRef.current(area); }
+          });
+        });
       }});
       // Tooltip text is a DOM text node, never interpreted as HTML.
-      const label = document.createElement("span"); label.textContent = area.name;
+      const label = document.createElement("span"); label.textContent = areaLabel(area, i18n.language);
       layer.bindTooltip(label).on("click", () => selectRef.current(area)).addTo(group);
     }
-  }, [areas, selectedId]);
+  }, [areas, selectedId, t, i18n.language]);
 
+  const geometry = aoi?.geometry;
+  const bbox = aoi?.bbox;
   useEffect(() => {
     const g = aoiLayer.current;
     if (!g || !map.current) return;
     g.clearLayers();
-    if (!aoi) return;
-    const shape = aoi.geometry
-      ? L.geoJSON(aoi.geometry, { interactive: false, style: { color: "#b4380f", weight: 2, fill: false } })
-      : L.rectangle([[aoi.bbox![1], aoi.bbox![0]], [aoi.bbox![3], aoi.bbox![2]]], { interactive: false, color: "#b4380f", weight: 2, fill: false });
+    if (!geometry && !bbox) return;
+    const shape = geometry
+      ? L.geoJSON(geometry, { interactive: false, style: { color: "#b4380f", weight: 2, fill: false } })
+      : L.rectangle([[bbox![1], bbox![0]], [bbox![3], bbox![2]]], { interactive: false, color: "#b4380f", weight: 2, fill: false });
     shape.addTo(g);
     map.current.fitBounds(shape.getBounds(), { padding: [20, 20], maxZoom: 9 });
-  }, [aoi]);
+  }, [geometry, bbox]);
 
   useEffect(() => {
     const lg = cellLayer.current;
@@ -100,7 +114,7 @@ export default function MapView({ aoi, cells, period, areas, selectedId, onSelec
 
   return (
     <>
-      <div ref={el} className="map" role="application" aria-label={t("map.draw_hint")} />
+      <div ref={el} className="map" role="application" aria-label={t("map.select_hint")} />
       {tileError && <p className="warn" role="status">{t("map.tiles_unavailable")}</p>}
       {cells && period && (
         <div className="legend" aria-live="polite">

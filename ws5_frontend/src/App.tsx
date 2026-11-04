@@ -6,8 +6,8 @@ import { DriversPanel, OutlookPanel, PeriodsPanel, StatusCard } from "./componen
 import ErrorBoundary from "./components/ErrorBoundary";
 import AnalysisControls from "./components/AnalysisControls";
 import AreaFilters from "./components/AreaFilters";
-import { EXAMPLE_AREAS, loadAreaCatalog, type AreaOption } from "./areas";
-import { DATA_MODE, DEMOS, RECORD_END, RECORD_START } from "./config";
+import { areaLabel, defaultArea, loadAreaCatalog, type AreaOption } from "./areas";
+import { DATA_MODE, RECORD_END, RECORD_START } from "./config";
 import { STATIC_DEMO } from "./snapshot";
 import { addDays, num } from "./lib/format";
 import type {
@@ -25,15 +25,24 @@ const MethodPage = lazy(() => import("./components/Pages").then((module) => ({ d
 export default function App() {
   const { t, i18n } = useTranslation();
   const [view, setView] = useState<View>("explore");
-  const [area, setArea] = useState<Pick<AOIRequest, "geometry" | "bbox"> | null>(EXAMPLE_AREAS[0].request);
-  const [selectedId, setSelectedId] = useState<string | null>("bd");
-  const [areas, setAreas] = useState<AreaOption[]>(EXAMPLE_AREAS);
+  const [area, setArea] = useState<Pick<AOIRequest, "geometry" | "bbox"> | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [areas, setAreas] = useState<AreaOption[]>([]);
+  const [catalogLoading, setCatalogLoading] = useState(true);
+  const [catalogVersion, setCatalogVersion] = useState(0);
   const [catalogUnavailable, setCatalogUnavailable] = useState(false);
   const generation = useRef(0);
   useEffect(() => { let active = true;
-    loadAreaCatalog().then((options) => { if (active) setAreas(options); }).catch(() => { if (active) setCatalogUnavailable(true); });
+    setCatalogLoading(true); setCatalogUnavailable(false);
+    loadAreaCatalog().then((options) => {
+      if (!active) return;
+      setAreas(options);
+      const initial = defaultArea(options);
+      if (initial) { setSelectedId(initial.id); setArea(initial.request); }
+    }).catch(() => { if (active) setCatalogUnavailable(true); })
+      .finally(() => { if (active) setCatalogLoading(false); });
     return () => { active = false; };
-  }, []);
+  }, [catalogVersion]);
   const [start, setStart] = useState(RECORD_START);
   const [end, setEnd] = useState(RECORD_END);
   const [res, setRes] = useState<Res>("week");
@@ -90,13 +99,13 @@ export default function App() {
     return () => { active = false; };
   }, [area, period]);
 
-  const pickArea = (option: AreaOption) => { setSelectedId(option.id); setArea(option.request); };
+  const pickArea = (option: AreaOption) => { setSelectedId(option.id); setArea(option.request); setCompareWith(""); };
   const runCompare = async () => {
     if (!req || !compareWith) return;
-    const other = compareWith === "bd" || compareWith === "pb" ? DEMOS[compareWith] : null;
+    const other = areas.find((candidate) => candidate.id === compareWith && candidate.id !== selectedId);
     if (!other) return;
     const current = generation.current;
-    const result = await api.post<CompareResponse>("/aoi/compare", { a: req, b: { ...other, start, end, res } }).catch(() => null);
+    const result = await api.post<CompareResponse>("/aoi/compare", { a: req, b: { ...other.request, start, end, res } }).catch(() => null);
     if (current === generation.current) setCompare(result);
   };
   const toggleLang = () => void i18n.changeLanguage(i18n.language === "bn" ? "en" : "bn");
@@ -128,7 +137,8 @@ export default function App() {
       {view === "method" && <ErrorBoundary><MethodPage /></ErrorBoundary>}
       {view === "explore" && (
         <main className="explorer">
-          <AreaFilters areas={areas} selectedId={selectedId} unavailable={catalogUnavailable} onApply={pickArea} />
+          <AreaFilters areas={areas} selectedId={selectedId} loading={catalogLoading} unavailable={catalogUnavailable}
+            onRetry={() => setCatalogVersion((version) => version + 1)} onApply={pickArea} />
           <div className="layout">
           <div className="mapcol">
             <MapView aoi={req} cells={cells?.cells ?? null} period={period} areas={areas} selectedId={selectedId} onSelect={pickArea} />
@@ -138,7 +148,7 @@ export default function App() {
               onStart={setStart} onEnd={setEnd} onRes={setRes}
               onRefresh={() => req && void load(req)} onReset={reset}
               summary={summary && status === "ok" ? t("aoi.summary", { cells: num(summary.aoi.n_cells), area: num(summary.aoi.area_km2) }) : undefined} />
-            {status === "idle" && <p className="note">{t(STATIC_DEMO ? "hosting.pick_area" : "map.draw_hint")}</p>}
+            {status === "idle" && !catalogLoading && !catalogUnavailable && <p className="note">{t(STATIC_DEMO ? "hosting.pick_area" : "map.select_hint")}</p>}
             {status === "loading" && <p className="note" aria-live="polite">{t("state.loading")}</p>}
             {status === "empty" && <p className="warn">{t("state.empty")}</p>}
             {status === "oversized" && <p className="warn">{t("state.oversized")}</p>}
@@ -172,11 +182,11 @@ export default function App() {
                     <label>{t("compare.with")}
                       <select value={compareWith} onChange={(e) => setCompareWith(e.target.value)}>
                         <option value="">–</option>
-                        <option value="bd">{t("map.demo_bd")}</option>
-                        <option value="pb">{t("map.demo_pb")}</option>
+                        {areas.filter((candidate) => candidate.id !== selectedId).map((candidate) =>
+                          <option key={candidate.id} value={candidate.id}>{areaLabel(candidate, i18n.language)}</option>)}
                       </select>
                     </label>
-                    <button className="chip" onClick={runCompare} disabled={!compareWith}>{t("compare.run")}</button>
+                    <button className="chip" onClick={runCompare} disabled={!compareWith || compareWith === selectedId}>{t("compare.run")}</button>
                   </div>
                 </section>
                 <section className="card">

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { EXAMPLE_AREAS, filterAreas, type AreaOption } from "./areas";
+import { areaLabel, defaultArea, EXAMPLE_AREAS, filterAreas, selectableAreas, type AreaOption } from "./areas";
 import { areaKey, selectSnapshot, type Snapshot } from "./snapshot";
 import rawSnapshot from "../public/demo/snapshot.json";
 import catalog from "../public/demo/areas.json";
@@ -11,6 +11,31 @@ describe("named area selection", () => {
     expect(filterAreas(areas, "IN", "dhaka")).toEqual([]);
     expect(filterAreas(areas, "IN", "haryana").map((a) => a.name)).toEqual(["Haryāna"]);
     expect(filterAreas(areas, "BD", "missing place")).toEqual([]);
+    expect(filterAreas(areas, "BD", "ঢাকা").map((a) => a.name)).toEqual(["Dhaka"]);
+    expect(filterAreas(areas, "BD", "Chattogram").map((a) => a.name)).toEqual(["Chittagong"]);
+    expect(filterAreas(areas, "BD", "Rajshahi").map((a) => a.name)).toEqual(["Rajshani"]);
+    expect(filterAreas(areas, "BD", "Dhaka Bangladesh").map((a) => a.name)).toEqual(["Dhaka"]);
+  });
+  it("opens a real administrative boundary and keeps rectangular samples out of the selector", () => {
+    const visible = selectableAreas([...areas, ...EXAMPLE_AREAS]);
+    expect(visible).toHaveLength(11);
+    expect(visible.some((area) => area.id === "bd" || area.id === "pb")).toBe(false);
+    const initial = defaultArea(visible)!;
+    expect(initial.name).toBe("Dhaka");
+    expect(initial.request.geometry).toBeDefined();
+    expect(initial.request.bbox).toBeUndefined();
+    expect(areaLabel(initial, "bn")).toBe("ঢাকা");
+    expect(defaultArea([])).toBeUndefined();
+  });
+  it("compares actual administrative areas using their own saved responses", () => {
+    const snapshot = rawSnapshot as unknown as Snapshot;
+    const request = (name: string) => ({ ...areas.find((a) => a.name === name)!.request,
+      start: "2000-11-01", end: "2026-11-02", res: "week" as const });
+    const a = request("Dhaka"), b = request("Khulna");
+    const result = selectSnapshot(snapshot, "/aoi/compare", { a, b }) as { a: unknown; b: unknown };
+    expect(result.a).toEqual(snapshot.areas[areaKey(a, snapshot)].summary);
+    expect(result.b).toEqual(snapshot.areas[areaKey(b, snapshot)].summary);
+    expect(result.a).not.toEqual(result.b);
   });
   it("serves every visible named area from its own saved request and rejects altered extents", () => {
     const snapshot = rawSnapshot as unknown as Snapshot;

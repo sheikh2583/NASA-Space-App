@@ -14,9 +14,9 @@ FireSense combines NASA FIRMS MODIS and VIIRS observations into a consistent fir
 | Set up CUDA training | Supported Windows/Linux NVIDIA environment | [CUDA dependencies](#cuda-training-dependencies) |
 | Publish your own demo | A GitHub repository with Pages available | [Deploy](#deploy-the-demo) |
 
-**Three operating modes:** Mock UI uses bundled synthetic contract fixtures. Local trained UI queries your processed real data through FastAPI. The hosted demo serves committed real-data results for 11 administrative regions and two smaller example areas. A source checkout includes fixtures, named boundaries, and the public snapshot; downloaded NASA files and trained models are separate.
+**Three operating modes:** Mock UI uses bundled synthetic contract fixtures. Local trained UI queries your processed real data through FastAPI. The hosted explorer serves committed real-data results for 11 administrative regions. A source checkout includes fixtures, named boundaries, and the public snapshot; downloaded NASA files and trained models are separate.
 
-Select a country, filter area names, choose a division/state, and click **Explore area**. You can also select a named boundary on the OpenStreetMap map. No drawing is required. Administrative outlines come from geoBoundaries; OSM supplies the basemap. Filtering names is local and needs no geocoding API key. Mock responses remain example fixtures and do not establish area-specific scientific results.
+The explorer opens on Dhaka's administrative boundary. Select a country, search in English or Bangla, choose a division/state, and click **Apply filters**. A unique name match selects itself; **Reset** returns to Dhaka. The “Viewing” label identifies the area behind the results while you edit filters. You can also click a named boundary or focus its map button and press Enter/Space. Administrative outlines come from geoBoundaries; OSM supplies the basemap. Name search is local and needs no geocoding key. Mock responses remain synthetic fixtures.
 
 The configured record ends on **2 November 2026**. Pre-2012 activity is modeled, weather relationships are associations, and forecasts can have no demonstrated skill. Extending the record requires reviewing sensor windows and configured dates; changing an end-date argument alone is insufficient.
 
@@ -325,7 +325,7 @@ npm run preview -- --host 127.0.0.1
 cd ..
 ```
 
-Open the preview URL printed by Vite. Other static hosts can publish the same `ws5_frontend/dist/` build. Snapshot mode supports the named administrative and example areas with saved weekly history. Arbitrary API AOIs, alternate date/resolution queries, spatial cell layers, and CSV exports require the live API.
+Open the preview URL printed by Vite. Other static hosts can publish the same `ws5_frontend/dist/` build. Snapshot mode exposes the 11 named administrative regions with saved weekly history, including comparison between regions. Arbitrary API AOIs, alternate date/resolution queries, spatial cell layers, and CSV exports require the live API.
 
 ### Publish refreshed scientific results
 

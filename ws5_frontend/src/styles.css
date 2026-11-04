@@ -42,6 +42,11 @@ button { cursor: pointer; }
 .area-filter-form select, .area-filter-form input { width: 100%; min-width: 0; border: 1px solid var(--line); border-radius: 6px; padding: 9px; background: white; }
 .apply-area { border: 1px solid var(--accent); border-radius: 6px; background: var(--accent); color: white; padding: 9px 18px; }
 .apply-area:disabled { opacity: .5; cursor: not-allowed; }
+.area-filter-actions { display: flex; gap: 8px; }
+.reset-area { border: 1px solid var(--line); background: white; border-radius: 6px; padding: 9px 14px; }
+.reset-area:disabled { opacity: .5; cursor: not-allowed; }
+.area-filter-foot strong { color: var(--ink); }
+.leaflet-interactive[role="button"]:focus-visible { outline: none; stroke: #1d5fa8; stroke-width: 4; }
 .area-filter-foot { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 9px; font-size: 12px; color: var(--muted); }
 .mapcol { position: relative; border-right: 1px solid var(--line); display: flex; flex-direction: column; }
 .map { flex: 1; min-height: 320px; }
