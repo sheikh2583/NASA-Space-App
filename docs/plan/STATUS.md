@@ -16,7 +16,7 @@ Regenerate the other columns from the cards with `python scripts/plan.py board -
 | T03 | agent | Lower-than-usual status levels and honest status wording | Samin | T00 | done | Punjab very_low (pct 0), Bangladesh none; snapshot re-exported |
 | T04 | agent | Mark incomplete weeks and months | Sattyam | T00 | done | last week 2026-11-02 partial (2 of 7 days: data runs to 3 Nov) in all 13 areas only |
 | T32 | agent | Verify and complete the outage registry from NASA's MODAPS table | Sheikh | T00 | done | 22 confirmed, 2 corrected, 0 rejected, 39 added 2012-2023, 15 missing 2024-2026 added |
-| T05 | agent | Run the coverage audit and record the outage decision | Sheikh | T32 | todo |  |
+| T05 | agent | Run the coverage audit and record the outage decision | Sheikh | T32 | done | threshold 0.25: 105 sensor-days flip; 54/770 SNPP+MODIS and 36/448 SNPP+NOAA20 weeks lost; 1 explained contradiction |
 | T06 | agent | Wire verified outages into sensor_days and fill from NOAA-20 (code and tests) | Sheikh | T05 | todo |  |
 | T16 | agent | Render data releases: publish a new runtime data version with one command | Sheikh | T00 | todo |  |
 | H02 | human | Sheikh: full training run with the outage handling | Sheikh | T06 | todo |  |
