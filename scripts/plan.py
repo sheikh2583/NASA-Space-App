@@ -339,7 +339,8 @@ def validate(plan: Plan) -> Plan:
                     W.append(f"{cid}: cannot check '{p}' here (this file type is not in the source zip)")
                 else:
                     E.append(f"{cid}: touches '{p}', which does not exist and is not created by a card it needs")
-        if st in ("todo", "doing"):
+        # Only a card that hasn't started may not find its files: while it is `doing`, they are its work in progress.
+        if st == "todo":
             for p in own:
                 if _exists(plan.root, p):
                     E.append(f"{cid}: creates '{p}', but it already exists (status {st})")
@@ -653,6 +654,10 @@ def show(plan: Plan, card: Card):
 
 # ------------------------------------------------------------------ CLI
 def main(argv=None) -> int:
+    # Cards contain characters such as "≥" and Bangla; a Windows console defaults to cp1252 and would crash on them.
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(errors="replace")
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = ap.add_subparsers(dest="cmd", required=True)
     sub.add_parser("check")

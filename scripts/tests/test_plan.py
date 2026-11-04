@@ -120,6 +120,12 @@ def test_checker_catches_mistakes(tmp_path, cards, statuses, expected):
     assert any(expected in e for e in p.errors), p.errors
 
 
+def test_a_card_in_progress_may_have_its_new_files(tmp_path):
+    # The loop runs `checks --run` (which runs `plan.py check`) before `set done`, so `doing` must allow the card's files.
+    p = check(make_plan(tmp_path, [{"id": "T00", "creates": "docs/a.md"}], {"T00": "doing"}))
+    assert not any("already exists" in e for e in p.errors), p.errors
+
+
 def test_board_mismatch_is_reported_and_fixed(tmp_path):
     root = make_plan(tmp_path, [{"id": "T00", "touches": "docs/a.md"}], {"T00": "review"})
     status = root / "docs/plan/STATUS.md"
