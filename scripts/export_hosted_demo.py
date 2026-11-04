@@ -36,7 +36,7 @@ def main():
         for key, request in requests:
             request = {**request, "end": snapshot["data_through"]}
             area = {"request": request}
-            for endpoint in ("summary", "critical-periods", "drivers", "outlook"):
+            for endpoint in ("summary", "critical-periods", "drivers", "outlook", "season"):
                 response = client.post(f"/aoi/{endpoint}", json=request)
                 response.raise_for_status()
                 area[endpoint] = response.json()
