@@ -27,7 +27,7 @@ Regenerate the other columns from the cards with `python scripts/plan.py board -
 | T09 | agent | Plain-language help, month labels and a phone-first layout | Shammo | T00 | done | Localized help, month labels and mobile collapsibles verified at 360px/390px/1366px |
 | T10 | agent | Caveats and "how we checked" on the method page (en, bn draft) | Samiul | T31 | done | Added bilingual caveats, truth-check evidence, sourced validation metrics, and verified rendered Method pages. |
 | T11 | agent | Retired: region picker (done on main by the named-area explorer) | Sattyam | T07 | cut | retired 4 Nov: named-area explorer on main (04adbc4, 0c9241d) |
-| T12 | agent | Shareable links (view, area, period, language in the URL) | Shammo | T00 | done | Added validated hash state, deep-link hydration, URL syncing, and bilingual copy-link fallback; verified Punjab/Bangla/week reproduction in snapshot. |
+| T12 | agent | Shareable links (view, area, period, language in the URL) | Shammo | T00 | done | Revised per user: English-only UI, no language toggle/hash state, and no stale snapshot restriction banner; verified old l=bn links normalize to English. |
 | T13 | agent | Interval report by stratum (measurement only) | Samin | T00 | todo |  |
 | T14 | agent | Season-level unusual flags (library and spec) | Monazir | T07 | todo |  |
 | T15 | agent | Season flags in the season response and on the calendar | Monazir | T14, T08 | todo |  |

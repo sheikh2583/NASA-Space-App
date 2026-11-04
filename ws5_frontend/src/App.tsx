@@ -69,7 +69,6 @@ export default function App() {
   const initialUrlState = useRef(parse(typeof window === "undefined" ? "" : window.location.hash)).current;
   const initialPeriod = useRef(initialUrlState.p);
   const [view, setView] = useState<View>(initialUrlState.v ?? "explore");
-  const [languageReady, setLanguageReady] = useState(false);
   const [area, setArea] = useState<Pick<AOIRequest, "geometry" | "bbox"> | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [areas, setAreas] = useState<AreaOption[]>([]);
@@ -111,17 +110,7 @@ export default function App() {
   const fallbackInput = useRef<HTMLInputElement | null>(null);
   const phone = useMediaQuery("(max-width: 640px)");
 
-  useEffect(() => {
-    let active = true;
-    const apply = async () => {
-      if (initialUrlState.l && !i18n.language.startsWith(initialUrlState.l)) {
-        await i18n.changeLanguage(initialUrlState.l);
-      }
-      if (active) setLanguageReady(true);
-    };
-    void apply();
-    return () => { active = false; };
-  }, [i18n, initialUrlState.l]);
+  useEffect(() => { void i18n.changeLanguage("en"); }, [i18n]);
 
   const req: AOIRequest | null = useMemo(() => area ? { ...area, start, end, res } : null, [area, start, end, res]);
 
@@ -164,15 +153,14 @@ export default function App() {
   useEffect(() => { if (req) void load(req); }, [area, start, end, res]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (!languageReady || catalogLoading) return;
+    if (catalogLoading) return;
     const catalogId = selectedId && areas.some((option) => option.id === selectedId) ? selectedId : undefined;
     history.replaceState(null, "", format({
       v: view,
       a: catalogId,
       p: period?.start ?? initialPeriod.current,
-      l: i18n.language.startsWith("bn") ? "bn" : "en",
     }));
-  }, [areas, catalogLoading, i18n.language, languageReady, period, selectedId, view]);
+  }, [areas, catalogLoading, period, selectedId, view]);
 
   useEffect(() => {
     if (STATIC_DEMO || !area || !period) return;
@@ -190,7 +178,6 @@ export default function App() {
     const result = await api.post<CompareResponse>("/aoi/compare", { a: req, b: { ...other.request, start, end, res } }).catch(() => null);
     if (current === generation.current) setCompare(result);
   };
-  const toggleLang = () => void i18n.changeLanguage(i18n.language === "bn" ? "en" : "bn");
   const copyLink = async () => {
     setCopyFallback(false);
     try {
@@ -228,12 +215,10 @@ export default function App() {
             <button key={v} aria-current={view === v ? "page" : undefined} onClick={() => setView(v)}>{t(`nav.${v}`)}</button>
           ))}
         </nav>
-        <button className="lang" onClick={toggleLang} lang={i18n.language === "bn" ? "en" : "bn"}>{t("lang.toggle")}</button>
       </header>
       <div className={`banner ${DATA_MODE}`}>
         <span className="data-badge">{t(`app.data_${DATA_MODE}`)}</span> {t("app.scope")}
       </div>
-      {STATIC_DEMO && <div className="banner">{t("hosting.snapshot")}</div>}
       {view === "validation" && <ErrorBoundary><ValidationPage /></ErrorBoundary>}
       {view === "method" && <ErrorBoundary><MethodPage /></ErrorBoundary>}
       {view === "explore" && (
