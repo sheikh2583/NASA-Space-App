@@ -292,13 +292,17 @@ components:
     AlertLevel:
       type: string
       enum: [none, watch, high]
+    StatusLevel:
+      type: string
+      description: Current-status level; low and very_low mark weeks well below the usual range.
+      enum: [very_low, low, none, watch, high]
     CurrentStatus:
       type: object
       description: Core, never cut (decision 14). Computed live for the AOI from the near-real-time feed.
       required: [week_percentile, level, data_through, message]
       properties:
         week_percentile: { type: number, minimum: 0, maximum: 100 }
-        level: { $ref: '#/components/schemas/AlertLevel' }
+        level: { $ref: '#/components/schemas/StatusLevel' }
         data_through: { type: string, format: date }
         data_source: { type: string, enum: [VIIRS_NOAA20_NRT, VIIRS_NOAA21_NRT, harmonized] }
         message: { type: string }
