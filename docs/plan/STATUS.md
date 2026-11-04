@@ -7,7 +7,7 @@ Regenerate the other columns from the cards with `python scripts/plan.py board -
 
 | ID | Kind | Title | Owner | Needs | Status | Note |
 |---|---|---|---|---|---|---|
-| T00 | agent | Finish the plan install (integration permissions and baseline checks) | Sheikh | – | todo |  |
+| T00 | agent | Finish the plan install (integration permissions and baseline checks) | Sheikh | – | done | plan installed; agent-safe baseline green (147 tests, web 13, both builds) |
 | H01 | human | Sheikh: confirm the Render service, add the FIRMS key there, and note its URL | Sheikh | T00 | todo |  |
 | T30 | agent | Check the Space Apps rules and record them with quotes | Sheikh | T00 | todo |  |
 | T01 | agent | Licence, references and AI-use statement | Sheikh | T30 | todo |  |

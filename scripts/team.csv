@@ -1,5 +1,5 @@
 github,name,slot,prefix,folder,allowed
-sheikh2583,Sheikh,1,ws1,ws1_harmonize,ws1_harmonize/:docs/:tools/:scripts/:.github/:README.md:CONTRIBUTING.md:AGENTS.md:CLAUDE.md:Dockerfile:render.yaml:deployment/:requirements.txt:requirements.lock.txt:requirements-api.txt:requirements-cuda.txt:.dockerignore:pytest.ini:.gitignore:.gitattributes:.env.example:contracts/parquet_schemas.json:contracts/json_schemas/:contracts/README.md:data/MANIFEST.md
+sheikh2583,Sheikh,1,ws1,ws1_harmonize,ws1_harmonize/:docs/:tools/:scripts/:.github/:README.md:CONTRIBUTING.md:AGENTS.md:CLAUDE.md:Dockerfile:render.yaml:deployment/:requirements.txt:requirements.lock.txt:requirements-api.txt:requirements-cuda.txt:.dockerignore:pytest.ini:.gitignore:.gitattributes:.env.example:contracts/parquet_schemas.json:contracts/json_schemas/:contracts/README.md:data/MANIFEST.md:common/:ws2_platform/:ws3_anomaly/:ws4_outlook/:ws5_frontend/:ws6_validation/:contracts/:LICENSE
 sssatty,Sattyam,2,ws2,ws2_platform,ws2_platform/:contracts/openapi.yaml:contracts/fixtures/:data/MANIFEST.md:docs/project/contract-changes.md
 Monajir,Monazir,3,ws3,ws3_anomaly,ws3_anomaly/:data/MANIFEST.md
 Samin2712,Samin,4,ws4,ws4_outlook,ws4_outlook/:common/:data/MANIFEST.md
