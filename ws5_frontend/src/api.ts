@@ -1,9 +1,11 @@
 import type { AOIRequest, Envelope } from "./types";
 import { STATIC_DEMO, snapshotCall } from "./snapshot";
 
-const BASE = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, "") || "http://localhost:8000";
+// A configured "/" becomes an empty prefix, keeping hosted requests same-origin.
+const configuredBase = import.meta.env.VITE_API_BASE_URL as string | undefined;
+const BASE = configuredBase === undefined ? "http://localhost:8000" : configuredBase.replace(/\/$/, "");
 const FALLBACK = (import.meta.env.VITE_FALLBACK_BASE_URL as string | undefined)?.replace(/\/$/, "") || "";
-const TIMEOUT_MS = 15000;
+const TIMEOUT_MS = 60000; // Free Render compute can take longer on uncached AOIs.
 
 export class AOIError extends Error {}
 export class ApiError extends Error {}

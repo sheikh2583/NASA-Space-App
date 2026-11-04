@@ -9,7 +9,6 @@ climatology and persistence with bootstrap CIs; status = no_demonstrated_skill w
 """
 from __future__ import annotations
 
-import lightgbm as lgb
 import numpy as np
 import pandas as pd
 
@@ -95,6 +94,8 @@ def evaluate_forecast(weekly, weather=None, seed=2):
                                    rounds=150, learning_rate=0.05, max_leaves=15, purpose="outlook-quantile")
             pred = compute.predict_cuda(m, te[feats])
         else:
+            # Internal human-run reference fitting; API serving never imports ML libraries.
+            import lightgbm as lgb
             m = lgb.LGBMRegressor(objective="quantile", alpha=0.5, n_estimators=150, learning_rate=0.05, num_leaves=15,
                                   min_child_samples=20, verbose=-1, n_jobs=compute.threads()).fit(tr[feats], tr["target"])
             pred = m.predict(te[feats])

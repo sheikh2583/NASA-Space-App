@@ -1,7 +1,5 @@
-name: Deploy live demo
+name: Legacy Pages snapshot (manual only)
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 permissions:
   contents: read

@@ -2,7 +2,7 @@
 
 FireSense combines NASA FIRMS MODIS and VIIRS observations into a consistent fire-activity record for **Bangladesh and Punjab–Haryana–Delhi**. It estimates earlier activity in VIIRS terms, reports uncertainty, flags unusual periods, describes weather associations, and presents results in English and Bangla through React/Vite and FastAPI.
 
-[Live demo](https://sheikh2583.github.io/NASA-Space-App/) · [Training guide](docs/TRAINING.md) · [GPU time estimates](docs/GPU_TRAINING_TIMES.md) · [Claude handoff](docs/CLAUDE_HANDOFF.md)
+[Render deployment](docs/RENDER.md) · [Legacy snapshot](https://sheikh2583.github.io/NASA-Space-App/) · [Training guide](docs/TRAINING.md) · [GPU time estimates](docs/GPU_TRAINING_TIMES.md) · [Claude handoff](docs/CLAUDE_HANDOFF.md)
 
 **Operator guide — updated 4 November 2026.** Start from the repository root and run each command only after the previous one succeeds. Setup, data acquisition, training, and publication are separate steps.
 
@@ -18,9 +18,9 @@ FireSense combines NASA FIRMS MODIS and VIIRS observations into a consistent fir
 | Develop or debug the UI/API | Python, Node.js, source code; no NASA account or GPU | [Initialize](#initialize-a-fresh-checkout), then Mock UI |
 | Train on real observations | NASA files, boundaries, land cover, weather cache | [Prepare data](#prepare-real-training-data), then [train](#train-and-validate) |
 | Set up CUDA training | Supported Windows/Linux NVIDIA environment | [CUDA dependencies](#cuda-training-dependencies) |
-| Publish your own demo | A GitHub repository with Pages available | [Deploy](#deploy-the-demo) |
+| Publish the complete app | GitHub repository and existing Render account | [Deploy frontend + backend together](#deploy-the-demo) |
 
-**Three operating modes:** Mock UI uses bundled synthetic contract fixtures. Local trained UI queries your processed real data through FastAPI. The hosted explorer serves committed real-data results for 11 administrative regions. A source checkout includes fixtures, named boundaries, and the public snapshot; downloaded NASA files and trained models are separate.
+**Operating modes:** Mock UI uses bundled synthetic contract fixtures. Local trained UI queries processed real data through FastAPI. The combined Render deployment serves the UI and live API together; its first deployment must still be completed in your account. The legacy Pages site serves saved results for 11 administrative regions. A source checkout includes fixtures, named boundaries, and that snapshot; downloaded NASA files and trained models are separate.
 
 The explorer opens on Dhaka's administrative boundary. Select a country, search in English or Bangla, choose a division/state, and click **Apply filters**. A unique name match selects itself; **Reset** returns to Dhaka. The “Viewing” label identifies the area behind the results while you edit filters. You can also click a named boundary or focus its map button and press Enter/Space. Administrative outlines come from geoBoundaries; OSM supplies the basemap. Name search is local and needs no geocoding key. Mock responses remain synthetic fixtures.
 
@@ -38,7 +38,7 @@ Install **64-bit Python 3.11** and **Git**. Install **Node.js 22.12+ with npm** 
 
 Use the complete PowerShell invocation below if script execution is blocked. macOS supports UI/API development only. Full and training-only modes require an NVIDIA driver and `nvidia-smi`; Windows native dependencies also need the [Microsoft Visual C++ x64 runtime](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist). Linux may need `libgomp1` and `python3.11-venv`; see [platform prerequisites](docs/TRAINING.md#1-install-the-full-training-environment).
 
-Setup creates `.venv`, installs pinned dependencies, and copies example environment files only when absent. Training-only setup creates only the root `.env`. Recreate environments on each OS rather than transferring `.venv` or `node_modules`. Allow at least 5 GiB of free space for training intermediates **plus** downloaded inputs and backups of existing outputs. Internet access is needed for installation, map tiles, and data acquisition.
+Setup creates `.venv`, installs pinned dependencies, and copies example environment files only when absent. Training-only setup creates only the root `.env`. Recreate environments on each OS rather than transferring `.venv` or `node_modules`. Allow at least 5 GiB of free space for training intermediates **plus** downloaded inputs and backups of existing outputs. Internet access is needed for installation, map tiles, and data acquisition. Render serving has a separate minimal environment in `requirements-api.txt` and does not use the training installers.
 
 Clone the repository, or extract the source ZIP and open a terminal in its root. To publish your own copy, fork the repository and clone **your fork's URL** instead.
 
@@ -333,100 +333,75 @@ FIRESENSE_TEST_CUDA=1 python -m pytest ws1_harmonize/tests/test_cuda.py -q
 
 ## Deploy the demo
 
-Choose a deployment mode before building:
+The primary deployment is now **one Free Render Web Service** for the React frontend and FastAPI backend. Both use the same URL; no separate API address, frontend hosting account, or manual snapshot export is needed for live queries. The previous GitHub Pages site remains a legacy saved snapshot until you create and verify the Render service.
 
-| Target | What is served | Required artifacts | What updates on push |
-|---|---|---|---|
-| Included GitHub Pages workflow | Static named-area explorer | Committed `areas.json` and `snapshot.json` | Frontend code and committed snapshot; no retraining |
-| Another static host | The same snapshot build | `ws5_frontend/dist/` built in snapshot mode | Depends on that host's configuration |
-| Full API plus frontend | Queries against processed runtime data | Separate API service, processed artifacts, public API URL, frontend build | Backend automation must be provisioned separately |
+### Render setup
 
-### GitHub Pages — automatic updates on pushes
+In your existing Render account, create a Web Service linked to this GitHub repository:
 
-The included `.github/workflows/pages.yml` builds and publishes a **static snapshot demo**. It requires no NASA key, Python training environment, GPU, or backend hosting. The saved public snapshot is already in `ws5_frontend/public/demo/snapshot.json`.
+| Field | Value |
+|---|---|
+| Name | `firesense`, or another available name |
+| Language | **Docker** |
+| Branch | `main` |
+| Region | Singapore |
+| Root Directory | Leave empty |
+| Dockerfile Path | `./Dockerfile` |
+| Compute | **Free — $0/month** |
+| Docker Command | Leave empty |
+| Environment Variables | None required |
+| Health Check Path | `/health` |
+| Auto-Deploy | On Commit |
 
-1. Fork this repository (or push the source and included workflow to a repository you own). Make sure its default/deployment branch is `main`, or update the workflow trigger.
-2. Enable Actions in your fork if GitHub asks. Under **Settings → Pages → Build and deployment → Source**, select **GitHub Actions**.
-3. Push a commit to `main`, or open **Actions → Deploy live demo → Run workflow**.
-4. Wait for both `build` and `deploy` to succeed. Open the URL in the `github-pages` environment. For a project site it is normally `https://<owner>.github.io/<repository>/`; the relative Vite base supports a repository subpath.
-5. Open `<site-url>/version.json` and compare its `commit` with your pushed SHA (`git rev-parse HEAD`). Failed checks prevent that revision from replacing the site.
+The root Dockerfile builds the UI in live mode, downloads the existing validated data pinned in [deployment/runtime.json](deployment/runtime.json), and serves the UI/API with one worker. It verifies the archive checksum and saved real-data QA. No training, CUDA probes, FIRMS key, database, or persistent disk is involved.
 
-The workflow runs locked npm installation, frontend tests, translations, type checking/build, and deployment on every push to `main`. It does **not** retrain or fetch NASA data. Pages availability depends on repository visibility and your GitHub plan; see [GitHub's workflow documentation](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).
+Choose **Free** explicitly: Render can preselect a paid instance. After the deployment is Live, use its assigned URL for both the website and API. Alternatively, **New → Blueprint** reads the same settings from [render.yaml](render.yaml).
 
-The separate `ci` workflow checks Python contracts/tests and the frontend. Pages depends on its own frontend checks, not on the separate Python job. Check both workflow results before treating a pushed change as verified. If Pages fails, open its failed job log, fix the reported test/build/permission/environment issue, and push the fix or rerun the workflow. Verify `version.json` again after deployment.
+Full instructions for the current Render form, artifact updates, free-tier limits, and troubleshooting: **[Render deployment guide](docs/RENDER.md)**.
 
-`scripts/github_pages.py` is a maintainer helper hardcoded to `sheikh2583/NASA-Space-App`; use repository Settings/Actions for your own fork. Do not run its `--enable` action expecting it to configure another repository.
+### Verify and update
 
-### Preview the hosted build locally
+1. Open `<render-url>/health`: expect `status: ok`, nonzero cells, and the data-through date.
+2. Open `<render-url>/version.json`: compare `commit` with your deployed Git SHA.
+3. Open `<render-url>/`: select Dhaka, change dates/resolution, inspect cell layers, and export CSV. The saved-snapshot banner should be absent.
+4. Open `<render-url>/docs` for API requests. The browser's Network panel should show requests to the same Render host.
 
-With dependencies installed, from the repository root:
+A normal push to `main` rebuilds frontend and backend together after Auto-Deploy is enabled. It uses the pinned runtime data and does not acquire new observations or train. The record still ends on **2 November 2026**.
 
-```powershell
-# PowerShell
-cd ws5_frontend
-$env:VITE_DEMO_MODE = 'snapshot'
-$env:VITE_DATA_MODE = 'real'
-npm test
-npm run check:strings
-npm run build
-npm run preview -- --host 127.0.0.1
-# After Ctrl+C, clear shell overrides before returning to API development.
-Remove-Item Env:VITE_DEMO_MODE, Env:VITE_DATA_MODE -ErrorAction SilentlyContinue
-cd ..
-```
+Free services sleep after 15 idle minutes and can take about a minute to wake; the website and API wake together. Free-instance hours are shared across your workspace. Read [Render's free-tier limits](https://render.com/docs/free). Monitor memory and logs; Free capacity has not been load-tested on Render.
 
-```bash
-# Bash
-cd ws5_frontend
-npm test
-npm run check:strings
-VITE_DEMO_MODE=snapshot VITE_DATA_MODE=real npm run build
-npm run preview -- --host 127.0.0.1
-# After Ctrl+C:
-cd ..
-```
+### Publish new scientific data
 
-Open the preview URL printed by Vite. Other static hosts can publish the same `ws5_frontend/dist/` build. Snapshot mode exposes the 11 named administrative regions with saved weekly history, including comparison between regions. Arbitrary API AOIs, alternate date/resolution queries, spatial cell layers, and CSV exports require the live API.
-
-### Publish refreshed scientific results
-
-After completing real-data training, inspect its scientific metrics and run:
+After human-run scientific validation, package the existing outputs:
 
 ```sh
-python scripts/workflow.py validate
-python scripts/export_hosted_demo.py
+python scripts/runtime_bundle.py pack
 ```
 
-The exporter refreshes both `ws5_frontend/public/demo/areas.json` and `snapshot.json`, with responses for all 11 administrative regions plus two examples. It refuses validation marked as synthetic. Review provenance and the data-through date, which remains **2026-11-02** explicitly. Preview/test the snapshot build above, then commit both files and push to your deployment branch:
+Publish `share/firesense-runtime.zip` under a new GitHub Release version. Update its public URL and printed SHA256 in `deployment/runtime.json`, then commit/push that manifest. The next Docker build retrieves and verifies it. Never overwrite a pinned release asset, commit raw/processed data, or add training commands to deployment.
+
+The serving bundle contains `cells.parquet`, `harmonized.parquet`, `sensor_days.parquet`, `interval_table.json`, `drivers_region.json`, `outlook_region.json`, and five saved validation JSON files. It excludes raw FIRMS observations, trained models, credentials, and run logs.
+
+### Local combined-app verification
+
+On a Docker-capable machine:
 
 ```sh
-git diff --stat -- ws5_frontend/public/demo
-git add ws5_frontend/public/demo/areas.json ws5_frontend/public/demo/snapshot.json
-git commit -m "Refresh validated public demo results"
-git push origin main
+docker build -t firesense .
+docker run --rm -p 10000:10000 firesense
 ```
 
-Use your deployment branch instead of `main` if you changed the workflow trigger. A normal code push leaves saved scientific data unchanged. Keep raw inputs, `.env`, models, and large processed files outside Git. [Area-selection notes](docs/AREA_SELECTION.md) explain boundary sources, licenses, and supported coverage.
+Open `http://localhost:10000/`, `/health`, and `/docs`. This builds and serves existing artifacts only. The current Windows machine has no Docker engine; local API/UI routing and artifact transport have been verified separately, while the container build still needs verification on Docker or Render.
 
-### Full API hosting
-
-GitHub Pages cannot run FastAPI. Arbitrary geometry/date queries need a separate HTTPS API service. For that frontend build, set `VITE_DEMO_MODE` empty, `VITE_DATA_MODE=real`, and `VITE_API_BASE_URL` to the public service in `ws5_frontend/.env`, then run `npm run build --prefix ws5_frontend` and publish `ws5_frontend/dist/`. The included Pages workflow explicitly forces snapshot mode; change its build environment if adapting it for a live API. A hosted browser cannot use your laptop's `localhost` URL.
-
-After training and QA, the existing container can be built from the repository root on a Docker-capable machine:
-
-```sh
-docker build -f ws2_platform/Dockerfile -t firesense-api .
-docker run --rm -p 7860:7860 firesense-api
-```
-
-The Dockerfile expects these paths under `data/processed/`: `cells.parquet`, `harmonized.parquet`, `sensor_days.parquet`, `interval_table.json`, `drivers_region.json`, `outlook_region.json`, and `validation/`. They are ignored by Git, so a repository-only cloud build will fail unless you supply the artifacts. The serving container uses processed outputs; it does not train models.
-
-Validate `http://localhost:7860/health` and a demo-area summary through `http://localhost:7860/docs` before exposing it. Restart the API after replacing runtime data. The container path has not been freshly verified by the current Windows setup; platform dependency installation may need adjustment. Provider provisioning, HTTPS, artifact delivery, capacity, and automatic backend deployment are separate work. The current API allows all CORS origins and has no authentication/rate limiting; configure access controls for your hosting context. Read [hosting operations](docs/HOSTING.md) for the current boundaries.
+The older [API-only Dockerfile](ws2_platform/Dockerfile) requires processed files in its local build context; it is not the new Render entrypoint. The GitHub Pages workflow is retained for manual legacy snapshot publication and no longer runs on pushes. Its existing site is not deleted.
 
 ## Project structure and contribution
 
 ```text
-.github/workflows/      Python/frontend CI and push-to-main Pages deployment
+.github/workflows/      Non-fitting Python/frontend CI; manual legacy Pages snapshot
+Dockerfile              Combined React build and live API image for Render
+render.yaml             Single Free Render service with GitHub auto-deploy
+deployment/             Versioned runtime-data URL and SHA256 manifest
 common/                 Shared science utilities, CUDA fits, reference test helpers
 contracts/              OpenAPI, data schemas, and bundled API fixtures
 data/                   Local raw/interim/processed data and CUDA backups

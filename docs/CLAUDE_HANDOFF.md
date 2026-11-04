@@ -12,6 +12,8 @@ Updated 4 November 2026, Asia/Dhaka. The current [README](../README.md), [traini
 - Windows: `START_HERE.cmd`; Linux/macOS: `bash start.command`.
 - Shared workflow: `scripts/workflow.py`; training and the low-level pipeline default to CUDA, GPU 0, eight helper threads.
 
+Hosting migration: the root `Dockerfile` and `render.yaml` now define one Free Render service for React plus live FastAPI. Use [RENDER.md](RENDER.md) as the current deployment guide. No Render URL has been verified yet. The old Pages URL is a legacy snapshot; its workflow is now manual-only. `deployment/runtime.json` pins the published existing-data ZIP and checksum, eliminating manual data setup on Render. Serving never trains. Python CI now runs only reviewed non-fitting deployment tests; historical broad test counts below predate the no-training policy.
+
 The canonical `docs/TRAINING.md` now starts with copyable Windows/Linux fast paths using the project interpreter directly, separate quick/full steps, and timing estimates for both GPUs. It distinguishes training-only Python checks from Node-dependent smoke/UI workflows, explains input transfer to another GPU host, supplies console logging/recovery commands, and ends with a final-run acceptance checklist. Updating the guide did not launch training or replace scientific artifacts.
 
 ## Initialization and dependencies
@@ -46,9 +48,9 @@ Request-generation checks prevent stale summary/secondary responses from replaci
 
 ## Hosting and sharing
 
-`.github/workflows/pages.yml` tests/translates/builds and deploys successful pushes to `main`. `version.json` identifies the deployed SHA. A push does not acquire data or retrain. Static hosting supports named saved areas with fixed weekly dates; arbitrary API requests, cell products, and CSV export require FastAPI.
+`render.yaml` links the combined Docker service to `main` with automatic deployment on commits once a human creates the Render service. `/version.json` identifies the deployed SHA and `live-api` mode. The root Dockerfile forces same-origin live frontend requests; no API URL or FIRMS key is required. The Pages snapshot workflow is retained only for manual legacy publication.
 
-Full API hosting is not provisioned. `ws2_platform/Dockerfile` requires local processed runtime artifacts that are absent from a Git-only cloud build. Provider/artifact/HTTPS/capacity work is separate. The key-free OSM basemap fix remains in place; do not restore unauthenticated CARTO URLs or expose FIRMS_MAP_KEY in the frontend.
+Render service creation and its actual Docker build remain to be verified in the user's account. The old API-only `ws2_platform/Dockerfile` is not the Render entrypoint. The new root image uses minimal serving requirements and an allowlisted, checksum-verified GitHub Release data bundle. Local serving checks covered UI, health, docs, all AOI products, day/month queries and CSV with training-library imports blocked. Five transport/routing tests and twelve frontend tests passed. Peak sampled Windows RSS was about 430 MiB; Render/Linux capacity remains unverified. The key-free OSM basemap stays in place; never expose FIRMS_MAP_KEY.
 
 Generate `share/firesense-source.zip` with `python scripts/workflow.py share`. It contains source, current docs, fixtures, optional-platform requirements, named boundaries, and the public snapshot, and excludes raw data, trained models, dependencies, credentials, run logs, and `codex/`.
 

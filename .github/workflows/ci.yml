@@ -17,8 +17,10 @@ jobs:
           cache: pip
           cache-dependency-path: requirements.lock.txt
       - run: pip install -r requirements.lock.txt
-      # Unit tests and contract-file checks only: data/ is not in git, so data and API tests skip themselves.
-      - run: python -m pytest -q
+      # Agent-safe CI: only reviewed transport/routing checks; no model fits or probes.
+      # Full scientific regression and training validation are human-operated.
+      - run: python -m compileall -q common scripts ws1_harmonize ws2_platform ws3_anomaly ws4_outlook
+      - run: python -m pytest scripts/tests/test_runtime_bundle.py scripts/tests/test_share_zip.py ws2_platform/tests/test_frontend_hosting.py -q
       - name: Contracts parse
         run: python -c "import yaml,json,glob; from openapi_spec_validator import validate; validate(yaml.safe_load(open('contracts/openapi.yaml'))); [json.load(open(p)) for p in glob.glob('contracts/**/*.json', recursive=True)]"
   web:

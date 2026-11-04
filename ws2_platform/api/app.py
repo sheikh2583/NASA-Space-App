@@ -146,6 +146,11 @@ def health():
     return {"status": "ok", "method_version": s.version, "data_through": s.data_end.date().isoformat(), "cells": int(len(s.cells))}
 
 
+@app.get('/version.json')
+def version():
+    return {'commit': os.environ.get('RENDER_GIT_COMMIT', 'local'), 'mode': 'live-api'}
+
+
 @app.post("/aoi/summary")
 def aoi_summary(req: AOIRequest):
     return _cached(_key("summary", req), lambda: build_summary(req))
@@ -247,3 +252,8 @@ def export(req: ExportRequest):
     df.to_csv(buf, index=False)  # header row first, so spreadsheets open it directly; units are in the file name
     return Response(buf.getvalue(), media_type="text/csv",
                     headers={"Content-Disposition": f'attachment; filename="burning_{req.view}_{req.start}_{req.end}_snpp-equivalent-detections.csv"'})
+
+
+if os.environ.get('FRONTEND_DIR'):
+    from ws2_platform.api.frontend import mount_frontend
+    mount_frontend(app, os.environ['FRONTEND_DIR'])
