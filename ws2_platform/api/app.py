@@ -104,6 +104,18 @@ def _scored(s: Store, sel, agri: bool = False):
     return sc
 
 
+def _coverage(t: pd.Timestamp, res: str, data_end: pd.Timestamp, end: pd.Timestamp) -> tuple[bool, int]:
+    """Whether a period starting at t is fully covered by data, and how many of its days have data.
+    Weeks are measured against the last day with data; months against the requested end (already capped at it)."""
+    if res == "week":
+        period_end = t + pd.Timedelta(days=6)
+        return bool(period_end <= data_end), max(0, (min(period_end, data_end) - t).days + 1)
+    if res == "month":
+        period_end = t + pd.offsets.MonthEnd(0)
+        return bool(period_end <= end), max(0, (min(period_end, end) - t).days + 1)
+    return True, 1
+
+
 def build_summary(req: AOIRequest) -> dict:
     s = store()
     sel = s.select(req.geometry, req.bbox)
@@ -126,9 +138,11 @@ def build_summary(req: AOIRequest) -> dict:
     pts = []
     for _, r in ser.iterrows():
         f = flags.get(r["week_start"])
-        pt = {"t": r["week_start"].date().isoformat(), "value": _num(r["value"]), "lo": _num(r["lo"]), "hi": _num(r["hi"]),
+        t0 = pd.Timestamp(r["week_start"])
+        complete, n_days = _coverage(t0, req.res, s.data_end, end)
+        pt = {"t": t0.date().isoformat(), "value": _num(r["value"]), "lo": _num(r["lo"]), "hi": _num(r["hi"]),
               "source": r["source"] or "modeled_from_modis", "modeled_share": round(float(r["modeled_share"]), 3),
-              "drift_flag": bool(r["drift_flag"])}
+              "drift_flag": bool(r["drift_flag"]), "complete": complete, "n_days": n_days}
         if f is not None:
             pt["anomaly"] = {"flag": bool(f["flag"]), "score": _num(f["score"], 2) or 0.0,
                              "exceeds_lower_bound": bool(f["exceeds_lower_bound"]),

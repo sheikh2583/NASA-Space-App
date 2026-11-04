@@ -196,6 +196,8 @@ components:
         modeled_share: { type: number, minimum: 0, maximum: 1, description: Fraction of the value from modeled or adjusted rows }
         drift_flag: { type: boolean }
         anomaly: { $ref: '#/components/schemas/Anomaly' }
+        complete: { type: boolean, description: false when the period extends past the last day with data }
+        n_days: { type: integer, minimum: 0, description: days of the period that have data }
     SummaryResponse:
       allOf:
         - $ref: '#/components/schemas/Envelope'

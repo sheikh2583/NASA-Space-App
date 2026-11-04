@@ -14,7 +14,7 @@ Regenerate the other columns from the cards with `python scripts/plan.py board -
 | T31 | agent | Truth checks against FIRMS itself (area API, no viewer) | Samiul | T00 | todo |  |
 | T02 | agent | Confirm that no validation piece still says "synthetic data" (read-only check) | Samin | T00 | todo |  |
 | T03 | agent | Lower-than-usual status levels and honest status wording | Samin | T00 | done | Punjab very_low (pct 0), Bangladesh none; snapshot re-exported |
-| T04 | agent | Mark incomplete weeks and months | Sattyam | T00 | todo |  |
+| T04 | agent | Mark incomplete weeks and months | Sattyam | T00 | done | last week 2026-11-02 partial (2 of 7 days: data runs to 3 Nov) in all 13 areas only |
 | T32 | agent | Verify and complete the outage registry from NASA's MODAPS table | Sheikh | T00 | todo |  |
 | T05 | agent | Run the coverage audit and record the outage decision | Sheikh | T32 | todo |  |
 | T06 | agent | Wire verified outages into sensor_days and fill from NOAA-20 (code and tests) | Sheikh | T05 | todo |  |
