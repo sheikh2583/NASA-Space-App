@@ -1,5 +1,10 @@
 # Current training results
 
+Forecast validation correction (T44, 5 Nov 2026): existing saved forecast-skill scores are
+historical and leakage-affected. They do not validate the corrected forward-season procedure.
+No corrected forecast scores have been measured here. Harmonization holdout results below
+are separate from this forecast defect.
+
 The active training path uses CUDA. Read [CUDA results](cuda-results.md) for the GPU hardware verification, selection correction, accepted outputs, QA, and timing evidence. Read [training guide](../guides/training.md) to reproduce the supported workflow.
 
 Current selected harmonization: **B1**, with selection CCC 0.8855 versus XGBoost CUDA 0.8696 across Terra+Aqua and Terra-only holdouts. All five scientific QA groups passed. The accepted downstream run recorded 399 verified GPU fits. A resumed downstream time must not be presented as full training time.
