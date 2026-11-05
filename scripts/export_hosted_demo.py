@@ -11,6 +11,23 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 
+def record_end(client):
+    response = client.get("/health")
+    response.raise_for_status()
+    value = response.json().get("data_through")
+    if not isinstance(value, str) or dt.date.fromisoformat(value).isoformat() != value:
+        raise ValueError("Health data_through must be an ISO date")
+    return value
+
+
+def validate_record_dates(area, expected):
+    for endpoint in ("outlook", "season"):
+        result = area.get(endpoint, {})
+        actual = result.get("data_through") if endpoint == "season" else result.get("current_status", {}).get("data_through")
+        if actual is not None and actual != expected:
+            raise ValueError(f"{endpoint} data_through disagrees with health metadata")
+
+
 def main():
     from fastapi.testclient import TestClient
     from ws2_platform.api.app import app
@@ -30,7 +47,7 @@ def main():
         validation = client.get("/meta/validation")
         validation.raise_for_status()
         snapshot = {"generated_at": dt.datetime.now(dt.timezone.utc).isoformat(), "data_mode": "real",
-                    "data_through": "2026-11-02", "validation": validation.json(), "areas": {}}
+                    "data_through": record_end(client), "validation": validation.json(), "areas": {}}
         requests = [(key, AOIS[name]) for key, name in (("bd", "bangladesh"), ("pb", "punjab"))]
         requests += [(a['id'], {**a['request'], 'start': '2000-11-01', 'res': 'week'}) for a in catalog['areas']]
         for key, request in requests:
@@ -40,6 +57,7 @@ def main():
                 response = client.post(f"/aoi/{endpoint}", json=request)
                 response.raise_for_status()
                 area[endpoint] = response.json()
+            validate_record_dates(area, snapshot["data_through"])
             snapshot["areas"][key] = area
             print(f'Exported responses for area {key}', flush=True)
     path = ROOT / "ws5_frontend/public/demo/snapshot.json"

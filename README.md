@@ -1,8 +1,8 @@
 # FireSense: MODIS + VIIRS burning-activity calendar
 
-FireSense combines NASA FIRMS **MODIS** and **VIIRS** fire detections into one consistent weekly fire-activity record for **Bangladesh** and **Punjab–Haryana–Delhi**. Earlier MODIS-era activity is expressed in Suomi NPP VIIRS terms, with uncertainty bands, unusual-period flags, weather associations and an outlook. The bilingual (English / Bangla) web app runs on React + Vite with a FastAPI backend.
+FireSense combines NASA FIRMS **MODIS** and **VIIRS** fire detections into one consistent weekly fire-activity record for **Bangladesh** and **Punjab–Haryana–Delhi**. Earlier MODIS-era activity is expressed in Suomi NPP VIIRS terms, with uncertainty bands, unusual-period flags, weather associations and an outlook. The English web app runs on React + Vite with a FastAPI backend.
 
-- The record ends on **2 November 2026**. Values before 2012 are modeled, weather links are associations (not causes), and forecasts can lack demonstrated skill.
+- The release record end is data_through in deployment/runtime.json; the UI reads the actual served end from runtime metadata. Values before 2012 are modeled, weather links are associations (not causes), and historical forecast-skill scores need corrected validation.
 - Current numbers, with their sources: [training results](docs/results/training-results.md).
 - Hosting: one Render service for the UI and API ([deployment](docs/guides/deployment.md)). The [legacy Pages snapshot](https://sheikh2583.github.io/NASA-Space-App/) is still online.
 
@@ -39,7 +39,7 @@ ws1_harmonize/      MODIS → VIIRS harmonization: features, baselines, models, 
 ws2_platform/       grid, cells, sensor days, coverage audit, FastAPI app
 ws3_anomaly/        FIRMS ingestion, weather loader, anomalies, critical periods, drivers
 ws4_outlook/        intervals, drift checks, season profile, outlook
-ws5_frontend/       React / Vite bilingual map UI
+ws5_frontend/       React / Vite English map UI
 ws6_validation/     data QA, API contracts, end-to-end checks, scientific gates
 scripts/            setup / train / start / teammate_train (.ps1 + .sh), workflow.py, pipeline, packaging, plan tool
   git/              branch / PR helpers and the ownership guard

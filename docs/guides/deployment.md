@@ -10,7 +10,7 @@ Updated 4 November 2026. The repository is prepared for a single **Free Docker W
 | [`render.yaml`](../../render.yaml) | Blueprint: Free plan, Singapore, branch `main`, health check `/health`, auto-deploy on commit |
 | [`deployment/runtime.json`](../../deployment/runtime.json) | URL and SHA256 of the versioned runtime-data ZIP on a GitHub Release |
 
-Routes: `/` serves the UI; `/health`, `/docs`, `/aoi/*`, `/export` and `/meta/validation` serve the API; `/version.json` reports the deployed Git SHA. Code pushes rebuild the UI and API together with the same pinned data. Nothing is trained, and no new NASA data is fetched. The record ends on **2 November 2026**.
+Routes: `/` serves the UI; `/health`, `/docs`, `/aoi/*`, `/export` and `/meta/validation` serve the API; `/version.json` reports the deployed Git SHA. Code pushes rebuild the UI and API together with the same pinned data. Nothing is trained, and no new NASA data is fetched. The release record end is `data_through` in `deployment/runtime.json`; health metadata reports the actual served end.
 
 ## Fill in the New Web Service form
 
@@ -41,13 +41,13 @@ References: [Render Docker builds](https://render.com/docs/docker), [Blueprint s
 
 Use the exact `onrender.com` URL assigned by Render:
 
-1. Open `/health`. It must report `status: ok`, a nonzero cell count, and `data_through: 2026-11-02`.
+1. Open `/health`. It must report `status: ok`, a nonzero cell count, and `data_through` matching `deployment/runtime.json`.
 2. Open `/version.json`. Its `commit` should match the deployment's Git SHA, and `mode` should be `live-api`.
 3. Open `/`. It should display the explorer with no saved-snapshot limitation banner.
 4. Select Dhaka, change the date range and resolution, inspect cell layers, and download CSV.
 5. Open `/docs` for the live API contract UI. Browser Network requests must go to this same Render host rather than `localhost` or the previous Pages site.
 
-The API uses existing processed observations/reconstructions. Serving a live API does not extend data coverage beyond 2 November or acquire new FIRMS observations.
+The API uses existing processed observations/reconstructions. Serving it does not extend coverage beyond the packaged `data_through` date or acquire new FIRMS observations.
 
 ## Data delivery and updates
 
@@ -59,14 +59,16 @@ To publish a new data version after **human-run** scientific validation, use `sc
 
 1. **Dry run.** It prints the new manifest and the exact `gh` commands, and changes nothing:
 
-   ```sh
-   python scripts/release_runtime.py --data-through 2026-11-02
+   ```powershell
+   $recordEnd = (Get-Content deployment/runtime.json | ConvertFrom-Json).data_through
+   python scripts/release_runtime.py --data-through $recordEnd
    ```
 
 2. **Publish.** This needs the GitHub CLI signed in (`gh auth login`):
 
-   ```sh
-   python scripts/release_runtime.py --data-through 2026-11-02 --publish
+   ```powershell
+   $recordEnd = (Get-Content deployment/runtime.json | ConvertFrom-Json).data_through
+   python scripts/release_runtime.py --data-through $recordEnd --publish
    ```
 
    It stops if the tag already exists, creates the release, downloads the asset back, and checks its SHA256 against the local zip. Only then does it write `deployment/runtime.json`. The default tag is `runtime-YYYYMMDD-render-vN` with the lowest free `N`; `--tag` overrides it.
