@@ -1,17 +1,19 @@
 import { describe, expect, it } from "vitest";
 import { StatusCard } from "../components/Panels";
-import type { OutlookResponse } from "../types";
-import rawSnapshot from "../../public/demo/snapshot.json";
+import { outlook } from "./fixtures/products";
 import { renderHtml, textOf } from "./render";
-
-const outlook = (rawSnapshot as unknown as { areas: Record<string, { outlook: OutlookResponse }> }).areas.bd.outlook;
+import i18n from "../i18n";
+import { num, date } from "../lib/format";
 
 describe("component test harness", () => {
-  it("renders a real component with translations in both languages", async () => {
+  it("renders English consistently with an obsolete language preference", async () => {
     const en = textOf(await renderHtml(<StatusCard o={outlook} />, "en"));
     expect(en).toContain("Current status");
     const bn = textOf(await renderHtml(<StatusCard o={outlook} />, "bn"));
-    expect(bn).not.toContain("Current status");
+    expect(bn).toBe(en);
     expect(bn.length).toBeGreaterThan(10);
+    expect(i18n.hasResourceBundle("bn", "translation")).toBe(false);
+    expect(num(1234)).toBe("1,234");
+    expect(date("2026-11-03")).toContain("Nov");
   });
 });

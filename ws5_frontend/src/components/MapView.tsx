@@ -16,6 +16,24 @@ interface Props {
   onSelect: (area: AreaOption) => void;
 }
 
+function regionStyle(selected: boolean): L.PathOptions {
+  return {
+    color: selected ? "#b4380f" : "#3d6b4f", weight: selected ? 2 : 1,
+    fillColor: selected ? "#b4380f" : "#3d6b4f", fillOpacity: selected ? 0.15 : 0.04,
+  };
+}
+
+export function updateRegionSelection(layers: Map<string, L.GeoJSON>, previous: string | null, selected: string | null) {
+  for (const id of new Set([previous, selected])) {
+    if (!id) continue;
+    const layer = layers.get(id);
+    if (!layer) continue;
+    const active = id === selected;
+    layer.setStyle(regionStyle(active));
+    layer.eachLayer((child) => (child as L.Path).getElement?.()?.setAttribute("aria-pressed", String(active)));
+  }
+}
+
 export default function MapView({ aoi, cells, period, areas, selectedId, onSelect }: Props) {
   const { t, i18n } = useTranslation();
   const el = useRef<HTMLDivElement>(null);
@@ -23,6 +41,12 @@ export default function MapView({ aoi, cells, period, areas, selectedId, onSelec
   const aoiLayer = useRef<L.FeatureGroup | null>(null);
   const cellLayer = useRef<L.LayerGroup | null>(null);
   const regionLayer = useRef<L.LayerGroup | null>(null);
+  const regions = useRef(new Map<string, L.GeoJSON>());
+  const previousSelected = useRef<string | null>(null);
+  const selectedRef = useRef(selectedId);
+  selectedRef.current = selectedId;
+  const labels = useRef({ t, language: i18n.language });
+  labels.current = { t, language: i18n.language };
   const [tileError, setTileError] = useState(false);
   const selectRef = useRef(onSelect);
   selectRef.current = onSelect;
@@ -58,18 +82,15 @@ export default function MapView({ aoi, cells, period, areas, selectedId, onSelec
     const group = regionLayer.current;
     if (!group) return;
     group.clearLayers();
+    regions.current.clear();
     for (const area of areas.filter((a) => a.cellCount !== undefined && a.request.geometry)) {
-      const selected = area.id === selectedId;
-      const layer = L.geoJSON(area.request.geometry!, { style: {
-        color: selected ? "#b4380f" : "#3d6b4f", weight: selected ? 2 : 1,
-        fillColor: selected ? "#b4380f" : "#3d6b4f", fillOpacity: selected ? 0.15 : 0.04,
-      }, onEachFeature: (_feature, featureLayer) => {
+      const layer = L.geoJSON(area.request.geometry!, { style: regionStyle(area.id === selectedRef.current), onEachFeature: (_feature, featureLayer) => {
         featureLayer.on("add", () => {
           const path = (featureLayer as L.Path).getElement();
           if (!path) return;
           path.setAttribute("role", "button"); path.setAttribute("tabindex", "0");
-          path.setAttribute("aria-label", t("area.map_select", { name: areaLabel(area, i18n.language) }));
-          path.setAttribute("aria-pressed", String(selected));
+          path.setAttribute("aria-label", labels.current.t("area.map_select", { name: areaLabel(area, labels.current.language) }));
+          path.setAttribute("aria-pressed", String(area.id === selectedRef.current));
           path.addEventListener("keydown", (event) => {
             const key = (event as KeyboardEvent).key;
             if (key === "Enter" || key === " ") { event.preventDefault(); selectRef.current(area); }
@@ -77,10 +98,27 @@ export default function MapView({ aoi, cells, period, areas, selectedId, onSelec
         });
       }});
       // Tooltip text is a DOM text node, never interpreted as HTML.
-      const label = document.createElement("span"); label.textContent = areaLabel(area, i18n.language);
+      const label = document.createElement("span"); label.textContent = areaLabel(area, labels.current.language);
       layer.bindTooltip(label).on("click", () => selectRef.current(area)).addTo(group);
+      regions.current.set(area.id, layer);
     }
-  }, [areas, selectedId, t, i18n.language]);
+    return () => { group.clearLayers(); regions.current.clear(); previousSelected.current = null; };
+  }, [areas]);
+
+  useEffect(() => {
+    updateRegionSelection(regions.current, previousSelected.current, selectedId);
+    previousSelected.current = selectedId;
+  }, [areas, selectedId]);
+
+  useEffect(() => {
+    for (const area of areas) {
+      const layer = regions.current.get(area.id);
+      if (!layer) continue;
+      const label = document.createElement("span"); label.textContent = areaLabel(area, i18n.language);
+      layer.setTooltipContent(label);
+      layer.eachLayer((child) => (child as L.Path).getElement?.()?.setAttribute("aria-label", t("area.map_select", { name: areaLabel(area, i18n.language) })));
+    }
+  }, [areas, t, i18n.language]);
 
   const geometry = aoi?.geometry;
   const bbox = aoi?.bbox;

@@ -1,6 +1,6 @@
 /**
  * Test helper: render a component to static HTML in Vitest's node environment (no jsdom, no testing library).
- * Use it for component tests:  const html = await renderHtml(<StatusCard o={...} />, "bn");
+ * Use it for component tests:  const html = await renderHtml(<StatusCard o={...} />);
  * Event handlers don't run here; put interaction logic in plain functions under src/lib/ and test those directly.
  */
 import type { ReactElement } from "react";

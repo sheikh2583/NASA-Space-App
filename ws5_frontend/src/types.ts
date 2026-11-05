@@ -2,9 +2,10 @@
 export type Source = "observed_viirs" | "adjusted_from_noaa20" | "modeled_from_modis" | "mixed";
 export type Res = "day" | "week" | "month";
 export type Level = "none" | "watch" | "high";
-export type StatusLevel = Level | "low" | "very_low";
+export type StatusLevel = Level | "low" | "very_low" | "insufficient_history";
 
 export interface AOIRequest {
+  area_id?: string;
   geometry?: GeoJSON.Polygon | GeoJSON.MultiPolygon;
   bbox?: [number, number, number, number];
   start: string;
@@ -17,7 +18,6 @@ export interface Envelope {
   units: string;
   day_convention: string;
   notes?: string[];
-  fromFallback?: boolean; // set by the client when the static fallback answered
 }
 
 export interface Anomaly {
@@ -67,10 +67,10 @@ export interface DriversResponse extends Envelope {
 }
 
 export interface CurrentStatus {
-  week_percentile: number; level: StatusLevel; data_through: string; data_source?: string; message: string;
+  week_percentile: number | null; level: StatusLevel; data_through: string; data_source?: string; message: string;
 }
 export interface OutlookResponse extends Envelope {
-  region: Region; as_of: string; current_status: CurrentStatus; season_to_date_percentile: number;
+  region: Region; as_of: string; current_status: CurrentStatus; season_to_date_percentile: number | null;
   expected_range: { q10: number; q50: number; q90: number };
   skill: { vs_climatology?: number; vs_persistence?: number; ci?: [number, number]; n_seasons?: number };
   status: "skill" | "no_demonstrated_skill"; alert: { level: Level; rule?: string };

@@ -1,10 +1,7 @@
 import { describe, expect, it } from "vitest";
-import raw from "../../public/demo/snapshot.json";
-import type { SeasonProfileResponse } from "../types";
+import { punjabProfile as profile } from "../test/fixtures/products";
 import { renderHtml, textOf } from "../test/render";
 import SeasonCard from "./SeasonCard";
-
-const profile = (raw as unknown as { areas: Record<string, { season: SeasonProfileResponse }> }).areas.pb.season;
 
 describe("season card", () => {
   it("shows both Punjab seasons and their central windows in English", async () => {
@@ -15,10 +12,10 @@ describe("season card", () => {
     expect(text).toContain("Nov");
   });
 
-  it("uses translated Bangla copy", async () => {
+  it("keeps English season names for an obsolete Bangla preference", async () => {
     const text = textOf(await renderHtml(<SeasonCard profile={profile} />, "bn"));
-    expect(text).not.toContain("Usually");
-    expect(text.toLowerCase()).not.toContain("paddy");
+    expect(text).toContain("Usually");
+    expect(text.toLowerCase()).toContain("paddy");
   });
 
   it("explains when no season profile is available", async () => {

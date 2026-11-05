@@ -5,6 +5,15 @@ import type { ValidationPiece, ValidationResponse } from "../types";
 import { date, num } from "../lib/format";
 
 type Row = Record<string, unknown>;
+type ValidationReport = ValidationResponse & { corrupt?: string[] };
+
+export function ValidationNotices({ report }: { report: ValidationReport }) {
+  const { t } = useTranslation();
+  return <>
+    {report.missing.length > 0 && <p className="note">{t("validation.missing", { list: report.missing.join(", ") })}</p>}
+    {Boolean(report.corrupt?.length) && <p className="warn" role="alert">{t("validation.corrupt", { list: report.corrupt!.join(", ") })}</p>}
+  </>;
+}
 
 function Table({ rows, cols, rowClassName }: { rows: Row[]; cols: string[]; rowClassName?: (row: Row) => string | undefined }) {
   return (
@@ -35,9 +44,9 @@ function PieceCard({ title, p, children }: { title: string; p?: ValidationPiece;
 
 export function ValidationPage() {
   const { t } = useTranslation();
-  const [v, setV] = useState<ValidationResponse | null>(null);
+  const [v, setV] = useState<ValidationReport | null>(null);
   const [err, setErr] = useState(false);
-  useEffect(() => { api.get<ValidationResponse>("/meta/validation").then(setV).catch(() => setErr(true)); }, []);
+  useEffect(() => { api.get<ValidationReport>("/meta/validation").then(setV).catch(() => setErr(true)); }, []);
   if (err) return <div className="panels"><p className="warn">{t("state.error")}</p></div>;
   if (!v) return <div className="panels"><p className="note">{t("state.loading")}</p></div>;
   const P = v.pieces;
@@ -50,7 +59,7 @@ export function ValidationPage() {
   return (
     <div className="panels" style={{ maxWidth: 1000, margin: "0 auto" }}>
       <h2>{t("validation.title")}</h2>
-      {v.missing.length > 0 && <p className="note">{t("validation.missing", { list: v.missing.join(", ") })}</p>}
+      <ValidationNotices report={v} />
       {qa?.summary && <section className="card">{qa.summary.map((s) => <p key={s}>{s}</p>)}</section>}
       <PieceCard title={t("validation.harmonization")} p={P.harmonization}>
         {h?.method_chosen && (
@@ -104,12 +113,11 @@ function renderMd(md: string): ReactNode[] {
 }
 
 export function MethodPage() {
-  const { t, i18n: inst } = useTranslation();
+  const { t } = useTranslation();
   const [md, setMd] = useState<string>("");
   useEffect(() => {
-    const lang = inst.language === "bn" ? "bn" : "en";
-    fetch(`./method_${lang}.md`).then((r) => (r.ok ? r.text() : fetch("./method_en.md").then((x) => x.text()))).then(setMd).catch(() => setMd(""));
-  }, [inst.language]);
+    fetch("./method_en.md").then((r) => { if (!r.ok) throw new Error("method_unavailable"); return r.text(); }).then(setMd).catch(() => setMd(""));
+  }, []);
   return (
     <div className="panels">
       <section className="card method">

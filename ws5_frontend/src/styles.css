@@ -14,12 +14,11 @@
   --none-cell: #d9d4cd;
   --band: #d98c3f;
   --radius: 10px;
-  --font: "IBM Plex Sans", "Noto Sans Bengali", system-ui, sans-serif;
+  --font: "IBM Plex Sans", system-ui, sans-serif;
 }
 * { box-sizing: border-box; }
 html, body, #root { height: 100%; margin: 0; }
 body { font-family: var(--font); color: var(--ink); background: var(--bg); font-size: 15px; line-height: 1.45; }
-:lang(bn) body, html[lang="bn"] body { font-family: "Noto Sans Bengali", "IBM Plex Sans", system-ui, sans-serif; line-height: 1.6; }
 button, input, select { font: inherit; color: inherit; }
 button { cursor: pointer; }
 :focus-visible { outline: 3px solid #1d5fa8; outline-offset: 2px; }

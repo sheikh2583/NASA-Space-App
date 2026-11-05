@@ -1,14 +1,12 @@
-import i18n from "i18next";
-
-/** Numbers in the active language: Bengali digits in Bangla, grouped Latin digits in English. */
+/** Grouped English digits for the English interface. */
 export function num(x: number | null | undefined, digits = 0): string {
   if (x === null || x === undefined || Number.isNaN(x)) return "–";
-  const locale = i18n.language === "bn" ? "bn-BD" : "en-GB";
+  const locale = "en-GB";
   return new Intl.NumberFormat(locale, { maximumFractionDigits: digits, minimumFractionDigits: 0 }).format(x);
 }
 
 export function date(iso: string, opts: Intl.DateTimeFormatOptions = { day: "numeric", month: "short", year: "numeric" }): string {
-  const locale = i18n.language === "bn" ? "bn-BD" : "en-GB";
+  const locale = "en-GB";
   return new Intl.DateTimeFormat(locale, { ...opts, timeZone: "UTC" }).format(new Date(iso + "T00:00:00Z"));
 }
 

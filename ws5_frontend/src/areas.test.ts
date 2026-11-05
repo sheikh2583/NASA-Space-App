@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { areaLabel, defaultArea, EXAMPLE_AREAS, filterAreas, selectableAreas, type AreaOption } from "./areas";
-import { areaKey, selectSnapshot, type Snapshot } from "./snapshot";
-import rawSnapshot from "../public/demo/snapshot.json";
+import { analysisArea } from "./App";
 import catalog from "../public/demo/areas.json";
 
 describe("named area selection", () => {
@@ -27,25 +26,13 @@ describe("named area selection", () => {
     expect(areaLabel(initial, "bn")).toBe("ঢাকা");
     expect(defaultArea([])).toBeUndefined();
   });
-  it("compares actual administrative areas using their own saved responses", () => {
-    const snapshot = rawSnapshot as unknown as Snapshot;
-    const request = (name: string) => snapshot.areas[areas.find((a) => a.name === name)!.id].request;
-    const a = request("Dhaka"), b = request("Khulna");
-    const result = selectSnapshot(snapshot, "/aoi/compare", { a, b }) as { a: unknown; b: unknown };
-    expect(result.a).toEqual(snapshot.areas[areaKey(a, snapshot)].summary);
-    expect(result.b).toEqual(snapshot.areas[areaKey(b, snapshot)].summary);
-    expect(result.a).not.toEqual(result.b);
-  });
-  it("serves every visible named area from its own saved request and rejects altered extents", () => {
-    const snapshot = rawSnapshot as unknown as Snapshot;
+  it("preserves every catalog boundary and cell count for live named-area requests", () => {
     expect(areas).toHaveLength(11);
-    for (const area of [...areas, ...EXAMPLE_AREAS]) {
-      const request = { ...snapshot.areas[area.id].request, ...area.request };
-      expect(areaKey(request, snapshot)).toBe(area.id);
-      const summary = selectSnapshot(snapshot, "/aoi/summary", request) as { aoi: { n_cells: number }; series: unknown[] };
-      expect(summary.series.length).toBeGreaterThan(1000);
-      if (area.cellCount) expect(summary.aoi.n_cells).toBe(area.cellCount);
+    for (const area of areas) {
+      expect(analysisArea(area)).toEqual({ area_id: area.id });
+      expect(area.request.geometry).toBeDefined();
+      expect(area.cellCount).toBeGreaterThan(0);
     }
-    expect(() => areaKey({ bbox: [0, 0, 1, 1], start: "2020-01-01", end: "2021-01-01" }, snapshot)).toThrow();
+    for (const area of EXAMPLE_AREAS) expect(analysisArea(area)).toEqual(area.request);
   });
 });

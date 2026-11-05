@@ -11,7 +11,6 @@ import AreaFilters from "./components/AreaFilters";
 import HelpButton from "./components/Help";
 import { areaLabel, defaultArea, loadAreaCatalog, type AreaOption } from "./areas";
 import { DATA_MODE, RECORD_END, RECORD_START } from "./config";
-import { STATIC_DEMO } from "./snapshot";
 import { addDays, num } from "./lib/format";
 import { format, parse } from "./lib/urlState";
 import { metadataEnd, validRecordEnd } from "./lib/recordEnd";
@@ -22,6 +21,10 @@ import type {
 
 type View = "explore" | "validation" | "method";
 type Status = "idle" | "loading" | "ok" | "empty" | "oversized" | "error";
+
+export function analysisArea(option: AreaOption): Pick<AOIRequest, "area_id" | "geometry" | "bbox"> {
+  return option.cellCount !== undefined ? { area_id: option.id } : option.request;
+}
 
 const MapView = lazy(() => import("./components/MapView"));
 const SeriesChart = lazy(() => import("./components/SeriesChart"));
@@ -77,6 +80,10 @@ export default function App() {
   const [catalogVersion, setCatalogVersion] = useState(0);
   const [catalogUnavailable, setCatalogUnavailable] = useState(false);
   const generation = useRef(0);
+  const batch = useRef<AbortController | null>(null);
+  const pendingLoad = useRef<number | null>(null);
+  const comparison = useRef<AbortController | null>(null);
+  const previousSelection = useRef<{ area: typeof area; res: Res } | null>(null);
   const pickArea = useCallback((option: AreaOption) => {
     setSelectedId(option.id); setArea(option.request); setCompareWith("");
   }, []);
@@ -120,7 +127,6 @@ export default function App() {
   const [period, setPeriod] = useState<{ start: string; end: string; key: string } | null>(null);
   const [compareWith, setCompareWith] = useState<string>("");
   const [compare, setCompare] = useState<CompareResponse | null>(null);
-  const [fallbackNote, setFallbackNote] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [copyFallback, setCopyFallback] = useState(false);
   const copyTimer = useRef<number | null>(null);
@@ -129,27 +135,35 @@ export default function App() {
 
   useEffect(() => { void i18n.changeLanguage("en"); }, [i18n]);
 
-  const req: AOIRequest | null = useMemo(() => area ? { ...area, start, end, res } : null, [area, start, end, res]);
+  const requestArea = useMemo(() => {
+    const option = areas.find((candidate) => candidate.id === selectedId);
+    return option ? analysisArea(option) : area;
+  }, [areas, selectedId, area]);
+  const req: AOIRequest | null = useMemo(() => requestArea ? { ...requestArea, start, end, res } : null, [requestArea, start, end, res]);
 
   const load = useCallback(async (r: AOIRequest) => {
+    if (pendingLoad.current !== null) window.clearTimeout(pendingLoad.current);
+    pendingLoad.current = null;
+    batch.current?.abort(); comparison.current?.abort();
+    const ctl = new AbortController();
+    batch.current = ctl;
     const current = ++generation.current;
     setStatus("loading");
-    setSummary(null); setPeriods(null); setDrivers(null); setOutlook(null); setSeason(null); setCells(null); setPeriod(null); setFallbackNote(null);
+    setSummary(null); setPeriods(null); setDrivers(null); setOutlook(null); setSeason(null); setCells(null); setPeriod(null);
     setCompare(null);
     try {
-      const s = await api.post<SummaryResponse>("/aoi/summary", r);
-      if (current !== generation.current) return;
+      const s = await api.post<SummaryResponse>("/aoi/summary", r, ctl.signal);
+      if (ctl.signal.aborted || current !== generation.current) return;
       setSummary(s);
-      setFallbackNote(s.fromFallback ? (s.notes?.[0] ?? "").replace("fallback:", "") : null);
       if (!s.series.length) { setStatus("empty"); return; }
       setStatus("ok");
       const [p, d, o, seasonProfile] = await Promise.allSettled([
-        api.post<CriticalPeriodsResponse>("/aoi/critical-periods", r),
-        api.post<DriversResponse>("/aoi/drivers", r),
-        api.post<OutlookResponse>("/aoi/outlook", r),
-        api.post<SeasonProfileResponse>("/aoi/season", r),
+        api.post<CriticalPeriodsResponse>("/aoi/critical-periods", r, ctl.signal),
+        api.post<DriversResponse>("/aoi/drivers", r, ctl.signal),
+        api.post<OutlookResponse>("/aoi/outlook", r, ctl.signal),
+        api.post<SeasonProfileResponse>("/aoi/season", r, ctl.signal),
       ]);
-      if (current !== generation.current) return;
+      if (ctl.signal.aborted || current !== generation.current) return;
       setPeriods(p.status === "fulfilled" ? p.value : null);
       setDrivers(d.status === "fulfilled" ? d.value : null);
       setOutlook(o.status === "fulfilled" ? o.value : null);
@@ -160,14 +174,29 @@ export default function App() {
       if (linkedWeek) setPeriod({ start: linkedWeek, end: addDays(linkedWeek, 6), key: linkedWeek });
       else if (lastWeek) setPeriod({ start: addDays(lastWeek, -7 * 7), end: addDays(lastWeek, 6), key: "recent" });
     } catch (e) {
-      if (current !== generation.current) return;
+      if (ctl.signal.aborted || current !== generation.current) return;
       initialPeriod.current = undefined;
       setSummary(null);
       setStatus(e instanceof AOIError ? "oversized" : "error");
     }
   }, []);
 
-  useEffect(() => { if (req && metadataReady) void load(req); }, [area, start, end, res, metadataReady]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (!req || !metadataReady) return;
+    const dateOnly = previousSelection.current?.area === area && previousSelection.current.res === res;
+    previousSelection.current = { area, res };
+    generation.current++;
+    batch.current?.abort(); comparison.current?.abort();
+    setStatus("loading");
+    const timer = window.setTimeout(() => { pendingLoad.current = null; void load(req); }, dateOnly ? 300 : 0);
+    pendingLoad.current = timer;
+    return () => {
+      window.clearTimeout(timer);
+      if (pendingLoad.current === timer) pendingLoad.current = null;
+      generation.current++;
+      batch.current?.abort(); comparison.current?.abort();
+    };
+  }, [req, metadataReady, area, res, load]);
 
   useEffect(() => {
     if (catalogLoading) return;
@@ -180,20 +209,24 @@ export default function App() {
   }, [areas, catalogLoading, period, selectedId, view]);
 
   useEffect(() => {
-    if (STATIC_DEMO || !area || !period) return;
+    if (!requestArea || !period) return;
     let active = true;
-    api.post<CellsResponse>("/aoi/cells", { ...area, start: period.start, end: period.end, res: "week" })
+    const ctl = new AbortController();
+    api.post<CellsResponse>("/aoi/cells", { ...requestArea, start: period.start, end: period.end, res: "week" }, ctl.signal)
       .then((value) => { if (active) setCells(value); }).catch(() => { if (active) setCells(null); });
-    return () => { active = false; };
-  }, [area, period]);
+    return () => { active = false; ctl.abort(); };
+  }, [requestArea, period]);
 
   const runCompare = async () => {
     if (!req || !compareWith) return;
     const other = areas.find((candidate) => candidate.id === compareWith && candidate.id !== selectedId);
     if (!other) return;
+    comparison.current?.abort();
+    const ctl = new AbortController();
+    comparison.current = ctl;
     const current = generation.current;
-    const result = await api.post<CompareResponse>("/aoi/compare", { a: req, b: { ...other.request, start, end, res } }).catch(() => null);
-    if (current === generation.current) setCompare(result);
+    const result = await api.post<CompareResponse>("/aoi/compare", { a: req, b: { ...analysisArea(other), start, end, res } }, ctl.signal).catch(() => null);
+    if (!ctl.signal.aborted && current === generation.current) setCompare(result);
   };
   const copyLink = async () => {
     setCopyFallback(false);
@@ -215,9 +248,9 @@ export default function App() {
     if (copyTimer.current !== null) window.clearTimeout(copyTimer.current);
   }, []);
   const reset = () => {
+    batch.current?.abort(); comparison.current?.abort();
     generation.current++; setArea(null); setSelectedId(null); setStatus("idle"); setSummary(null); setPeriods(null);
     setDrivers(null); setOutlook(null); setSeason(null); setCells(null); setPeriod(null); setCompare(null);
-    setFallbackNote(null);
   };
 
   return (
@@ -244,21 +277,19 @@ export default function App() {
             onRetry={() => setCatalogVersion((version) => version + 1)} onApply={pickArea} />
           <div className="layout">
           <div className="mapcol">
-            <MapView aoi={req} cells={cells?.cells ?? null} period={period} areas={areas} selectedId={selectedId} onSelect={pickArea} />
+            <MapView aoi={area ? { ...area, start, end, res } : null} cells={cells?.cells ?? null} period={period} areas={areas} selectedId={selectedId} onSelect={pickArea} />
           </div>
           <div className="panels">
             {metadataFallback && <p className="warn">{t("hosting.date_fallback", { date: recordEnd })}</p>}
-            {STATIC_DEMO && <p className="note">{t("hosting.snapshot", { date: recordEnd })}</p>}
-            <AnalysisControls fixed={STATIC_DEMO} start={start} end={end} recordEnd={recordEnd} res={res} canRun={Boolean(req) && metadataReady}
+            <AnalysisControls start={start} end={end} recordEnd={recordEnd} res={res} canRun={Boolean(req) && metadataReady}
               onStart={setStart} onEnd={(value) => { endEdited.current = true; setEnd(value); }} onRes={setRes}
               onRefresh={() => req && void load(req)} onReset={reset}
               summary={summary && status === "ok" ? t("aoi.summary", { cells: num(summary.aoi.n_cells), area: num(summary.aoi.area_km2) }) : undefined} />
-            {status === "idle" && !catalogLoading && !catalogUnavailable && <p className="note">{t(STATIC_DEMO ? "hosting.pick_area" : "map.select_hint")}</p>}
+            {status === "idle" && !catalogLoading && !catalogUnavailable && <p className="note">{t("map.select_hint")}</p>}
             {status === "loading" && <LoadingNote onRetry={() => req && void load(req)} />}
             {status === "empty" && <p className="warn">{t("state.empty")}</p>}
             {status === "oversized" && <p className="warn">{t("state.oversized")}</p>}
             {status === "error" && <p className="warn">{t("state.error")}</p>}
-            {fallbackNote && <p className="warn">{t("state.fallback", { region: fallbackNote })}</p>}
             {status === "ok" && summary && (
               <>
                 {outlook && <ErrorBoundary><StatusCard o={outlook} /></ErrorBoundary>}
@@ -294,9 +325,9 @@ export default function App() {
                 <section className="card">
                   <h2>{t("export.title")}</h2>
                   <div className="exportrow">
-                    <button disabled={STATIC_DEMO} onClick={() => req && api.exportCsv(req, "summary")}>{t("export.summary")}</button>
-                    <button disabled={STATIC_DEMO} onClick={() => req && period && api.exportCsv({ ...req, start: period.start, end: period.end }, "cells")}>{t("export.cells")}</button>
-                    <button disabled={STATIC_DEMO} onClick={() => req && api.exportCsv(req, "critical_periods")}>{t("export.periods")}</button>
+                    <button onClick={() => req && api.exportCsv(req, "summary")}>{t("export.summary")}</button>
+                    <button onClick={() => req && period && api.exportCsv({ ...req, start: period.start, end: period.end }, "cells")}>{t("export.cells")}</button>
+                    <button onClick={() => req && api.exportCsv(req, "critical_periods")}>{t("export.periods")}</button>
                     <button onClick={() => window.print()}>{t("export.print")}</button>
                     <button onClick={() => void copyLink()}>{t("export.copy_link")}</button>
                   </div>

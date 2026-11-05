@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import { addDays, isoYear, isoWeekOfYear, weekColumn, weekOfYear } from "./format";
-import { centreOf } from "../api";
 
 describe("calendar helpers", () => {
   it("preserves week 53 for display independently of folded climatology", () => {
@@ -21,10 +20,5 @@ describe("calendar helpers", () => {
     expect(weekColumn("01-01")).toBe(1);
     expect(weekColumn("11-02")).toBe(44);
     expect(weekColumn("12-31")).toBe(52);
-  });
-  it("finds the centre of a drawn polygon for the static fallback", () => {
-    expect(centreOf({ bbox: [88, 20, 90, 22], start: "", end: "" })).toEqual([89, 21]);
-    const g = { type: "Polygon" as const, coordinates: [[[74, 30], [76, 30], [76, 32], [74, 30]]] };
-    expect(centreOf({ geometry: g, start: "", end: "" })).toEqual([75, 31]);
   });
 });

@@ -35,9 +35,9 @@ describe("LoadingNote", () => {
     expect(html).toContain("<button");
   });
 
-  it("speaks Bangla in Bangla", async () => {
+  it("uses English for an obsolete Bangla preference", async () => {
     const text = textOf(await renderHtml(<LoadingNote onRetry={noop} initialElapsedMs={5_000} />, "bn"));
-    expect(text).toContain("সার্ভার চালু হচ্ছে");
-    expect(text).not.toContain("Waking");
+    expect(text).not.toContain("সার্ভার চালু হচ্ছে");
+    expect(text).toContain("Waking");
   });
 });

@@ -11,9 +11,11 @@ export function StatusCard({ o }: { o: OutlookResponse }) {
       <div className="card-title"><h2 id="status-h">{t("status.title")}</h2><HelpButton topic="status" /></div>
       <div className="status">
         <div className={`level ${cs.level}`}>{t(`status.level_${cs.level}`)}</div>
-        <div>{t("status.percentile", { p: num(cs.week_percentile) })}</div>
+        <div>{cs.week_percentile === null
+          ? t("status.insufficient_history") : t("status.percentile", { p: num(cs.week_percentile) })}</div>
         <div className="meta">{t("status.data_through", { date: date(cs.data_through) })}</div>
-        <div className="meta">{cs.data_source ? t("status.source", { source: cs.data_source }) : null}</div>
+        <div className="meta">{cs.data_source
+          ? t("status.source", { source: t(`source.${cs.data_source}`, { defaultValue: cs.data_source }) }) : null}</div>
       </div>
     </section>
   );
@@ -80,8 +82,12 @@ export function OutlookPanel({ o }: { o: OutlookResponse }) {
   return (
     <section className="card" aria-labelledby="outlook-h">
       <div className="card-title"><h2 id="outlook-h">{t("outlook.title")}</h2><HelpButton topic="outlook" /></div>
-      <p>{t("outlook.std", { p: num(o.season_to_date_percentile) })}</p>
-      <p className="meta">{t("outlook.range", { q10: num(r.q10), q50: num(r.q50), q90: num(r.q90) })}</p>
+      {o.season_to_date_percentile === null
+        ? <p>{t("outlook.insufficient_history")}</p>
+        : <>
+          <p>{t("outlook.std", { p: num(o.season_to_date_percentile) })}</p>
+          <p className="meta">{t("outlook.range", { q10: num(r.q10), q50: num(r.q50), q90: num(r.q90) })}</p>
+        </>}
       <p>{o.status === "skill" && ci
         ? t("outlook.skill", { s: num(100 * (o.skill.vs_climatology ?? 0)), lo: num(100 * ci[0]), hi: num(100 * ci[1]) })
         : t("outlook.no_skill")}</p>

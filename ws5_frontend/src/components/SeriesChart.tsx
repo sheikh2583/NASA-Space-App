@@ -1,5 +1,6 @@
 import { Area, CartesianGrid, ComposedChart, Line, ReferenceArea, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { useTranslation } from "react-i18next";
+import { useMemo } from "react";
 import type { SummaryPoint } from "../types";
 import { date, num } from "../lib/format";
 
@@ -14,7 +15,7 @@ interface Props {
 export default function SeriesChart({ series, seams, highlight, second }: Props) {
   const { t } = useTranslation();
   // A partial period (data ends inside it) is drawn as a dot, not as a drop in the line or band.
-  const data = series.map((p, i) => {
+  const data = useMemo(() => series.map((p, i) => {
     const partial = p.complete === false;
     return {
       t: p.t, value: partial ? null : p.value,
@@ -22,7 +23,7 @@ export default function SeriesChart({ series, seams, highlight, second }: Props)
       b: second?.[i]?.value ?? undefined, drift: p.drift_flag ? p.value : undefined,
       partial: partial ? p.value : undefined,
     };
-  });
+  }), [series, second]);
   const first = series[0]?.t;
   const last = series[series.length - 1]?.t;
   const inRange = (d: string) => first && last && d >= first && d <= last;
