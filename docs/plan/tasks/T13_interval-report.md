@@ -70,6 +70,10 @@ card changes no band.
    Sheikh's run".
 
 ## Acceptance
+T46 supersedes the old area-count and Terra-only descriptions: n_cells is unique contributing
+OOF cells, drawn_n_cells preserves h*w, and Terra-only OOF rows are overlap-era holdouts,
+not observed truth for the pre-2012 record. Stop detection applies to every dimension.
+
 - [ ] `build_table` output is unchanged: `interval_table.json` hash before = after, pasted into the PR.
 - [ ] The new piece validates (CHECK-FILES) and appears on the Validation page in the snapshot build.
 - [ ] Measured results are in the PR, with the command and date.
