@@ -28,7 +28,15 @@ Regenerate the other columns from the cards with `python scripts/plan.py board -
 | T10 | agent | Caveats and "how we checked" on the method page (en, bn draft) | Samiul | T31 | done | Added bilingual caveats, truth-check evidence, sourced validation metrics, and verified rendered Method pages. |
 | T11 | agent | Retired: region picker (done on main by the named-area explorer) | Sattyam | T07 | cut | retired 4 Nov: named-area explorer on main (04adbc4, 0c9241d) |
 | T12 | agent | Shareable links (view, area, period, language in the URL) | Shammo | T00 | done | English-only UI complete, including an English-only area-search placeholder. |
-| T13 | agent | Interval report by stratum (measurement only) | Samin | T00 | done | 56 strata measured; snapshot updated; no large-area stop condition |
+| T13 | agent | Interval report by stratum (measurement only) | Samin | T00 | review | reopened: three season strata breach n>=500 and coverage<0.80 stop rule; T46 remediation |
+| T42 | agent | Redact FIRMS credentials at every error boundary | Monazir | T00 | review | 11 offline redaction tests pass; ready for commit; no real requests or fitting |
+| T43 | agent | Correct clean-run pipeline dependency ordering | Sheikh | T00 | todo |  |
+| T44 | agent | Eliminate forecast feature and target leakage | Samin | T00 | todo |  |
+| T45 | agent | Correct alert transitions and disable unsupported forecast alerts | Samin | T44 | todo |  |
+| T46 | agent | Correct interval area counts and report every stop-condition failure | Samin | T00 | todo |  |
+| T47 | agent | Include detailed interval diagnostics in runtime releases | Sheikh | T46 | todo |  |
+| T48 | agent | Use runtime metadata consistently for record-end dates | Shammo | T00 | todo |  |
+| T49 | agent | Verify and publish the reviewed correctness repairs | Sheikh | T42, T43, T44, T45, T46, T47, T48 | todo |  |
 | T14 | agent | Season-level unusual flags (library and spec) | Monazir | T07 | todo |  |
 | T15 | agent | Season flags in the season response and on the calendar | Monazir | T14, T08 | todo |  |
 | T18 | agent | Live season feed, part 1: redacted NRT fetcher and a cached /live/season endpoint (off without a key) | Monazir | T03, T04, T07 | todo |  |
