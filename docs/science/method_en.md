@@ -28,6 +28,11 @@ A week is **unusual** when it is clearly above the same week in other years. The
 
 ## How we checked
 
+Forecast-skill scores saved before the T44 correction used climatology influenced by held-out
+seasons. They are historical and cannot establish forecast skill. Corrected evaluation uses
+earlier-season training data and embargoes targets crossing the evaluation boundary.
+Numerical forecast revalidation is pending; current observed-season status is a separate diagnostic.
+
 - Punjab 15 Sep–1 Nov 2026, SNPP NRT: FIRMS 460, ours 455, close.
 - Punjab 2 Nov 2024, SNPP: FIRMS 345, ours 353, close.
 - Punjab 3 Nov 2024, SNPP: FIRMS 0, ours 3, small counts below 10.
