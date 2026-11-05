@@ -1,6 +1,7 @@
 {
   "app.title": "Burning Activity Calendar",
-  "hosting.snapshot": "Saved real-data results through 2 November 2026. Select a named area below. Weekly dates are fixed; cell layers and CSV exports require the live API.",
+  "hosting.snapshot": "Saved real-data results through {{date}}. Select a named area below. Weekly dates are fixed; cell layers and CSV exports require the live API.",
+  "hosting.date_fallback": "Record metadata is unavailable. Using fallback date {{date}}; the available record may differ.",
   "hosting.pick_area": "Choose a country and area, then apply the filters or select a region on the map.",
   "area.title": "Explore an area",
   "area.hint": "Choose a division or state, then explore its fire history on the map.",

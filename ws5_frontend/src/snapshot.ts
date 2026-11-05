@@ -3,7 +3,7 @@ import type { AOIRequest, Envelope, SummaryResponse, ValidationResponse } from "
 
 export const STATIC_DEMO = import.meta.env.VITE_DEMO_MODE === "snapshot";
 type Area = { request: AOIRequest; summary: SummaryResponse } & Record<string, unknown>;
-export interface Snapshot { validation: ValidationResponse; areas: Record<string, Area> }
+export interface Snapshot { data_through?: string; validation: ValidationResponse; areas: Record<string, Area> }
 let cached: Promise<Snapshot> | undefined;
 
 export function areaKey(request: AOIRequest, snapshot?: Snapshot): string {
@@ -15,6 +15,7 @@ export function areaKey(request: AOIRequest, snapshot?: Snapshot): string {
 }
 
 export function selectSnapshot(snapshot: Snapshot, path: string, body?: unknown): unknown {
+  if (path === "/health") return { data_through: snapshot.data_through };
   if (path === "/meta/validation") return snapshot.validation;
   if (path === "/aoi/compare") {
     const pair = body as { a: AOIRequest; b: AOIRequest };

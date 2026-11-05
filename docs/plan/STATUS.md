@@ -35,7 +35,7 @@ Regenerate the other columns from the cards with `python scripts/plan.py board -
 | T45 | agent | Correct alert transitions and disable unsupported forecast alerts | Samin | T44 | done | 8 pure alert tests pass; watch promotes; unsupported batch forecast alerts explicitly off |
 | T46 | agent | Correct interval area counts and report every stop-condition failure | Samin | T00 | done | 4 diagnostic tests and 35 web tests pass; all-dimensional stop warnings; bands unchanged; T13 stays review |
 | T47 | agent | Include detailed interval diagnostics in runtime releases | Sheikh | T46 | done | 3 new and 3 existing transport tests pass; new bundles require diagnostics; legacy pins remain loadable |
-| T48 | agent | Use runtime metadata consistently for record-end dates | Shammo | T00 | todo |  |
+| T48 | agent | Use runtime metadata consistently for record-end dates | Shammo | T00 | done | 6 exporter tests and 37 frontend tests pass; live and snapshot builds pass; metadata drives dates |
 | T49 | agent | Verify and publish the reviewed correctness repairs | Sheikh | T42, T43, T44, T45, T46, T47, T48 | todo |  |
 | T14 | agent | Season-level unusual flags (library and spec) | Monazir | T07 | todo |  |
 | T15 | agent | Season flags in the season response and on the calendar | Monazir | T14, T08 | todo |  |

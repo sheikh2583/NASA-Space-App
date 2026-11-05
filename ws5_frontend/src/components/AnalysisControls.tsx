@@ -4,6 +4,7 @@ import type { Res } from "../types";
 interface Props {
   start: string;
   end: string;
+  recordEnd?: string;
   res: Res;
   summary?: string;
   canRun: boolean;
@@ -24,7 +25,7 @@ export default function AnalysisControls(props: Props) {
           onChange={(event) => props.onStart(event.target.value)} />
       </label>
       <label>{t("controls.end")}
-        <input disabled={props.fixed} type="date" value={props.end} min={props.start}
+        <input disabled={props.fixed} type="date" value={props.end} min={props.start} max={props.recordEnd}
           onChange={(event) => props.onEnd(event.target.value)} />
       </label>
       <label>{t("controls.res")}

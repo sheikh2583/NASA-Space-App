@@ -14,6 +14,7 @@ import { DATA_MODE, RECORD_END, RECORD_START } from "./config";
 import { STATIC_DEMO } from "./snapshot";
 import { addDays, num } from "./lib/format";
 import { format, parse } from "./lib/urlState";
+import { metadataEnd, validRecordEnd } from "./lib/recordEnd";
 import type {
   AOIRequest, CellsResponse, CompareResponse, CriticalPeriodsResponse, DriversResponse, OutlookResponse, Res,
   SeasonProfileResponse, SummaryResponse,
@@ -92,6 +93,22 @@ export default function App() {
   }, [catalogVersion, initialUrlState.a, pickArea]);
   const [start, setStart] = useState(RECORD_START);
   const [end, setEnd] = useState(RECORD_END);
+  const [recordEnd, setRecordEnd] = useState(RECORD_END);
+  const [metadataReady, setMetadataReady] = useState(false);
+  const [metadataFallback, setMetadataFallback] = useState(false);
+  const endEdited = useRef(false);
+  useEffect(() => {
+    let active = true;
+    api.recordEnd().then((value) => {
+      if (!validRecordEnd(value)) throw new Error("Invalid record metadata");
+      if (!active) return;
+      setRecordEnd(value);
+      setEnd((current) => metadataEnd(current, value, endEdited.current));
+      setStart((current) => current > value ? value : current);
+    }).catch(() => { if (active) setMetadataFallback(true); })
+      .finally(() => { if (active) setMetadataReady(true); });
+    return () => { active = false; };
+  }, []);
   const [res, setRes] = useState<Res>("week");
   const [status, setStatus] = useState<Status>("idle");
   const [summary, setSummary] = useState<SummaryResponse | null>(null);
@@ -150,7 +167,7 @@ export default function App() {
     }
   }, []);
 
-  useEffect(() => { if (req) void load(req); }, [area, start, end, res]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (req && metadataReady) void load(req); }, [area, start, end, res, metadataReady]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (catalogLoading) return;
@@ -230,8 +247,10 @@ export default function App() {
             <MapView aoi={req} cells={cells?.cells ?? null} period={period} areas={areas} selectedId={selectedId} onSelect={pickArea} />
           </div>
           <div className="panels">
-            <AnalysisControls fixed={STATIC_DEMO} start={start} end={end} res={res} canRun={Boolean(req)}
-              onStart={setStart} onEnd={setEnd} onRes={setRes}
+            {metadataFallback && <p className="warn">{t("hosting.date_fallback", { date: recordEnd })}</p>}
+            {STATIC_DEMO && <p className="note">{t("hosting.snapshot", { date: recordEnd })}</p>}
+            <AnalysisControls fixed={STATIC_DEMO} start={start} end={end} recordEnd={recordEnd} res={res} canRun={Boolean(req) && metadataReady}
+              onStart={setStart} onEnd={(value) => { endEdited.current = true; setEnd(value); }} onRes={setRes}
               onRefresh={() => req && void load(req)} onReset={reset}
               summary={summary && status === "ok" ? t("aoi.summary", { cells: num(summary.aoi.n_cells), area: num(summary.aoi.area_km2) }) : undefined} />
             {status === "idle" && !catalogLoading && !catalogUnavailable && <p className="note">{t(STATIC_DEMO ? "hosting.pick_area" : "map.select_hint")}</p>}

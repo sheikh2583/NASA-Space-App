@@ -1,7 +1,8 @@
 {
   "_review": "Draft by an AI assistant. A fluent Bangla reviewer must check every line before H42 (docs/plan/README.md).",
   "app.title": "অগ্নি কার্যক্রম ক্যালেন্ডার",
-  "hosting.snapshot": "২ নভেম্বর ২০২৬ পর্যন্ত আসল ডেটার সংরক্ষিত ফলাফল। নিচে একটি এলাকা বেছে নিন। সাপ্তাহিক সময়সীমা নির্দিষ্ট; সেল স্তর ও CSV রপ্তানির জন্য সরাসরি API প্রয়োজন।",
+  "hosting.snapshot": "Saved real-data results through {{date}}. Weekly dates are fixed; custom queries require the live API.",
+  "hosting.date_fallback": "Record metadata is unavailable. Using fallback date {{date}}.",
   "hosting.pick_area": "দেশ ও এলাকা বেছে প্রয়োগ করুন, অথবা মানচিত্রে একটি অঞ্চল নির্বাচন করুন।",
   "area.title": "এলাকা অনুসন্ধান",
   "area.hint": "বিভাগ বা রাজ্য বেছে মানচিত্রে তার অগ্নি ইতিহাস দেখুন।",

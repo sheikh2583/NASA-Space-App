@@ -24,6 +24,7 @@ export function centreOf(req: AOIRequest): [number, number] {
 
 async function fromFallback<T extends Envelope>(path: string, req?: AOIRequest): Promise<T> {
   if (!FALLBACK) throw new ApiError("api_down");
+  if (path === "/health") throw new ApiError("record_metadata_unavailable");
   if (path === "/meta/validation") {
     const r = await fetch(`${FALLBACK}/meta/validation.json`);
     return { ...(await r.json()), fromFallback: true };
@@ -65,6 +66,7 @@ async function call<T extends Envelope>(path: string, body?: unknown): Promise<T
 }
 
 export const api = {
+  recordEnd: () => call<Envelope & { data_through?: unknown }>("/health").then((value) => value.data_through),
   post: <T extends Envelope>(path: string, req: unknown) => call<T>(path, req),
   get: <T extends Envelope>(path: string) => call<T>(path),
   async exportCsv(req: AOIRequest, view: "summary" | "cells" | "critical_periods") {

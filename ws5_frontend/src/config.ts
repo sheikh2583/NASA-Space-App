@@ -1,7 +1,7 @@
 import type { AOIRequest } from "./types";
 
 export const RECORD_START = "2000-11-01";
-export const RECORD_END = "2026-11-02";
+export const RECORD_END = "2026-11-02"; // Fallback only; serving metadata supplies the actual end.
 
 export const DEMOS: Record<"bd" | "pb", AOIRequest> = {
   bd: { bbox: [89.5, 23.0, 90.5, 24.0], start: RECORD_START, end: RECORD_END },
