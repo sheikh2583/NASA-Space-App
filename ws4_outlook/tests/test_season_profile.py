@@ -1,4 +1,4 @@
-"""Season profile (I1). Synthetic seasons with known timing, plus the real hosted snapshot as a regression fixture."""
+"""Season profile (I1). Synthetic seasons with known timing, plus committed contract summaries as regression fixtures."""
 import json
 import os
 
@@ -96,17 +96,23 @@ def test_missing_low_activity_and_multi_peak():
     assert st[2010]["p50_date"] is None and 2010 not in p["typical"]["season_years"]
 
 
-def test_profile_from_the_real_snapshot_matches_schema():
-    snap_path = os.path.join(ROOT, "ws5_frontend", "public", "demo", "snapshot.json")
+def test_profile_from_committed_summaries_matches_schema(capsys):
     with open(os.path.join(ROOT, "contracts", "json_schemas", "season_profile.schema.json"), encoding="utf-8") as f:
         schema = json.load(f)
-    with open(snap_path, encoding="utf-8") as f:
-        snap = json.load(f)
+    profiles = {}
     for area in ("pb", "bd"):
-        prof = sp.from_snapshot(snap, area)
+        name = "punjab" if area == "pb" else "bangladesh"
+        with open(os.path.join(ROOT, "contracts", "fixtures", name + "_summary.json"), encoding="utf-8") as f:
+            summary = json.load(f)
+        with open(os.path.join(ROOT, "contracts", "fixtures", name + "_season.json"), encoding="utf-8") as f:
+            as_of = json.load(f)["as_of"]
+        prof = profiles[area] = sp.from_summary(summary, area, as_of)
         json.dumps(prof, allow_nan=False)
         jsonschema.Draft7Validator(schema).validate(prof)
-    pb = sp.from_snapshot(snap, "pb")
+    sp.main(["--summary", os.path.join(ROOT, "contracts", "fixtures", "punjab_summary.json"),
+             "--area", "pb", "--as-of", profiles["pb"]["as_of"]])
+    assert json.loads(capsys.readouterr().out) == profiles["pb"]
+    pb = profiles["pb"]
     assert [s["name"] for s in pb["seasons"]] == ["wheat_residue", "paddy_residue"]
     paddy = pb["seasons"][1]["typical"]
     assert paddy["p50"]["median_md"][:2] in ("10", "11")                           # autumn peak, as documented

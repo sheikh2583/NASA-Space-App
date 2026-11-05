@@ -6,11 +6,14 @@ from __future__ import annotations
 
 import datetime as dt
 import glob
+import hashlib
 import io
 import json
 import math
 import os
 from collections import OrderedDict
+from concurrent.futures import Future
+from threading import Lock
 from typing import Literal, Optional
 
 import numpy as np
@@ -20,7 +23,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel, Field, model_validator
 
-from ws2_platform.api.query import AOIError, Store
+from ws2_platform.api.query import AOIError, Store, cell_set_key
 from ws3_anomaly.anomaly import score_series
 from ws3_anomaly.periods import find_periods
 from ws4_outlook import outlook as outlook_mod
@@ -28,23 +31,29 @@ from ws4_outlook import season_profile as season_mod
 
 SCHEMA_VERSION = "0.2.0"
 DAY_CONVENTION = "local_solar_date"
-EXPECTED_PIECES = ["harmonization", "intervals", "drift", "outlook_skill", "qa"]
+EXPECTED_PIECES = ["harmonization", "intervals", "drift", "outlook_skill", "qa", "intervals_by_stratum"]
 SEAMS = ["2012-01-20", "2026-11-02"]
 
 app = FastAPI(title="MODIS-VIIRS Harmonization API", version=SCHEMA_VERSION)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 _store: Store | None = None
 _cache: "OrderedDict[str, dict]" = OrderedDict()
+_cache_lock = Lock()
+_store_lock = Lock()
+_inflight: dict[str, Future] = {}
 
 
 def store() -> Store:
     global _store
     if _store is None:
-        _store = Store(os.environ.get("DATA_DIR", "data/processed"))
+        with _store_lock:
+            if _store is None:
+                _store = Store(os.environ.get("DATA_DIR", "data/processed"))
     return _store
 
 
 class AOIRequest(BaseModel):
+    area_id: Optional[str] = Field(default=None, min_length=1, max_length=128)
     geometry: Optional[dict] = None
     bbox: Optional[list[float]] = Field(default=None, min_length=4, max_length=4)
     start: dt.date
@@ -53,8 +62,8 @@ class AOIRequest(BaseModel):
 
     @model_validator(mode="after")
     def _one_area(self):
-        if (self.geometry is None) == (self.bbox is None):
-            raise ValueError("give exactly one of geometry or bbox")
+        if sum(value is not None for value in (self.geometry, self.bbox, self.area_id)) != 1:
+            raise ValueError("give exactly one of geometry, bbox or area_id")
         if self.start > self.end:
             raise ValueError("start must not be after end")
         return self
@@ -84,18 +93,43 @@ async def aoi_error(_: Request, exc: AOIError):
 
 
 def _cached(key: str, fn):
-    if key in _cache:
-        _cache.move_to_end(key)
-        return _cache[key]
-    val = fn()
-    _cache[key] = val
-    if len(_cache) > 256:
-        _cache.popitem(last=False)
+    """Share in-flight work; the response LRU has a 256-entry limit, not a byte budget."""
+    with _cache_lock:
+        if key in _cache:
+            _cache.move_to_end(key)
+            return _cache[key]
+        pending = _inflight.get(key)
+        leader = pending is None
+        if leader:
+            pending = _inflight[key] = Future()
+    if not leader:
+        return pending.result()
+    try:
+        val = fn()
+    except BaseException as error:
+        with _cache_lock:
+            _inflight.pop(key, None)
+        pending.set_exception(error)
+        raise
+    with _cache_lock:
+        _cache[key] = val
+        if len(_cache) > 256:
+            _cache.popitem(last=False)
+        _inflight.pop(key, None)
+    pending.set_result(val)
     return val
 
 
 def _key(name, req: BaseModel) -> str:
-    return name + ":" + req.model_dump_json()
+    s = store()
+    selected = s.select(req.geometry, req.bbox, req.area_id)
+    # A Store reads one immutable artifact revision. Fake stores use an instance namespace.
+    identity = {"revision": getattr(s, "cache_revision", str(id(s))), "cells": cell_set_key(selected)}
+    if name not in ("outlook", "season"):
+        identity["start"], identity["end"] = req.start.isoformat(), req.end.isoformat()
+    if name == "summary":
+        identity["res"] = req.res
+    return name + ":" + hashlib.sha256(json.dumps(identity, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
 
 
 def _scored(s: Store, sel, agri: bool = False):
@@ -122,7 +156,7 @@ def _coverage(t: pd.Timestamp, res: str, data_end: pd.Timestamp, end: pd.Timesta
 
 def build_summary(req: AOIRequest) -> dict:
     s = store()
-    sel = s.select(req.geometry, req.bbox)
+    sel = s.select(req.geometry, req.bbox, req.area_id)
     notes = ["Values before 20 Jan 2012 are modeled from MODIS; values after 2 Nov 2026 are NOAA-20 adjusted to SNPP terms."]
     if sel.empty:
         return {**envelope(req.res, notes + ["No grid cells in this area."]), "aoi": {"n_cells": 0, "area_km2": 0.0},
@@ -178,7 +212,7 @@ def aoi_summary(req: AOIRequest):
 def aoi_cells(req: AOIRequest):
     def run():
         s = store()
-        sel = s.select(req.geometry, req.bbox)
+        sel = s.select(req.geometry, req.bbox, req.area_id)
         t = s.cell_totals(sel, req.start, req.end)
         cells = [{"cell_id": int(r.cell_id), "lat_c": round(float(r.lat_c), 3), "lon_c": round(float(r.lon_c), 3),
                   "value": round(float(r.value), 2), "modeled_share": round(float(r.modeled_share), 3)} for r in t.itertuples()]
@@ -190,7 +224,7 @@ def aoi_cells(req: AOIRequest):
 def aoi_periods(req: AOIRequest):
     def run():
         s = store()
-        sel = s.select(req.geometry, req.bbox)
+        sel = s.select(req.geometry, req.bbox, req.area_id)
         if sel.empty:
             return {**envelope(), "periods": []}
         reg = s.region_of(sel)
@@ -205,7 +239,7 @@ def aoi_periods(req: AOIRequest):
 @app.post("/aoi/drivers")
 def aoi_drivers(req: AOIRequest):
     s = store()
-    sel = s.select(req.geometry, req.bbox)
+    sel = s.select(req.geometry, req.bbox, req.area_id)
     reg = s.region_of(sel)
     if reg is None or reg["region_id"] not in s.drivers:
         return {**envelope(), "region": reg and {k: reg[k] for k in ("region_id", "region_name")} or {"region_id": "", "region_name": ""},
@@ -220,11 +254,11 @@ def aoi_drivers(req: AOIRequest):
 def aoi_outlook(req: AOIRequest):
     def run():
         s = store()
-        sel = s.select(req.geometry, req.bbox)
+        sel = s.select(req.geometry, req.bbox, req.area_id)
         reg = s.region_of(sel)
         hist = s.full_history(sel)
         as_of = s.data_end + pd.Timedelta(days=1)
-        live = outlook_mod.outlook(hist, as_of=as_of, data_through=s.data_end.date().isoformat())
+        live = outlook_mod.outlook(hist, as_of=as_of, data_through=s.data_end.date().isoformat(), record_end=s.data_end)
         ro = s.outlooks.get(reg["region_id"], {}) if reg else {}
         return {**envelope(notes=["Current status is computed for the drawn area; skill and alerts come from its main region."]),
                 "region": {"region_id": reg["region_id"], "region_name": reg["region_name"]} if reg else {"region_id": "", "region_name": ""},
@@ -239,7 +273,7 @@ def aoi_outlook(req: AOIRequest):
 def aoi_season(req: AOIRequest):
     def run():
         s = store()
-        sel = s.select(req.geometry, req.bbox)
+        sel = s.select(req.geometry, req.bbox, req.area_id)
         reg = s.region_of(sel)
         area = reg["country"].lower() if reg else None
         as_of = s.data_end + pd.Timedelta(days=1)
@@ -270,14 +304,16 @@ def aoi_compare(req: CompareRequest):
 @app.get("/meta/validation")
 def meta_validation():
     d = os.path.join(store().data_dir, "validation")
-    pieces = {}
+    pieces, corrupt = {}, []
     for p in sorted(glob.glob(os.path.join(d, "*.json"))):
         try:
-            v = json.load(open(p))
+            with open(p, encoding="utf-8") as stream:
+                v = json.load(stream)
             pieces[v.get("producer", os.path.basename(p)[:-5])] = v
-        except Exception:  # a broken piece must not break the page
-            continue
-    return {**envelope(), "pieces": pieces, "missing": [x for x in EXPECTED_PIECES if x not in pieces]}
+        except (OSError, ValueError, AttributeError, TypeError):  # report broken pieces without hiding healthy ones
+            corrupt.append(os.path.basename(p))
+    return {**envelope(), "pieces": pieces, "missing": [x for x in EXPECTED_PIECES if x not in pieces],
+            "corrupt": corrupt}
 
 
 @app.post("/export")

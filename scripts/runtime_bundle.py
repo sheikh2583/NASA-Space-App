@@ -43,11 +43,10 @@ def pack(data: Path, output: Path) -> str:
     return hashlib.sha256(output.read_bytes()).hexdigest()
 
 
-def unpack(archive: Path, output: Path, expected_sha256: str) -> None:
-    if hashlib.sha256(archive.read_bytes()).hexdigest() != expected_sha256:
-        raise ValueError('Runtime archive SHA256 mismatch')
-    if output.exists() and any(output.iterdir()):
-        raise ValueError('Refusing to overwrite an existing runtime data directory')
+def validate_archive(archive: Path) -> tuple[str, ...]:
+    """Validate either supported runtime layout without extracting or changing any files."""
+    if archive.stat().st_size > MAX_BYTES:
+        raise ValueError('Runtime archive is too large')
     with zipfile.ZipFile(archive) as package:
         names = package.namelist()
         if len(names) != len(set(names)) or set(names) not in (LEGACY_NAMES, REQUIRED | VALIDATION):
@@ -59,6 +58,16 @@ def unpack(archive: Path, output: Path, expected_sha256: str) -> None:
             if path.is_absolute() or '..' in path.parts or '\\' in name:
                 raise ValueError('Unsafe runtime archive path')
         validate_saved_outputs(package.read)
+        return tuple(names)
+
+
+def unpack(archive: Path, output: Path, expected_sha256: str) -> None:
+    if hashlib.sha256(archive.read_bytes()).hexdigest() != expected_sha256:
+        raise ValueError('Runtime archive SHA256 mismatch')
+    if output.exists() and any(output.iterdir()):
+        raise ValueError('Refusing to overwrite an existing runtime data directory')
+    names = validate_archive(archive)
+    with zipfile.ZipFile(archive) as package:
         # Exact allowlist above excludes traversal, symlinks, scripts and secrets.
         for name in names:
             target = output / name

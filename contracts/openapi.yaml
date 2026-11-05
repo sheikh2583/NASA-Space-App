@@ -176,8 +176,14 @@ components:
       oneOf:
         - required: [geometry]
         - required: [bbox]
+        - required: [area_id]
       properties:
-        geometry: { type: object, description: GeoJSON Polygon or MultiPolygon (exactly one of geometry or bbox) }
+        area_id:
+          type: string
+          minLength: 1
+          maxLength: 128
+          description: Catalog identifier selecting the exact original polygon-centre cell set; give exactly one of area_id, geometry or bbox.
+        geometry: { type: object, description: GeoJSON Polygon or MultiPolygon (exactly one of area_id, geometry or bbox) }
         bbox:
           type: array
           description: '[min_lon, min_lat, max_lon, max_lat]'
@@ -333,17 +339,20 @@ components:
       enum: [none, watch, high]
     StatusLevel:
       type: string
-      description: Current-status level; low and very_low mark weeks well below the usual range.
-      enum: [very_low, low, none, watch, high]
+      description: Current-status level; insufficient_history means no complete week or same-week reference is available.
+      enum: [very_low, low, none, watch, high, insufficient_history]
     CurrentStatus:
       type: object
-      description: Core, never cut (decision 14). Computed live for the AOI from the near-real-time feed.
+      description: Core, never cut (decision 14). Evaluates the latest week complete by both as_of and the actual record end.
       required: [week_percentile, level, data_through, message]
       properties:
-        week_percentile: { type: number, minimum: 0, maximum: 100 }
+        week_percentile: { type: number, nullable: true, minimum: 0, maximum: 100, description: Null when comparison history is insufficient }
         level: { $ref: '#/components/schemas/StatusLevel' }
         data_through: { type: string, format: date }
-        data_source: { type: string, enum: [VIIRS_NOAA20_NRT, VIIRS_NOAA21_NRT, harmonized] }
+        data_source:
+          type: string
+          description: Provenance of the evaluated complete week; legacy feed identifiers remain accepted for saved responses. Omitted when no complete week is available.
+          enum: [observed_viirs, adjusted_from_noaa20, modeled_from_modis, mixed, harmonized, VIIRS_NOAA20_NRT, VIIRS_NOAA21_NRT]
         message: { type: string }
     OutlookResponse:
       allOf:
@@ -354,9 +363,10 @@ components:
             region: { $ref: '#/components/schemas/Region' }
             as_of: { type: string, format: date }
             current_status: { $ref: '#/components/schemas/CurrentStatus' }
-            season_to_date_percentile: { type: number }
+            season_to_date_percentile: { type: number, nullable: true, description: Null when no earlier same-position season is available }
             expected_range:
               type: object
+              description: Historical range; interpret only when season_to_date_percentile is non-null.
               required: [q10, q50, q90]
               properties:
                 q10: { type: number }
@@ -414,7 +424,11 @@ components:
               additionalProperties: { $ref: '#/components/schemas/ValidationPiece' }
             missing:
               type: array
-              description: Expected producers with no file yet
+              description: Expected producers with no readable piece, including intervals_by_stratum
+              items: { type: string }
+            corrupt:
+              type: array
+              description: Basenames of validation files that could not be read as JSON pieces
               items: { type: string }
     ExportRequest:
       allOf:

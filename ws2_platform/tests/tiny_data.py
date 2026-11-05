@@ -1,6 +1,6 @@
 """A tiny, deterministic data/processed folder for API tests that must run in CI (where data/ is absent).
 
-make_tiny_processed(dir) writes the runtime files the API reads (the same set ws2_platform/Dockerfile copies):
+make_tiny_processed(dir) writes the runtime files the API reads (the core serving files in the root Dockerfile runtime bundle):
 cells.parquet, harmonized.parquet, sensor_days.parquet, interval_table.json, drivers_region.json,
 outlook_region.json and validation/. Two demo regions, four cells each:
   - PB (country "PB", admin1 "PB-1" Punjab): a paddy-residue season peaking about 2 Nov and a smaller

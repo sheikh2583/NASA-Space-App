@@ -109,42 +109,15 @@ def contracted_files(root: str = ROOT) -> tuple[list[str], list[str]]:
     return known, other
 
 
-def check_snapshot_seasons(root: str = ROOT) -> int:
-    """Each areas.<key>.season in the legacy snapshot against json_schemas/season_profile.schema.json (card T07)."""
-    path = os.path.join(root, "ws5_frontend", "public", "demo", "snapshot.json")
-    if not os.path.exists(path):
-        return 0
-    snap = json.load(open(path, encoding="utf-8"))
-    schema = json.load(open(os.path.join(ROOT, "contracts", "json_schemas", "season_profile.schema.json"), encoding="utf-8"))
-    failed = 0
-    for key in ("bd", "pb"):
-        season = snap.get("areas", {}).get(key, {}).get("season")
-        if season is None:
-            print(f"FAIL snapshot season {key}")
-            print("   - missing (run scripts/export_hosted_demo.py)")
-            failed += 1
-            continue
-        doc = {**season, "schema_version": season.get("profile_version", season.get("schema_version"))}
-        doc = {k: v for k, v in doc.items() if k in schema.get("properties", doc)}
-        errs = sorted(jsonschema.Draft7Validator(schema).iter_errors(doc), key=lambda e: list(e.path))
-        print(("PASS " if not errs else "FAIL ") + f"snapshot season {key}")
-        for e in errs[:5]:
-            print(f"   - {list(e.path)}: {e.message}")
-        failed += bool(errs)
-    return failed
-
-
 def main(paths) -> int:
-    snapshot_failed = 0
     if paths == ["--all"]:
         paths, other = contracted_files()
         for p in other:
             print("SKIP " + p + "  (no contract for this file)")
-        snapshot_failed = check_snapshot_seasons()
         if not paths:
             print("SKIP: no contracted files in data/processed on this machine")
-            return 1 if snapshot_failed else 0
-    failed = snapshot_failed
+            return 0
+    failed = 0
     for p in paths:
         errs = check(p)
         print(("PASS " if not errs else "FAIL ") + p)

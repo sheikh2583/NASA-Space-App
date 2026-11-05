@@ -10,15 +10,22 @@ import zipfile
 import pytest
 
 from scripts import release_runtime as rr
+from scripts import runtime_bundle as bundle
+from scripts.tests.test_runtime_bundle import data_fixture
 
 PINNED = {"data_through": "2026-11-02", "sha256": "0" * 64,
           "url": "https://github.com/sheikh2583/NASA-Space-App/releases/download/runtime-20261104-render-v1/firesense-runtime.zip"}
 
 
 def make_zip(tmp_path: Path) -> Path:
+    import pyarrow as pa
+    import pyarrow.parquet as pq
+
+    source = tmp_path / "saved"
+    data_fixture(source)
+    pq.write_table(pa.table({"date": [dt.date(2026, 11, 9), dt.date(2026, 11, 1)]}), source / "sensor_days.parquet")
     z = tmp_path / "firesense-runtime.zip"
-    with zipfile.ZipFile(z, "w") as f:
-        f.writestr("cells.parquet", b"fake")
+    bundle.pack(source, z)
     return z
 
 
@@ -101,3 +108,24 @@ def test_a_checksum_mismatch_after_upload_writes_nothing(tmp_path, monkeypatch):
     before = m.read_text(encoding="utf-8")
     assert rr.main(args + ["--publish"]) == 1
     assert m.read_text(encoding="utf-8") == before
+
+
+def test_release_validates_existing_archive_record_end_before_any_external_command(tmp_path, monkeypatch):
+    _, m, gh, args = setup(tmp_path, monkeypatch)
+    before = m.read_bytes()
+    args[args.index("--data-through") + 1] = "2026-11-10"
+    with pytest.raises(ValueError, match="archive record end 2026-11-09"):
+        rr.main(args + ["--publish"])
+    assert not gh.calls
+    assert m.read_bytes() == before
+
+
+def test_existing_invalid_archive_cannot_reach_release_creation(tmp_path, monkeypatch):
+    z, m, gh, args = setup(tmp_path, monkeypatch)
+    before = m.read_bytes()
+    with zipfile.ZipFile(z, "w") as package:
+        package.writestr("../outside.txt", "unexpected")
+    with pytest.raises(ValueError, match="unexpected"):
+        rr.main(args + ["--publish"])
+    assert not gh.calls
+    assert m.read_bytes() == before

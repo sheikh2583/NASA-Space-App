@@ -1,5 +1,7 @@
 import numpy as np
 import pandas as pd
+import json
+import pytest
 
 from ws4_outlook import alerts, outlook
 
@@ -83,3 +85,41 @@ def test_a_median_week_is_usual():
 def test_somewhat_low_week_is_low_not_very_low():
     cs = _same_week(past=[100, 110, 120, 130, 140, 150], last_value=105, hi=125)
     assert cs["level"] == "low" and "lower than usual" in cs["message"] and "much lower" not in cs["message"]
+
+
+def test_saturday_record_end_excludes_the_unfinished_week_from_both_comparisons():
+    w = weekly(years=17)
+    w["source"] = "observed_viirs"
+    last = pd.Timestamp("2026-10-26")
+    w = pd.concat([w[w.week_start < last], pd.DataFrame({
+        "week_start": [last], "value": [10000.0], "lo": [10000.0], "hi": [10000.0],
+        "source": ["adjusted_from_noaa20"],
+    })], ignore_index=True)
+    actual = outlook.outlook(w, as_of="2026-11-01", record_end="2026-10-31")
+    expected = outlook.outlook(w[w.week_start < last], as_of="2026-11-01", record_end="2026-10-31")
+    assert actual == expected
+    assert actual["as_of"] == "2026-11-01"
+    assert actual["current_status"]["data_source"] == "observed_viirs"
+    assert "19 Oct 2026" in actual["current_status"]["message"]
+    # A later record end must not override an earlier issue date.
+    assert outlook.outlook(w, as_of="2026-10-25", record_end="2026-11-30") == outlook.outlook(w, as_of="2026-10-25")
+
+
+@pytest.mark.parametrize("source", ["observed_viirs", "adjusted_from_noaa20", "modeled_from_modis", "mixed"])
+def test_status_source_comes_from_the_evaluated_week(source):
+    w = weekly()
+    w["source"] = source
+    end = w.week_start.max() + pd.Timedelta(days=6)
+    assert outlook.current_status(w, end, record_end=end)["data_source"] == source
+
+
+@pytest.mark.parametrize("values", [[], [30.0], [np.nan]])
+def test_absent_reference_history_returns_null_percentiles_and_strict_json(values):
+    w = pd.DataFrame({"week_start": pd.date_range("2026-10-26", periods=len(values), freq="7D"), "value": values})
+    result = outlook.outlook(w, as_of="2026-11-02", record_end="2026-11-01")
+    assert result["current_status"]["level"] == "insufficient_history"
+    assert result["current_status"]["week_percentile"] is None
+    assert result["season_to_date_percentile"] is None
+    assert "within the usual range" not in result["current_status"]["message"]
+    assert "nan" not in result["current_status"]["message"].lower()
+    json.dumps(result, allow_nan=False)

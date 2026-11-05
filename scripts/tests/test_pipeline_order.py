@@ -5,6 +5,7 @@ from scripts import run_pipeline
 def test_clean_pipeline_dependency_order(monkeypatch, tmp_path):
     monkeypatch.setattr(run_pipeline, "ROOT", str(tmp_path))
     names = [name for name, _ in run_pipeline.selected_steps(False)]
+    assert "fallback" not in names
     for prerequisite, consumer in (
         ("ingest", "grid"), ("grid", "cells"), ("cells", "sensors"),
         ("sensors", "panel"), ("cells", "panel"), ("panel", "model"),
@@ -37,3 +38,14 @@ def test_downstream_resume_preserves_start_and_never_executes(monkeypatch, tmp_p
     assert run_pipeline.selected_steps(False, "cells")[0][0] == "cells"
     model_args = dict(run_pipeline.selected_steps(True))["model"]
     assert "--quick" in model_args
+
+
+def test_detailed_interval_report_is_refreshed_before_qa_on_full_and_resumed_runs(monkeypatch, tmp_path):
+    monkeypatch.setattr(run_pipeline, "ROOT", str(tmp_path))
+    for quick in (False, True):
+        for start in (None, "intervals"):
+            selected = run_pipeline.selected_steps(quick, start)
+            names = [name for name, _ in selected]
+            assert names.index("interval_report") == names.index("intervals") + 1
+            assert names.index("interval_report") < names.index("qa")
+            assert dict(selected)["interval_report"] == ["-m", "ws4_outlook.run", "interval_report"]

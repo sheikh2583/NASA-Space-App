@@ -1,5 +1,5 @@
-# Satellite outage registry (improvement I8). PROPOSED: read by ws2_platform/coverage.py (audit only).
-# Not yet read by ws2_platform/sensors.py, so it changes no pipeline output. Spec: docs/specs/I8_COVERAGE.md.
+# Satellite outage registry (improvement I8). Read by ws2_platform/coverage.py and ws2_platform/sensors.py.
+# Verified outages affect sensor_days and downstream pipeline outputs. Spec: docs/specs/I8_COVERAGE.md.
 #
 # One entry per interval in UTC. start_utc is inclusive, end_utc exclusive. A granule listed "inclusive" ends 6 minutes
 # after its start time. Times are those in the source table; where the table and its comment disagree, the wider

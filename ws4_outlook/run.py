@@ -105,7 +105,8 @@ def step_outlook(status_only=False):
         else:
             sk, status = outlook.evaluate_forecast(w, load_weather(country))
         al = alerts.no_forecast_bounds()
-        o = outlook.outlook(w, as_of=as_of, skill=sk, status=status, alert=al, data_through=end.date().isoformat())
+        o = outlook.outlook(w, as_of=as_of, skill=sk, status=status, alert=al,
+                            data_through=end.date().isoformat(), record_end=end)
         regions[region] = {"region_name": name, **o}
         skills.append({"region_id": region, **sk, "status": status})
         print(f"{region}: status {status}, skill vs clim {sk.get('vs_climatology')} CI {sk.get('ci')}, now {o['current_status']['level']}")

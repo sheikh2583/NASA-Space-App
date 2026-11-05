@@ -72,3 +72,33 @@ def test_rows_split_at_midnight_are_one_outage():
     reg = [{"id": "x", "sat": "SNPP", "start_utc": "2025-07-05T08:00:00Z", "end_utc": "2025-07-06T02:00:00Z"}]
     c = mo.compare(reg, mo.parse(html)).iloc[0]
     assert c["matched"] and c["d_start_min"] == 0 and c["d_end_min"] == 0
+
+
+def test_compare_keeps_its_schema_without_transcribed_entries():
+    frame = mo.compare([], mo.parse(HTML))
+    assert frame.empty
+    assert list(frame.columns) == ["id", "matched", "table_start", "table_end", "table_comment",
+                                   "d_start_min", "d_end_min"]
+
+
+def test_zero_transcribed_registry_accepts_a_new_historical_outage_and_is_idempotent():
+    registry = """events:
+  - {id: existing, sat: SNPP, start_utc: "2024-11-02T22:12:00Z", end_utc: "2024-11-06T17:36:00Z", source: s, verification: documented}
+"""
+    table = mo.parse(HTML).iloc[[2]]  # one historical event, no network
+    first, counts = mo.update(registry, table, "2026-11-06")
+    assert counts["added"] == 1 and counts["added_2024_2026"] == 0
+    assert len(yaml.safe_load(first)["events"]) == 2
+    second, counts = mo.update(first, table, "2026-11-06")
+    assert second == first
+    assert all(value == 0 for value in counts.values())
+
+
+def test_both_historical_and_recent_candidates_respect_existing_coverage():
+    registry = """events:
+  - {id: historical, sat: SNPP, start_utc: "2015-04-10T23:00:00Z", end_utc: "2015-04-11T00:00:00Z", source: s, verification: documented}
+  - {id: recent, sat: SNPP, start_utc: "2024-11-02T22:12:00Z", end_utc: "2024-11-06T17:36:00Z", source: s, verification: documented}
+"""
+    updated, counts = mo.update(registry, mo.parse(HTML).iloc[[1, 2]], "2026-11-06")
+    assert updated == registry
+    assert all(value == 0 for value in counts.values())

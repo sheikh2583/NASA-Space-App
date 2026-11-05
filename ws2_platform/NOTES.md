@@ -6,7 +6,7 @@
 - cells: admin1 matched with `intersects` so border cells get a region. Land cover: MCD12C1 via pyhdf, else synthetic.
 - API implements openapi 0.2.0. AOI size limit is by drawn area (area in square degrees x 100 = grid cells, limit 6000).
   The 26-year weekly history per AOI is cached and shared by summary, critical periods and outlook (first call ~0.8 s).
-- Static fallback: `python -m ws2_platform.api.static_export`; URL pattern documented in that file.
+- CSV downloads use the live API /export endpoint.
 - Fixtures: `python -m ws2_platform.api.make_fixtures` (shapes are fixed; numbers are synthetic).
 
 ## Known issues

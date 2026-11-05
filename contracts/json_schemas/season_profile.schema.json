@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "season_profile (DRAFT 0.1.0, improvement I1)",
-  "description": "Output of ws4_outlook.season_profile.season_profile. Proposed for /aoi/season and for snapshot.json areas.<key>.season. Timing is a detection statistic (central activity window), not physical onset or end of burning.",
+  "description": "Output of ws4_outlook.season_profile.season_profile. Served by /aoi/season. Timing is a detection statistic (central activity window), not physical onset or end of burning.",
   "type": "object",
   "required": ["schema_version", "area", "as_of", "data_through", "units", "definition", "seasons"],
   "properties": {

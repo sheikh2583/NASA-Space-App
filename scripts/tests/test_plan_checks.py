@@ -145,10 +145,9 @@ def test_web_check_builds_like_the_render_image():
     card = plan_mod.Card("T99", ROOT / "x.md", {"checks": ["CHECK-WEB"], "branch": "ws1/T99-x"}, "")
     steps = plan_mod.expand_checks(p, card)
     assert [s[1] for s in steps] == [["npm", "test"], ["npm", "run", "check:strings"], ["npm", "run", "build"]]
-    assert all(s[3] == {"VITE_API_BASE_URL": "/", "VITE_DEMO_MODE": "live", "VITE_DATA_MODE": "real",
-                        "VITE_FALLBACK_BASE_URL": ""} for s in steps)
+    assert all(s[3] == {"VITE_API_BASE_URL": "/", "VITE_DATA_MODE": "real"} for s in steps)
     dockerfile = (ROOT / "Dockerfile").read_text(encoding="utf-8")
-    assert "VITE_API_BASE_URL=/ VITE_DEMO_MODE=live VITE_DATA_MODE=real VITE_FALLBACK_BASE_URL=" in dockerfile
+    assert "VITE_API_BASE_URL=/ VITE_DATA_MODE=real" in dockerfile
 
 
 def test_env_requirement_reads_dotenv_without_printing(tmp_path, monkeypatch):

@@ -5,7 +5,7 @@ years; high when the lower bound reaches the 90th percentile, watch at the 80th,
 upper bound is at or below the 10th; a difference under 10 detections from typical is never unusual (none);
 data_through = last day with data.
 outlook(weekly, as_of): current_status + season-to-date percentile and the expected range of cumulative
-activity at this point of the season (from earlier seasons). Uses only data up to as_of.
+activity at this point of the season (from earlier seasons). Complete weeks are bounded by as_of and record_end.
 forecast skill (evaluate_forecast): 2-4 week ahead quantile learner, forward-season folds, skill against
 climatology and persistence with bootstrap CIs; status = no_demonstrated_skill when the CI includes 0.
 """
@@ -23,21 +23,33 @@ LEVEL_WORDS = {"none": "within the usual range", "watch": "higher than usual", "
                "low": "lower than usual", "very_low": "much lower than usual"}
 
 
-def _prep(weekly: pd.DataFrame, as_of) -> pd.DataFrame:
-    w = weekly[["week_start", "value"] + [c for c in ("lo", "hi") if c in weekly]].copy()
+def _prep(weekly: pd.DataFrame, as_of, *, record_end=None) -> pd.DataFrame:
+    """Keep weeks complete by the issue date and, when supplied, the actual record end."""
+    w = weekly[["week_start", "value"] + [c for c in ("lo", "hi", "source") if c in weekly]].copy()
     w["week_start"] = pd.to_datetime(w["week_start"])
-    as_of = pd.Timestamp(as_of)
-    return w[w["week_start"] + pd.Timedelta(days=6) <= as_of].sort_values("week_start").reset_index(drop=True)
+    cutoff = pd.Timestamp(as_of)
+    if record_end is not None:
+        cutoff = min(cutoff, pd.Timestamp(record_end))
+    return w[w["week_start"] + pd.Timedelta(days=6) <= cutoff].sort_values("week_start").reset_index(drop=True)
 
 
-def current_status(weekly: pd.DataFrame, as_of, data_through=None, data_source="VIIRS_NOAA20_NRT") -> dict:
-    w = _prep(weekly, as_of).dropna(subset=["value"])
+def current_status(weekly: pd.DataFrame, as_of, data_through=None, *, record_end=None) -> dict:
+    w = _prep(weekly, as_of, record_end=record_end).dropna(subset=["value"])
     if w.empty:
-        return {"week_percentile": 0.0, "level": "none", "data_through": pd.Timestamp(as_of).date().isoformat(),
-                "data_source": data_source, "message": "No recent data for this area."}
+        through = data_through or record_end or as_of
+        return {"week_percentile": None, "level": "insufficient_history",
+                "data_through": pd.Timestamp(through).date().isoformat(),
+                "message": "No complete week with data is available for this area."}
     last = w.iloc[-1]
+    data_source = last.get("source", "harmonized")
+    if pd.isna(data_source):
+        data_source = "harmonized"
+    through = data_through or (last["week_start"] + pd.Timedelta(days=6)).date().isoformat()
     wk = week_of_year([last["week_start"]]).iloc[0]
     same = w[(week_of_year(w["week_start"]).values == wk) & (w["week_start"] < last["week_start"])]["value"]
+    if same.empty:
+        return {"week_percentile": None, "level": "insufficient_history", "data_through": str(through),
+                "data_source": data_source, "message": "Not enough same-week history to compare burning activity."}
     pct = percentile_of(float(last["value"]), same.values)
     value = float(last["value"])
     lo = last.get("lo", np.nan)
@@ -65,17 +77,19 @@ def current_status(weekly: pd.DataFrame, as_of, data_through=None, data_source="
     else:
         msg = (f"Burning in the week of {week_txt} was {LEVEL_WORDS[level]} for this time of year "
                f"(percentile {pct:.0f} of the same week in {n} past years).")
-    through = data_through or (last["week_start"] + pd.Timedelta(days=6)).date().isoformat()
     return {"week_percentile": round(float(pct), 1), "level": level, "data_through": str(through),
             "data_source": data_source, "message": msg}
 
 
-def season_position(weekly: pd.DataFrame, as_of) -> dict:
-    w = cumulative_by_season(_prep(weekly, as_of).fillna({"value": 0}))
+def season_position(weekly: pd.DataFrame, as_of, *, record_end=None) -> dict:
+    # C07: missing-to-zero handling is unchanged pending a separate scientific specification.
+    w = cumulative_by_season(_prep(weekly, as_of, record_end=record_end).fillna({"value": 0}))
     if w.empty:
-        return {"season_to_date_percentile": 0.0, "expected_range": {"q10": 0.0, "q50": 0.0, "q90": 0.0}}
+        return {"season_to_date_percentile": None, "expected_range": {"q10": 0.0, "q50": 0.0, "q90": 0.0}}
     cur = w.iloc[-1]
     prev = w[(w["season"] < cur["season"]) & (w["week_of_season"] == cur["week_of_season"])]["cum_value"].values
+    if not prev.size:
+        return {"season_to_date_percentile": None, "expected_range": {"q10": 0.0, "q50": 0.0, "q90": 0.0}}
     pct = percentile_of(float(cur["cum_value"]), prev)
     q = np.quantile(prev, [0.1, 0.5, 0.9]) if prev.size else [0, 0, 0]
     return {"season_to_date_percentile": round(float(pct), 1),
@@ -179,11 +193,11 @@ def evaluate_forecast(weekly, weather=None, seed=2):
 
 
 def outlook(weekly_df: pd.DataFrame, bbox=None, as_of=None, skill: dict | None = None, status: str = "no_demonstrated_skill",
-            alert: dict | None = None, data_through=None) -> dict:
+            alert: dict | None = None, data_through=None, *, record_end=None) -> dict:
     as_of = pd.Timestamp(as_of or pd.Timestamp.today().normalize())
     out = {"as_of": as_of.date().isoformat(),
-           "current_status": current_status(weekly_df, as_of, data_through),
-           **season_position(weekly_df, as_of),
+           "current_status": current_status(weekly_df, as_of, data_through, record_end=record_end),
+           **season_position(weekly_df, as_of, record_end=record_end),
            "skill": skill or {"n_seasons": 0},
            "status": status,
            "alert": alert or {"level": "none", "rule": "Forecast alerts are off until the forecast shows skill."}}

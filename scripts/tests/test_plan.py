@@ -148,12 +148,13 @@ def test_set_status_changes_one_row(tmp_path):
 
 def test_checks_expand_with_environment_and_branch(tmp_path):
     p = plan_mod.load(ROOT)
-    card = plan_mod.Card("T99", ROOT / "x.md", {"checks": ["CHECK-SNAP", "CHECK-GUARD", "python -m pytest ws4_outlook -q"],
+    card = plan_mod.Card("T99", ROOT / "x.md", {"checks": ["CHECK-WEB", "CHECK-GUARD", "python -m pytest ws4_outlook -q"],
                                                 "branch": "ws1/T99-x"}, "")
     steps = plan_mod.expand_checks(p, card)
-    assert steps[0][1] == ["npm", "run", "build"] and steps[0][3] == {"VITE_DEMO_MODE": "snapshot", "VITE_DATA_MODE": "real"}
-    assert steps[1][1][-1] == "ws1/T99-x" and "sheikh2583" in steps[1][1]
-    assert steps[2][1][:3] == ["python", "-m", "pytest"]
+    assert [step[1] for step in steps[:3]] == [["npm", "test"], ["npm", "run", "check:strings"], ["npm", "run", "build"]]
+    assert steps[2][3] == plan_mod.RENDER_WEB_ENV
+    assert steps[3][1][-1] == "ws1/T99-x" and "sheikh2583" in steps[3][1]
+    assert steps[4][1][:3] == ["python", "-m", "pytest"]
     assert plan_mod._resolve(["python", "-V"])[0] == sys.executable
 
 

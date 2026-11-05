@@ -7,25 +7,47 @@ Packaging and uploading train nothing. The zip is share/firesense-runtime.zip (m
 `train.sh --pack`, or here with `runtime_bundle.py pack` if missing). --publish needs the GitHub CLI signed in
 (`gh auth login`). Every upload goes to a NEW tag, so a pinned asset is never replaced. deployment/runtime.json is
 written only after the uploaded asset's SHA256 matches the local zip. It never commits or pushes.
-Standard library only.
+Archive record-end verification uses the installed PyArrow package; no fitting occurs.
 """
 from __future__ import annotations
 
 import argparse
 import datetime as dt
 import hashlib
+import io
 import json
 from pathlib import Path
 import re
 import subprocess
 import sys
 import tempfile
+import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "deployment" / "runtime.json"
 ZIP = ROOT / "share" / "firesense-runtime.zip"
 ASSET = "firesense-runtime.zip"
 URL_RE = re.compile(r"https://github\.com/(?P<repo>[^/]+/[^/]+)/releases/download/(?P<tag>[^/]+)/(?P<asset>[^/]+)$")
+
+
+def validate_release_archive(zip_path: Path, data_through: str) -> str:
+    """Check saved validation/layout and assert the record end against the selected archive."""
+    import pyarrow.parquet as pq
+    # Also support direct execution as `python scripts/release_runtime.py`.
+    if __package__:
+        from .runtime_bundle import validate_archive
+    else:
+        from runtime_bundle import validate_archive
+
+    validate_archive(zip_path)
+    with zipfile.ZipFile(zip_path) as package:
+        dates = pq.read_table(io.BytesIO(package.read("sensor_days.parquet")), columns=["date"])["date"].to_pylist()
+    if not dates or any(not isinstance(value, dt.date) for value in dates):
+        raise ValueError("Runtime sensor_days must contain non-null dates")
+    actual = max(dates).isoformat()
+    if data_through != actual:
+        raise ValueError(f"--data-through {data_through!r} disagrees with archive record end {actual}")
+    return actual
 
 
 def sha256(path: Path) -> str:
@@ -100,6 +122,7 @@ def main(argv=None) -> int:
         if r.returncode != 0:
             print("STOPPED: runtime_bundle.py pack refused the current outputs.")
             return 1
+    validate_release_archive(a.zip, a.data_through)
     tag = a.tag or default_tag(dt.date.today(), existing_tags(manifest))
     new = plan_release(manifest, a.zip, tag, a.data_through)
     notes = f"{a.data_through}; packaged from validated outputs; no training"

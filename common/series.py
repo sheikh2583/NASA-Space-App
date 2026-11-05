@@ -68,12 +68,13 @@ def _period_start(idx: pd.DatetimeIndex, res: str) -> pd.DatetimeIndex:
 
 def weekly_series(harmonized: pd.DataFrame, cells: pd.DataFrame, region_ids=None, bbox=None, res: str = "week",
                   *, cell_ids=None, start=None, end=None, sensor_days: pd.DataFrame | None = None,
-                  table: dict | None = None) -> pd.DataFrame:
+                  table: dict | None = None, source_calendar: pd.Series | None = None) -> pd.DataFrame:
     """Aggregate cell-day values to an AOI series.
 
     Returns columns week_start, value, lo, hi, modeled_share, source, drift_flag (week_start is the period start
     for any res). lo/hi are NaN when no interval table is given or res == 'day'. Observed SNPP days contribute
     to lo and hi unchanged (decision 21); the interval is applied to the adjusted and modeled part.
+    source_calendar may supply the sensor_days-derived daily sources once per immutable Store.
     """
     sel = select_cells(cells, region_ids, bbox, cell_ids)
     h = harmonized[harmonized["cell_id"].isin(sel["cell_id"])].copy()
@@ -85,7 +86,9 @@ def weekly_series(harmonized: pd.DataFrame, cells: pd.DataFrame, region_ids=None
     start, end = pd.Timestamp(start), pd.Timestamp(end)
     h = h[(h["date"] >= start) & (h["date"] <= end)]
     days = pd.date_range(start, end, freq="D")
-    if sensor_days is not None:
+    if source_calendar is not None:
+        src = source_calendar.reindex(days)
+    elif sensor_days is not None:
         src = day_sources(sensor_days, start, end)
     else:
         src = pd.Series(np.where(days.date < np.datetime64("2012-01-20"), MODELED, OBSERVED), index=days)
@@ -98,17 +101,24 @@ def weekly_series(harmonized: pd.DataFrame, cells: pd.DataFrame, region_ids=None
     daily["source"] = src.values
     daily.loc[daily["source"].isna(), "value"] = np.nan
     daily["nonobs"] = np.where(daily["source"] == OBSERVED, 0.0, daily["value"])
+    daily["nonobs_day"] = (daily["source"] != OBSERVED) & daily["source"].notna()
     daily["period"] = _period_start(days, res)
     g = daily.groupby("period")
     out = pd.DataFrame({
         "value": g["value"].sum(min_count=1),
         "nonobs": g["nonobs"].sum(min_count=1),
         "n_days": g["source"].count(),
-        "n_nonobs_days": g["source"].apply(lambda s: int(((s != OBSERVED) & s.notna()).sum())),
-        "sources": g["source"].apply(lambda s: sorted(set(s.dropna()))),
+        "n_nonobs_days": g["nonobs_day"].sum(),
         "drift_flag": g["drift"].max().astype(bool),
     })
-    out["source"] = out["sources"].apply(lambda s: s[0] if len(s) == 1 else ("mixed" if s else None))
+    # Sorted source columns replace per-period set/list callbacks with presence reductions.
+    sources = pd.get_dummies(daily["source"], dtype=bool).groupby(daily["period"]).any()
+    n_sources = sources.sum(axis=1)
+    out["source"] = None
+    single = n_sources == 1
+    if single.any():
+        out.loc[single, "source"] = sources.loc[single].idxmax(axis=1)
+    out.loc[n_sources > 1, "source"] = "mixed"
     with np.errstate(invalid="ignore", divide="ignore"):
         share = np.where(out["value"] > 0, out["nonobs"] / out["value"], out["n_nonobs_days"] / out["n_days"].clip(lower=1))
     out["modeled_share"] = np.clip(np.nan_to_num(share, nan=0.0), 0, 1)

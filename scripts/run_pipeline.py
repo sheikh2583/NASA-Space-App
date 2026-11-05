@@ -5,8 +5,8 @@
   python scripts/run_pipeline.py --quick    # fewer holdouts in the model step
   python scripts/run_pipeline.py --from v1  # resume from a step
 
-Steps: synth, ingest, grid, cells, sensors, panel, v0, model, intervals, drift, v1, anomalies, outlook,
-validation, fixtures, fallback, qa, results.
+Steps: synth, ingest, grid, cells, sensors, panel, v0, model, intervals, interval_report, drift, v1, anomalies, outlook,
+validation, fixtures, qa, results.
 """
 from __future__ import annotations
 
@@ -52,13 +52,13 @@ def steps(quick: bool):
         ("v0", ["-m", "ws1_harmonize.run", "v0"]),
         ("model", model),
         ("intervals", ["-m", "ws4_outlook.run", "intervals"]),
+        ("interval_report", ["-m", "ws4_outlook.run", "interval_report"]),
         ("drift", ["-m", "ws4_outlook.run", "drift"]),
         ("v1", ["-m", "ws1_harmonize.run", "v1"]),
         ("anomalies", ["-m", "ws3_anomaly.batch"]),
         ("outlook", ["-m", "ws4_outlook.run", "outlook"]),
         ("validation", ["-m", "ws1_harmonize.run", "validation"]),
         ("fixtures", ["-m", "ws2_platform.api.make_fixtures"]),
-        ("fallback", ["-m", "ws2_platform.api.static_export"]),
         ("qa", ["-m", "ws6_validation.qa"]),
         ("results", [os.path.join("scripts", "results.py")]),
     ]

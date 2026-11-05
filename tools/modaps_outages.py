@@ -141,7 +141,8 @@ def compare(registry: list[dict], table: pd.DataFrame) -> pd.DataFrame:
                      "table_comment": best["comment"] if ok else None,
                      "d_start_min": (best["start_utc"] - r0).total_seconds() / 60 if ok else None,
                      "d_end_min": (best["end_utc"] - r1).total_seconds() / 60 if ok else None})
-    return pd.DataFrame(rows)
+    return pd.DataFrame(rows, columns=["id", "matched", "table_start", "table_end", "table_comment",
+                                       "d_start_min", "d_end_min"])
 
 
 def _word(comment: str) -> str:
@@ -206,11 +207,15 @@ def update(registry_text: str, table: pd.DataFrame, today: str) -> tuple[str, di
         lines[idx] = _flow(new)
     existing = {e["id"] for e in events}
     covered = [(pd.Timestamp(e["start_utc"]), pd.Timestamp(e["end_utc"])) for e in events if e.get("sat") == "SNPP"]
-    recent = [p for p in propose(table, years=(2024, 2026))
-              if not any(_overlap(pd.Timestamp(p["start_utc"]), pd.Timestamp(p["end_utc"]), a, b) > 0 for a, b in covered)]
+
+    def uncovered(p):
+        return not any(_overlap(pd.Timestamp(p["start_utc"]), pd.Timestamp(p["end_utc"]), a, b) > 0 for a, b in covered)
+
+    historical = [p for p in propose(table) if uncovered(p)]
+    recent = [p for p in propose(table, years=(2024, 2026)) if uncovered(p)]
     counts["added_2024_2026"] = len(recent)
     added = []
-    for p in propose(table) + recent:
+    for p in historical + recent:
         pid, n = p["id"], 2
         while p["id"] in existing:
             p["id"] = f"{pid}-{n}"

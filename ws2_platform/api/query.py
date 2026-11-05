@@ -2,18 +2,28 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import os
 from dataclasses import dataclass, field
+from pathlib import Path
+from threading import Lock
 
 import numpy as np
 import pandas as pd
+import pyarrow.parquet as pq
 from shapely import STRtree, points
 from shapely.geometry import shape
 
-from common.series import OBSERVED, weekly_series
+from common.series import OBSERVED, day_sources, weekly_series
 
 MAX_CELLS = int(os.environ.get("AOI_MAX_CELLS", "6000"))
 HISTORY_START = "2000-11-06"
+
+
+def cell_set_key(sel) -> str:
+    """Canonical membership identity, independent of row order or integer storage width."""
+    ids = np.sort(np.asarray(sel["cell_id"], dtype="<i8"))
+    return hashlib.sha256(ids.tobytes()).hexdigest()
 
 
 class AOIError(ValueError):
@@ -33,8 +43,12 @@ class Store:
     def __post_init__(self):
         d = self.data_dir
         self.cells = pd.read_parquet(f"{d}/cells.parquet")
-        h = pd.read_parquet(f"{d}/harmonized.parquet")
+        path = f"{d}/harmonized.parquet"
+        h = pd.read_parquet(path, columns=["cell_id", "date", "value_count", "source", "drift_flag"])
+        first = next(pq.ParquetFile(path).iter_batches(columns=["method_version"], batch_size=1), None)
+        self.version = first.column(0)[0].as_py() if first is not None else "none"
         h["date"] = pd.to_datetime(h["date"])
+        h["source"] = h["source"].astype("category")
         self.harmonized = h.merge(self.cells[["cell_id", "cropland_frac"]], on="cell_id", how="left")
         self.sensor_days = pd.read_parquet(f"{d}/sensor_days.parquet")
         self.table = json.load(open(f"{d}/interval_table.json"))
@@ -42,14 +56,37 @@ class Store:
         self.outlooks = self._regions(f"{d}/outlook_region.json")
         self.tree = STRtree(points(self.cells["lon_c"].values, self.cells["lat_c"].values))
         self.data_end = pd.to_datetime(self.sensor_days["date"]).max()
-        self.version = h["method_version"].iloc[0] if len(h) else "none"
+        first_day = min(pd.Timestamp(HISTORY_START), pd.Timestamp(self.sensor_days["date"].min()))
+        self.source_calendar = day_sources(self.sensor_days, first_day, self.data_end)
+        files = ("cells.parquet", "harmonized.parquet", "sensor_days.parquet", "interval_table.json",
+                 "drivers_region.json", "outlook_region.json")
+        revision = [(name, os.stat(f"{d}/{name}").st_size, os.stat(f"{d}/{name}").st_mtime_ns)
+                    for name in files if os.path.isfile(f"{d}/{name}")]
+        self.cache_revision = hashlib.sha256(json.dumps([os.path.realpath(d), revision]).encode()).hexdigest()
+        self._memo_lock = Lock()
+        # Render's built public assets and local source assets carry the same catalog.
+        public = Path(os.environ.get("FRONTEND_DIR") or Path(__file__).resolve().parents[2] / "ws5_frontend/public")
+        catalog = public / "demo/areas.json"
+        self.named_areas = {}
+        if catalog.is_file():
+            with catalog.open(encoding="utf-8") as stream:
+                areas = json.load(stream)["areas"]
+            for area in areas:
+                selected = self.select(geometry=area["request"]["geometry"])
+                self.named_areas[area["id"]] = self.cells.index.get_indexer(selected.index)
 
     @staticmethod
     def _regions(path):
         return json.load(open(path))["regions"] if os.path.exists(path) else {}
 
     # -------------------------------------------------------------- selection
-    def select(self, geometry=None, bbox=None) -> pd.DataFrame:
+    def select(self, geometry=None, bbox=None, area_id=None) -> pd.DataFrame:
+        if sum(value is not None for value in (geometry, bbox, area_id)) != 1:
+            raise AOIError("give exactly one of geometry, bbox or area_id")
+        if area_id is not None:
+            if area_id not in self.named_areas:
+                raise AOIError("unknown named area ID")
+            return self.cells.iloc[self.named_areas[area_id]]
         if geometry is not None:
             try:
                 geom = shape(geometry)
@@ -88,21 +125,35 @@ class Store:
     # -------------------------------------------------------------- series
     def series(self, sel, start, end, res="week", with_intervals=True) -> pd.DataFrame:
         return weekly_series(self.harmonized, self.cells, cell_ids=sel["cell_id"].values, res=res, start=start, end=end,
-                             sensor_days=self.sensor_days, table=self.table if with_intervals else None)
+                             sensor_days=self.sensor_days, table=self.table if with_intervals else None,
+                             source_calendar=self.source_calendar)
 
     def agri_series(self, sel, start, end) -> pd.Series:
-        h = self.harmonized.assign(value_count=self.harmonized["value_count"] * self.harmonized["cropland_frac"].fillna(0))
-        return weekly_series(h, self.cells, cell_ids=sel["cell_id"].values, start=start, end=end,
-                             sensor_days=self.sensor_days)["value"]
+        start, end = pd.Timestamp(start), pd.Timestamp(end)
+        h = self.harmonized
+        selected = h["cell_id"].isin(sel["cell_id"].values) & h["date"].between(start, end)
+        h = h.loc[selected, ["date", "value_count", "cropland_frac"]]
+        weighted = h.assign(value_count=h["value_count"] * h["cropland_frac"].fillna(0))
+        days = pd.date_range(start, end, freq="D")
+        daily = weighted.groupby("date")["value_count"].sum().reindex(days).fillna(0.0)
+        daily.loc[self.source_calendar.reindex(days).isna()] = np.nan
+        periods = days - pd.to_timedelta(days.dayofweek, unit="D")
+        return daily.groupby(periods).sum(min_count=1).reset_index(drop=True).rename("value")
 
     def _memo(self, kind, sel, fn):
-        key = (kind, hash(sel["cell_id"].values.tobytes()))
+        """At most 64 cell-set products; entry-bounded, not a process-memory byte budget."""
+        key = (kind, cell_set_key(sel))
         cache = self.__dict__.setdefault("_memo_cache", {})
-        if key not in cache:
-            if len(cache) > 64:
-                cache.pop(next(iter(cache)))
-            cache[key] = fn()
-        return cache[key]
+        with self._memo_lock:
+            if key in cache:
+                return cache[key]
+        value = fn()  # May request another memoized product; never compute under the lock.
+        with self._memo_lock:
+            if key not in cache:
+                if len(cache) >= 64:
+                    cache.pop(next(iter(cache)))
+                cache[key] = value
+            return cache[key]
 
     def full_history(self, sel) -> pd.DataFrame:
         """Weekly series from the start of the record, cached per cell set (shared by summary, periods, outlook)."""

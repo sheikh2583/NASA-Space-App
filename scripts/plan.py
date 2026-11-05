@@ -59,6 +59,7 @@ SAFE_TESTS = (
     "scripts/tests/test_runtime_bundle.py",
     "scripts/tests/test_share_zip.py",
     "ws2_platform/tests/test_coverage.py",
+    "ws2_platform/tests/test_season_record_end.py",
     "ws2_platform/tests/test_frontend_hosting.py",
     "ws2_platform/tests/test_platform.py",
     "ws2_platform/tests/test_tiny_api.py",
@@ -71,7 +72,7 @@ SAFE_TESTS = (
     "ws6_validation/tests/test_e2e.py",
 )
 # The Render image builds the web app with these settings (root Dockerfile), so CHECK-WEB does too.
-RENDER_WEB_ENV = {"VITE_API_BASE_URL": "/", "VITE_DEMO_MODE": "live", "VITE_DATA_MODE": "real", "VITE_FALLBACK_BASE_URL": ""}
+RENDER_WEB_ENV = {"VITE_API_BASE_URL": "/", "VITE_DATA_MODE": "real"}
 
 # Named checks. Each is a list of (command, working directory relative to the repo root, extra environment).
 CHECKS = {
@@ -80,7 +81,6 @@ CHECKS = {
     "CHECK-WEB": [(["npm", "test"], "ws5_frontend", RENDER_WEB_ENV),
                   (["npm", "run", "check:strings"], "ws5_frontend", RENDER_WEB_ENV),
                   (["npm", "run", "build"], "ws5_frontend", RENDER_WEB_ENV)],
-    "CHECK-SNAP": [(["npm", "run", "build"], "ws5_frontend", {"VITE_DEMO_MODE": "snapshot", "VITE_DATA_MODE": "real"})],
     "CHECK-FILES": [(["python", "tools/verify_files.py", "--all"], ".", {})],
     "CHECK-GUARD": [(["python", "scripts/git/guard.py", "--range", "origin/main...HEAD", "--user", "{pr_user}",
                       "--branch", "{branch}"], ".", {})],

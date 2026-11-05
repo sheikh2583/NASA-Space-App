@@ -1,6 +1,6 @@
 """Season profile (improvement I1): when burning usually happens in an area, and how this season compares.
 
-LIBRARY ONLY: not yet called by the API, the pipeline or the snapshot export (spec: docs/specs/I1_SEASON_PROFILE.md).
+Used by the API and the read-only summary CLI (spec: docs/specs/I1_SEASON_PROFILE.md).
 
 Definitions (deliberately conservative):
 - A *season window* is a fixed calendar search window per area (Punjab has two: wheat residue in spring and paddy
@@ -308,24 +308,23 @@ def season_profile(weekly: pd.DataFrame, as_of, area: str | None = None, seasons
     }
 
 
-def from_snapshot(snapshot: dict, area: str, as_of=None) -> dict:
-    """Profile from the hosted snapshot (static mode). Uses the snapshot's data_through when as_of is not given."""
-    series = pd.DataFrame(snapshot["areas"][area]["summary"]["series"])
-    as_of = as_of or (pd.Timestamp(snapshot["data_through"]) + pd.Timedelta(days=1))
+def from_summary(summary: dict, area: str, as_of) -> dict:
+    """Profile from a saved weekly summary with an explicit observation cutoff."""
+    series = pd.DataFrame(summary["series"])
     return season_profile(series, as_of, area)
 
 
 def main(argv=None):
     import argparse
     import json
-    ap = argparse.ArgumentParser(description="Season profile from the hosted snapshot (read-only)")
-    ap.add_argument("--snapshot", default="ws5_frontend/public/demo/snapshot.json")
+    ap = argparse.ArgumentParser(description="Season profile from a saved weekly summary (read-only)")
+    ap.add_argument("--summary", required=True, help="Weekly summary JSON, e.g. contracts/fixtures/punjab_summary.json")
     ap.add_argument("--area", choices=sorted(SEASON_WINDOWS), required=True)
-    ap.add_argument("--as-of")
+    ap.add_argument("--as-of", required=True)
     ap.add_argument("--out")
     a = ap.parse_args(argv)
-    with open(a.snapshot, encoding="utf-8") as f:
-        prof = from_snapshot(json.load(f), a.area, a.as_of)
+    with open(a.summary, encoding="utf-8") as f:
+        prof = from_summary(json.load(f), a.area, a.as_of)
     text = json.dumps(prof, indent=2, default=lambda o: None if isinstance(o, float) and not np.isfinite(o) else str(o))
     if a.out:
         with open(a.out, "w", encoding="utf-8") as f:
