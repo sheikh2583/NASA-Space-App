@@ -301,6 +301,11 @@ def aoi_compare(req: CompareRequest):
     return {**envelope(a.res), "a": aoi_summary(a2), "b": aoi_summary(b2)}
 
 
+def _reject_nonfinite(token: str):
+    """json.load accepts NaN/Infinity, which the strict JSON response cannot carry: treat the piece as corrupt."""
+    raise ValueError(f"non-finite value {token} in validation piece")
+
+
 @app.get("/meta/validation")
 def meta_validation():
     d = os.path.join(store().data_dir, "validation")
@@ -308,7 +313,7 @@ def meta_validation():
     for p in sorted(glob.glob(os.path.join(d, "*.json"))):
         try:
             with open(p, encoding="utf-8") as stream:
-                v = json.load(stream)
+                v = json.load(stream, parse_constant=_reject_nonfinite)
             pieces[v.get("producer", os.path.basename(p)[:-5])] = v
         except (OSError, ValueError, AttributeError, TypeError):  # report broken pieces without hiding healthy ones
             corrupt.append(os.path.basename(p))

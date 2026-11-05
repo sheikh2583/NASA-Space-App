@@ -183,7 +183,7 @@ components:
           minLength: 1
           maxLength: 128
           description: Catalog identifier selecting the exact original polygon-centre cell set; give exactly one of area_id, geometry or bbox.
-        geometry: { type: object, description: GeoJSON Polygon or MultiPolygon (exactly one of area_id, geometry or bbox) }
+        geometry: { type: object, description: "GeoJSON Polygon or MultiPolygon (exactly one of area_id, geometry or bbox)" }
         bbox:
           type: array
           description: '[min_lon, min_lat, max_lon, max_lat]'
