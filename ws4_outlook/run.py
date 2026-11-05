@@ -99,8 +99,7 @@ def step_outlook():
     for (region, name, country), _ in cells.groupby(["admin1_id", "admin1_name", "country"]):
         w = weekly_series(h, cells, region_ids=[region], sensor_days=sd, table=table, start="2000-11-06", end=end)
         sk, status = outlook.evaluate_forecast(w, load_weather(country))
-        cs = outlook.current_status(w, as_of, end.date().isoformat())
-        al = alerts.alert_level([cs["week_percentile"]], [cs["week_percentile"]], status)
+        al = alerts.no_forecast_bounds()
         o = outlook.outlook(w, as_of=as_of, skill=sk, status=status, alert=al, data_through=end.date().isoformat())
         regions[region] = {"region_name": name, **o}
         skills.append({"region_id": region, **sk, "status": status})
@@ -108,7 +107,8 @@ def step_outlook():
     with open(f"{P}/outlook_region.json", "w") as f:
         json.dump({"schema_version": "1.0", "generated_at": NOW(), "regions": regions}, f, indent=1)
     piece("outlook_skill", {"by_region": skills, "horizon_weeks": "2-4", "loss": "pinball (median)"}, [
-        "Skill is measured leave-one-season-out on past seasons; a season unlike any before may behave differently.",
+        "Skill is measured on forward-season folds with training-only climatology and target-boundary embargoes.",
+        "Forecast alerts are off until genuine validated forecast lower-bound percentiles are available.",
         "Where status is no_demonstrated_skill the app shows the current-season position only, not a forecast.",
         "Built on SYNTHETIC data; rerun on real data before quoting."])
 

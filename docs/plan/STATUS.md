@@ -32,7 +32,7 @@ Regenerate the other columns from the cards with `python scripts/plan.py board -
 | T42 | agent | Redact FIRMS credentials at every error boundary | Monazir | T00 | done | 11 offline redaction regressions pass; credentials sanitized at error boundaries |
 | T43 | agent | Correct clean-run pipeline dependency ordering | Sheikh | T00 | done | 3 planning-only tests pass via explicit session override; named guard flags runner imports; no stages executed |
 | T44 | agent | Eliminate forecast feature and target leakage | Samin | T00 | done | 4 pure fold-isolation tests pass; old forecast scores qualified; numerical revalidation pending |
-| T45 | agent | Correct alert transitions and disable unsupported forecast alerts | Samin | T44 | todo |  |
+| T45 | agent | Correct alert transitions and disable unsupported forecast alerts | Samin | T44 | done | 8 pure alert tests pass; watch promotes; unsupported batch forecast alerts explicitly off |
 | T46 | agent | Correct interval area counts and report every stop-condition failure | Samin | T00 | todo |  |
 | T47 | agent | Include detailed interval diagnostics in runtime releases | Sheikh | T46 | todo |  |
 | T48 | agent | Use runtime metadata consistently for record-end dates | Shammo | T00 | todo |  |
