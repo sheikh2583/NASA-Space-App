@@ -8,6 +8,18 @@ const point = (t: string, value: number, extra: Partial<SummaryPoint> = {}): Sum
 });
 
 describe("Calendar", () => {
+  it("places week-52 and week-53 observations in separate visible squares", async () => {
+    const html = await renderHtml(<Calendar series={[point("2015-12-21", 17), point("2015-12-28", 3)]}
+      selected={null} onSelect={() => {}} />, "en");
+    const positions = [...html.matchAll(/<rect class="cell[^"]*" x="([^"]+)" y="([^"]+)"/g)];
+    expect(positions).toHaveLength(2);
+    expect(positions[0][1]).not.toBe(positions[1][1]);
+    expect(positions[0][2]).toBe(positions[1][2]);
+    const width = Number(html.match(/<svg width="([^"]+)"/)?.[1]);
+    expect(Number(positions[1][1]) + 11).toBeLessThanOrEqual(width);
+    expect(textOf(html)).toContain("17");
+    expect(textOf(html)).toContain("3");
+  });
   const series = [point("2026-10-26", 305), point("2026-11-02", 98, { complete: false, n_days: 1 })];
 
   it("outlines only the partial week with a dashed border and says it is partial", async () => {

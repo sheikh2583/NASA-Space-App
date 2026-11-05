@@ -29,8 +29,7 @@ describe("named area selection", () => {
   });
   it("compares actual administrative areas using their own saved responses", () => {
     const snapshot = rawSnapshot as unknown as Snapshot;
-    const request = (name: string) => ({ ...areas.find((a) => a.name === name)!.request,
-      start: "2000-11-01", end: "2026-11-02", res: "week" as const });
+    const request = (name: string) => snapshot.areas[areas.find((a) => a.name === name)!.id].request;
     const a = request("Dhaka"), b = request("Khulna");
     const result = selectSnapshot(snapshot, "/aoi/compare", { a, b }) as { a: unknown; b: unknown };
     expect(result.a).toEqual(snapshot.areas[areaKey(a, snapshot)].summary);
@@ -41,7 +40,7 @@ describe("named area selection", () => {
     const snapshot = rawSnapshot as unknown as Snapshot;
     expect(areas).toHaveLength(11);
     for (const area of [...areas, ...EXAMPLE_AREAS]) {
-      const request = { ...area.request, start: "2000-11-01", end: "2026-11-02", res: "week" as const };
+      const request = { ...snapshot.areas[area.id].request, ...area.request };
       expect(areaKey(request, snapshot)).toBe(area.id);
       const summary = selectSnapshot(snapshot, "/aoi/summary", request) as { aoi: { n_cells: number }; series: unknown[] };
       expect(summary.series.length).toBeGreaterThan(1000);

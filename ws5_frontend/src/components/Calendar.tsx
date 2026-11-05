@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { burnScale } from "../lib/colour";
 import { useTranslation } from "react-i18next";
 import type { SummaryPoint } from "../types";
-import { date, isoYear, monthDay, num, weekColumn, weekOfYear } from "../lib/format";
+import { date, isoYear, isoWeekOfYear, monthDay, num, weekColumn } from "../lib/format";
 import { monthColumns } from "../lib/months";
 import HelpButton from "./Help";
 
@@ -30,13 +30,13 @@ const TOP = 14;
 export default function Calendar({ series, selected, onSelect, bands = [] }: Props) {
   const { t } = useTranslation();
   const { years, cells, max } = useMemo(() => {
-    const cells = series.map((p) => ({ p, y: isoYear(p.t), w: weekOfYear(p.t) }));
+    const cells = series.map((p) => ({ p, y: isoYear(p.t), w: isoWeekOfYear(p.t) }));
     const years = [...new Set(cells.map((c) => c.y))].sort((a, b) => a - b);
     const max = Math.max(2, ...series.map((p) => p.value ?? 0));
     return { years, cells, max };
   }, [series]);
   const color = burnScale(max);
-  const width = LEFT + 52 * (CELL + GAP);
+  const width = LEFT + 53 * (CELL + GAP);
   const cellsTop = TOP + bands.length * 10;
   const height = cellsTop + years.length * (CELL + GAP);
   const row = (y: number) => years.indexOf(y);

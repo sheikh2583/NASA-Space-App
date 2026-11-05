@@ -1,8 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { addDays, isoYear, weekColumn, weekOfYear } from "./format";
+import { addDays, isoYear, isoWeekOfYear, weekColumn, weekOfYear } from "./format";
 import { centreOf } from "../api";
 
 describe("calendar helpers", () => {
+  it("preserves week 53 for display independently of folded climatology", () => {
+    expect(isoWeekOfYear("2015-12-21")).toBe(52);
+    expect(isoWeekOfYear("2015-12-28")).toBe(53);
+    expect(isoWeekOfYear("2021-01-01")).toBe(53);
+    expect(weekOfYear("2015-12-28")).toBe(52);
+  });
   it("matches ISO weeks and folds week 53 into 52", () => {
     expect(weekOfYear("2024-01-01")).toBe(1);
     expect(weekOfYear("2020-12-28")).toBe(52);

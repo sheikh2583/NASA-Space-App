@@ -16,14 +16,19 @@ export function monthDay(md: string): string {
   return date(`2023-${md}`, { day: "numeric", month: "short" });
 }
 
-/** ISO week number 1-52 (week 53 folded into 52, as on the server). */
-export function weekOfYear(iso: string): number {
+/** Actual ISO week number 1-53 for display of separate observations. */
+export function isoWeekOfYear(iso: string): number {
   const d = new Date(iso + "T00:00:00Z");
   const day = (d.getUTCDay() + 6) % 7;
   d.setUTCDate(d.getUTCDate() - day + 3);
   const firstThu = new Date(Date.UTC(d.getUTCFullYear(), 0, 4));
   const w = 1 + Math.round(((d.getTime() - firstThu.getTime()) / 86400000 - 3 + ((firstThu.getUTCDay() + 6) % 7)) / 7);
-  return Math.min(w, 52);
+  return w;
+}
+
+/** Folded same-week climatology convention; not observation coordinates. */
+export function weekOfYear(iso: string): number {
+  return Math.min(isoWeekOfYear(iso), 52);
 }
 
 export function weekColumn(md: string): number {

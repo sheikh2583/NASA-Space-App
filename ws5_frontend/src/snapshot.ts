@@ -37,6 +37,9 @@ export async function snapshotCall<T extends Envelope>(path: string, body?: unkn
   cached ??= fetch(`${import.meta.env.BASE_URL}demo/snapshot.json`).then(async response => {
     if (!response.ok) throw new Error("Snapshot unavailable");
     return response.json();
+  }).catch((error) => {
+    cached = undefined;
+    throw error;
   });
   return selectSnapshot(await cached, path, body) as T;
 }
