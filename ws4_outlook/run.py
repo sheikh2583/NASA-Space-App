@@ -90,7 +90,7 @@ def step_drift():
         "Built on SYNTHETIC data; rerun on real data before quoting."])
 
 
-def step_outlook():
+def step_outlook(status_only=False):
     h = pd.read_parquet(f"{P}/harmonized.parquet")
     cells = pd.read_parquet(f"{P}/cells.parquet")
     sd = pd.read_parquet(f"{P}/sensor_days.parquet")
@@ -100,17 +100,21 @@ def step_outlook():
     regions, skills = {}, []
     for (region, name, country), _ in cells.groupby(["admin1_id", "admin1_name", "country"]):
         w = weekly_series(h, cells, region_ids=[region], sensor_days=sd, table=table, start="2000-11-06", end=end)
-        sk, status = outlook.evaluate_forecast(w, load_weather(country))
+        if status_only:
+            sk, status = {"n_seasons": 0, "validation_status": "pending_corrected_forecast_validation"}, "no_demonstrated_skill"
+        else:
+            sk, status = outlook.evaluate_forecast(w, load_weather(country))
         al = alerts.no_forecast_bounds()
         o = outlook.outlook(w, as_of=as_of, skill=sk, status=status, alert=al, data_through=end.date().isoformat())
         regions[region] = {"region_name": name, **o}
         skills.append({"region_id": region, **sk, "status": status})
-        print(f"{region}: status {status}, skill vs clim {sk['vs_climatology']} CI {sk['ci']}, now {o['current_status']['level']}")
+        print(f"{region}: status {status}, skill vs clim {sk.get('vs_climatology')} CI {sk.get('ci')}, now {o['current_status']['level']}")
     with open(f"{P}/outlook_region.json", "w") as f:
         json.dump({"schema_version": "1.0", "generated_at": NOW(), "regions": regions}, f, indent=1)
     piece("outlook_skill", {"by_region": skills, "horizon_weeks": "2-4", "loss": "pinball (median)"}, [
         "Skill is measured on forward-season folds with training-only climatology and target-boundary embargoes.",
         "Forecast alerts are off until genuine validated forecast lower-bound percentiles are available.",
+        "Forecast validation is pending when validation_status says pending_corrected_forecast_validation; no new skill claim.",
         "Where status is no_demonstrated_skill the app shows the current-season position only, not a forecast.",
         "Built on SYNTHETIC data; rerun on real data before quoting."])
 
@@ -120,6 +124,7 @@ def main(command=None):
     if command in {'drift', 'outlook'}:
         compute.configure_cuda_training()
     {"intervals": step_intervals, "interval_report": step_interval_report,
+     "outlook_status": lambda: step_outlook(status_only=True),
      "drift": step_drift, "outlook": step_outlook}[command]()
 
 
