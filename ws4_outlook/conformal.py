@@ -24,8 +24,9 @@ LEVEL = 0.9
 BINS = [2.0, 10.0, 50.0, 250.0, None]
 
 
-def _aggregate_samples(oof: pd.DataFrame, cells: pd.DataFrame, split: str, n: int, res: str, rng) -> pd.DataFrame:
-    d = oof[(oof["split"] == split) & (oof["sat_combo"] == "terra_aqua")].copy()
+def _aggregate_samples(oof: pd.DataFrame, cells: pd.DataFrame, split: str, n: int, res: str, rng, *,
+                       sat_combo: str = "terra_aqua", max_side: int = 10) -> pd.DataFrame:
+    d = oof[(oof["split"] == split) & (oof["sat_combo"] == sat_combo)].copy()
     d["date"] = pd.to_datetime(d["date"])
     d = d.merge(cells[["cell_id", "landcover_dom"]], on="cell_id", how="left")
     if res == "month":
@@ -40,7 +41,7 @@ def _aggregate_samples(oof: pd.DataFrame, cells: pd.DataFrame, split: str, n: in
         g = per_block[blocks[rng.integers(len(blocks))]]
         ids = g["cell_id"].unique()
         c0 = ids[rng.integers(len(ids))]
-        h, w = rng.integers(1, 11, 2)
+        h, w = rng.integers(1, max_side + 1, 2)
         i0, j0 = divmod(int(c0), N_COLS)
         sel_cells = [(i0 + a) * N_COLS + (j0 + b) for a in range(h) for b in range(w)]
         t = periods[rng.integers(len(periods))]
@@ -48,8 +49,8 @@ def _aggregate_samples(oof: pd.DataFrame, cells: pd.DataFrame, split: str, n: in
         if s.empty:
             continue
         lc = s["landcover_dom"].mode().iloc[0] if s["landcover_dom"].notna().any() else "unknown"
-        rows.append((t, lc, s["y_true_count"].sum(), s["y_pred_count"].sum()))
-    out = pd.DataFrame(rows, columns=["period", "landcover", "y", "pred"])
+        rows.append((t, lc, s["y_true_count"].sum(), s["y_pred_count"].sum(), int(h * w)))
+    out = pd.DataFrame(rows, columns=["period", "landcover", "y", "pred", "n_cells"])
     out["season"] = pd.to_datetime(out["period"]).dt.month.map(season_label)
     out["score"] = np.abs(np.log((out["y"] + 1) / (out["pred"] + 1)))
     return out

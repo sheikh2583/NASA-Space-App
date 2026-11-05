@@ -1,0 +1,84 @@
+"""Held-out interval diagnostics by area size, magnitude, season and input combination."""
+from __future__ import annotations
+
+import numpy as np
+import pandas as pd
+
+from common import metrics
+from common.intervals import apply_interval_many
+from ws4_outlook.conformal import LEVEL, _aggregate_samples
+
+AREA_STRATA = (
+    ("1-10", 1, 10),
+    ("11-50", 11, 50),
+    ("51-100", 51, 100),
+    ("101-400", 101, 400),
+)
+MAGNITUDE_STRATA = ("zero", "q1", "q2", "q3", "q4")
+SEASON_STRATA = ("q1", "q2", "q3", "q4")
+
+
+def _finite(value: float) -> float | None:
+    return float(value) if np.isfinite(value) else None
+
+
+def _row(frame: pd.DataFrame, *, res: str, sat_combo: str, dimension: str, value: str) -> dict:
+    n = int(len(frame))
+    row = {
+        "res": res,
+        "sat_combo": sat_combo,
+        "dimension": dimension,
+        "value": value,
+        "stratum": f"{res} | {sat_combo} | {dimension}:{value}",
+        "n": n,
+        "coverage": _finite(metrics.coverage(frame["y"], frame["lo"], frame["hi"])),
+        "interval_score": _finite(metrics.interval_score(frame["y"], frame["lo"], frame["hi"], alpha=0.1)),
+        "median_relative_width": _finite(
+            np.median((frame["hi"] - frame["lo"]) / np.maximum(frame["y"], 1)) if n else np.nan
+        ),
+    }
+    if dimension == "magnitude" and value == "zero":
+        row["zero_covered"] = _finite(np.mean((frame["lo"] <= 0) & (frame["hi"] >= 0)) if n else np.nan)
+    if n < 30:
+        row["note"] = "too few samples"
+    return row
+
+
+def _magnitude_labels(values: pd.Series) -> pd.Series:
+    labels = pd.Series("zero", index=values.index, dtype="object")
+    positive = values[values > 0]
+    if len(positive):
+        # Ranking first gives deterministic, similarly sized groups even when many totals are tied.
+        quartile = pd.qcut(positive.rank(method="first"), 4, labels=MAGNITUDE_STRATA[1:])
+        labels.loc[positive.index] = quartile.astype("object")
+    return labels
+
+
+def report(oof: pd.DataFrame, cells: pd.DataFrame, table: dict, n: int = 4000, seed: int = 7) -> dict:
+    """Measure the saved interval table on random rectangles from held-out test blocks."""
+    rng = np.random.default_rng(seed)
+    rows = []
+    for res in ("week", "month"):
+        for sat_combo in ("terra_aqua", "terra_only"):
+            samples = _aggregate_samples(
+                oof, cells, "test", n, res, rng, sat_combo=sat_combo, max_side=20
+            )
+            strata = [(f"landcover:{lc}|season:{season}",) for lc, season in
+                      zip(samples["landcover"], samples["season"])]
+            samples["lo"], samples["hi"] = apply_interval_many(
+                samples["pred"].to_numpy(), strata, res, table
+            )
+            samples["magnitude_stratum"] = _magnitude_labels(samples["y"])
+
+            rows.append(_row(samples, res=res, sat_combo=sat_combo,
+                             dimension="satellite_combination", value=sat_combo))
+            for value, low, high in AREA_STRATA:
+                rows.append(_row(samples[samples["n_cells"].between(low, high)], res=res,
+                                 sat_combo=sat_combo, dimension="area_size", value=value))
+            for value in MAGNITUDE_STRATA:
+                rows.append(_row(samples[samples["magnitude_stratum"] == value], res=res,
+                                 sat_combo=sat_combo, dimension="magnitude", value=value))
+            for value in SEASON_STRATA:
+                rows.append(_row(samples[samples["season"] == value], res=res,
+                                 sat_combo=sat_combo, dimension="season", value=value))
+    return {"rows": rows, "nominal": LEVEL}

@@ -28,7 +28,7 @@ Regenerate the other columns from the cards with `python scripts/plan.py board -
 | T10 | agent | Caveats and "how we checked" on the method page (en, bn draft) | Samiul | T31 | done | Added bilingual caveats, truth-check evidence, sourced validation metrics, and verified rendered Method pages. |
 | T11 | agent | Retired: region picker (done on main by the named-area explorer) | Sattyam | T07 | cut | retired 4 Nov: named-area explorer on main (04adbc4, 0c9241d) |
 | T12 | agent | Shareable links (view, area, period, language in the URL) | Shammo | T00 | done | English-only UI complete, including an English-only area-search placeholder. |
-| T13 | agent | Interval report by stratum (measurement only) | Samin | T00 | todo |  |
+| T13 | agent | Interval report by stratum (measurement only) | Samin | T00 | doing | code and agent-safe checks pass; awaiting human interval_report stage |
 | T14 | agent | Season-level unusual flags (library and spec) | Monazir | T07 | todo |  |
 | T15 | agent | Season flags in the season response and on the calendar | Monazir | T14, T08 | todo |  |
 | T18 | agent | Live season feed, part 1: redacted NRT fetcher and a cached /live/season endpoint (off without a key) | Monazir | T03, T04, T07 | todo |  |

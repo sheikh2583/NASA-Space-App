@@ -20,7 +20,7 @@ from common import compute
 from tools.verify_files import write_parquet_contract
 from ws1_harmonize import model as lgbm
 from ws3_anomaly.loaders.weather import load_weather
-from ws4_outlook import alerts, conformal, drift, outlook
+from ws4_outlook import alerts, conformal, drift, interval_report, outlook
 
 P, I = "data/processed", "data/interim/sheikh"
 NOW = lambda: dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
@@ -51,6 +51,17 @@ def step_intervals():
         "Coverage is measured on randomly drawn rectangles in held-out test blocks; very large or unusual areas may differ.",
         "Rows below 90% coverage are reported as they are; the band is then too narrow for that land cover and season.",
         "Built on SYNTHETIC data; rerun on real data before quoting."])
+
+
+def step_interval_report():
+    oof = pd.read_parquet(f"{P}/predictions_oof.parquet")
+    cells = pd.read_parquet(f"{P}/cells.parquet")
+    with open(f"{P}/interval_table.json") as f:
+        table = json.load(f)
+    piece("intervals_by_stratum", interval_report.report(oof, cells, table), [
+        "Coverage is measured on random rectangles from held-out test blocks only.",
+        "Terra-only inputs cover a short early-record period, so some strata have few samples.",
+        "Relative interval width is a diagnostic, not an optimization target."])
 
 
 def step_drift():
@@ -106,7 +117,8 @@ def main(command=None):
     command = command or sys.argv[1]
     if command in {'drift', 'outlook'}:
         compute.configure_cuda_training()
-    {"intervals": step_intervals, "drift": step_drift, "outlook": step_outlook}[command]()
+    {"intervals": step_intervals, "interval_report": step_interval_report,
+     "drift": step_drift, "outlook": step_outlook}[command]()
 
 
 if __name__ == "__main__":
