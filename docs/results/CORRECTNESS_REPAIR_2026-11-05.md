@@ -63,5 +63,16 @@ OpenAPI/schema/contract log. It excludes partial weeks that could extend beyond 
 record. The exporter checks the explicit record end.
 Snapshot export then completed for all 13 saved areas, through 2026-11-03.
 
-Live revision/report verification is pending the repair push and Render rebuild. Do not
-interpret this report as evidence that the code is already serving live.
+Follow-up QA after the API cutoff integration passed all five groups again: 7 data tests,
+17 contract tests, 4 end-to-end tests, 20 common tests and the seam-rate check.
+
+Repair code was pushed to main at f5016278b07f93f9ee5ffa59dad696917b39bceb.
+GitHub Actions run 42055220173 did not execute its Python or web test steps. Both job
+annotations state: "The job was not started because your account is locked due to a billing issue."
+This is an infrastructure failure, not a remote regression-test result.
+
+The subsequent live revision check still returned 562b10287a134900047923bc1e94c6db17f3f08f.
+Thus live repair/report verification remains incomplete and T49 stays in review. Resolve
+GitHub's account billing lock and confirm Render's deployment settings/build, then rerun
+check_render.py against the deployed repair revision and verify the detailed report/forecast
+state directly. Do not describe these repairs as live until those checks pass.

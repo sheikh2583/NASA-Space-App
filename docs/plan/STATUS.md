@@ -36,7 +36,7 @@ Regenerate the other columns from the cards with `python scripts/plan.py board -
 | T46 | agent | Correct interval area counts and report every stop-condition failure | Samin | T00 | done | 4 diagnostic tests and 35 web tests pass; all-dimensional stop warnings; bands unchanged; T13 stays review |
 | T47 | agent | Include detailed interval diagnostics in runtime releases | Sheikh | T46 | done | 3 new and 3 existing transport tests pass; new bundles require diagnostics; legacy pins remain loadable |
 | T48 | agent | Use runtime metadata consistently for record-end dates | Shammo | T00 | done | 6 exporter tests and 37 frontend tests pass; live and snapshot builds pass; metadata drives dates |
-| T49 | agent | Verify and publish the reviewed correctness repairs | Sheikh | T42, T43, T44, T45, T46, T47, T48 | review | local repairs and QA pass; immutable runtime and snapshot ready; awaiting push/live revision verification |
+| T49 | agent | Verify and publish the reviewed correctness repairs | Sheikh | T42, T43, T44, T45, T46, T47, T48 | review | repairs pushed; local QA passes; Actions blocked by account billing lock; Render still 562b102; live verification pending |
 | T14 | agent | Season-level unusual flags (library and spec) | Monazir | T07 | todo |  |
 | T15 | agent | Season flags in the season response and on the calendar | Monazir | T14, T08 | todo |  |
 | T18 | agent | Live season feed, part 1: redacted NRT fetcher and a cached /live/season endpoint (off without a key) | Monazir | T03, T04, T07 | todo |  |
