@@ -13,7 +13,7 @@ touches: [ws5_frontend/src/App.tsx, ws5_frontend/src/types.ts, ws5_frontend/src/
           ws5_frontend/src/lib/format.ts, ws5_frontend/src/lib/format.test.ts, ws5_frontend/src/styles.css,
           ws5_frontend/src/i18n/en.json, ws5_frontend/src/i18n/bn.json]
 creates: [ws5_frontend/src/components/SeasonCard.tsx, ws5_frontend/src/components/SeasonCard.test.tsx]
-checks: [CHECK-PLAN, CHECK-WEB, CHECK-SNAP]
+checks: ["CHECK-PLAN", "CHECK-WEB"]
 ---
 ## Goal
 Answer the challenge's plainest question on screen: *when does burning usually happen here, and how is this season

@@ -11,7 +11,7 @@ requires: []
 branch: ws1/T27-qa-automation
 touches: [ws5_frontend/package.json]
 creates: [ws5_frontend/src/i18n/i18n.test.ts, ws5_frontend/scripts/check-budget.mjs, scripts/tests/test_numbers_in_ui.py]
-checks: [CHECK-PLAN, CHECK-TESTS, "python -m pytest -q scripts/tests/test_numbers_in_ui.py", CHECK-WEB, CHECK-SNAP, "npm --prefix ws5_frontend run check:budget"]
+checks: ["CHECK-PLAN", "CHECK-TESTS", "python -m pytest -q scripts/tests/test_numbers_in_ui.py", "CHECK-WEB", "npm --prefix ws5_frontend run check:budget"]
 ---
 ## Goal
 Before the feature freeze (12 Nov 20:00 Dhaka), catch the mistakes judges notice that machines can find. The automated

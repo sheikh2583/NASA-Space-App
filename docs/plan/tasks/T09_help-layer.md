@@ -14,7 +14,7 @@ touches: [ws5_frontend/src/App.tsx, ws5_frontend/src/components/Panels.tsx, ws5_
           ws5_frontend/src/i18n/bn.json]
 creates: [ws5_frontend/src/components/Help.tsx, ws5_frontend/src/components/Help.test.tsx,
           ws5_frontend/src/lib/months.ts, ws5_frontend/src/lib/months.test.ts]
-checks: [CHECK-PLAN, CHECK-WEB, CHECK-SNAP]
+checks: ["CHECK-PLAN", "CHECK-WEB"]
 ---
 ## Goal
 Judges and planners aren't remote-sensing experts. Every term on screen gets a one-tap plain explanation, the

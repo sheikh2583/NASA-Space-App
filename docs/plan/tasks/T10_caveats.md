@@ -11,7 +11,7 @@ requires: []
 branch: ws1/T10-caveats
 touches: [docs/science/method_en.md, docs/science/method_bn.md]
 creates: []
-checks: [CHECK-PLAN, CHECK-WEB, CHECK-SNAP]
+checks: ["CHECK-PLAN", "CHECK-WEB"]
 ---
 ## Goal
 Say plainly what the numbers can and can't tell you, and how we checked them. Validity is a fifth of the score, and

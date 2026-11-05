@@ -11,7 +11,7 @@ requires: []
 branch: ws1/T34-device-review
 touches: [ws5_frontend/src/i18n/bn.json]
 creates: [ws6_validation/qa_review.md, ws6_validation/screens]
-checks: [CHECK-PLAN, CHECK-WEB, CHECK-SNAP]
+checks: ["CHECK-PLAN", "CHECK-WEB"]
 ---
 ## Goal
 Check what judges see on phones and desktops, and what assistive tools see, without a person. Card-level tests can't

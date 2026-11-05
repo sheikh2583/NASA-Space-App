@@ -42,7 +42,7 @@ References: [Render Docker builds](https://render.com/docs/docker), [Blueprint s
 The GitHub Actions CI workflow has been removed. Render builds directly from commits; the
 Dockerfile still runs frontend tests, string checks and the production build. Local Python
 checks remain available. Keep the Render service's auto-deploy trigger set to On Commit,
-rather than After CI Checks Pass. The separate manual Pages and ownership workflows remain.
+rather than After CI Checks Pass. The ownership workflow remains; Pages publication has been retired.
 
 Use the exact `onrender.com` URL assigned by Render:
 
@@ -120,7 +120,7 @@ The free instance provides 512 MB RAM. The local Windows serving check reached a
 | Process killed / memory limit | Inspect Render metrics/logs; Free capacity has not been load-tested on Render. |
 | Changes do not appear | Verify repository, branch, Auto-Deploy, deployment SHA, and `/version.json`; use Manual Deploy → Deploy latest commit if needed. |
 
-GitHub Pages is retained as an optional manually dispatched legacy snapshot workflow. It no longer auto-deploys on pushes. The previous site is not deleted; use Render as the primary URL after verifying its deployment.
+Pages publication and snapshot mode have been retired from this repository. Repository settings and the previously published site are managed separately by Sheikh.
 
 ## Verification performed
 
@@ -139,8 +139,8 @@ docker run --rm -p 10000:10000 firesense
 
 Open `http://localhost:10000/`, `/health` and `/docs`. This builds and serves the existing artifacts only.
 
-## Legacy GitHub Pages snapshot
+## Hosting
 
-The previous static site is still at [sheikh2583.github.io/NASA-Space-App](https://sheikh2583.github.io/NASA-Space-App/). It serves saved results for fixed dates and resolutions, with no live CSV export or cell requests. `.github/workflows/pages.yml` is **manual-only**: pushes no longer update it. Refresh it only on purpose with `scripts/export_hosted_demo.py`. The API-only `ws2_platform/Dockerfile` is kept for local builds that already have processed files. It is not the Render entrypoint.
+Use [FireSense on Render](https://nasa-space-app-e6vz.onrender.com) for the UI and API. Snapshot mode and Pages publication scripts have been retired.
 
 The basemap is OpenStreetMap and never uses `FIRMS_MAP_KEY`. Follow the [OSM tile policy](https://operations.osmfoundation.org/policies/tiles/), and don't bulk-prefetch tiles.

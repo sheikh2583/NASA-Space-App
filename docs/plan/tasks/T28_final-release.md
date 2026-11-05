@@ -9,9 +9,9 @@ size: M
 needs: [H03, T16]
 requires: [real-data, gh-auth]
 branch: ws1/T28-final-release
-touches: [docs/results/training-results.md, ws5_frontend/public/demo/snapshot.json, deployment/runtime.json]
+touches: [docs/results/training-results.md, ws5_frontend/public/demo/areas.json, deployment/runtime.json]
 creates: []
-checks: [CHECK-PLAN, CHECK-TESTS, CHECK-FILES, CHECK-WEB, CHECK-SNAP]
+checks: ["CHECK-PLAN", "CHECK-TESTS", "CHECK-FILES", "CHECK-WEB"]
 ---
 ## Goal
 Freeze a reproducible, fully measured release by 12 Nov 20:00 Dhaka. Everything shown at the event comes from this

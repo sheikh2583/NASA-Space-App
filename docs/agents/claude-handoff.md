@@ -8,11 +8,11 @@ Updated 4 November 2026, Asia/Dhaka. The current [README](../../README.md), [tra
 
 - Workspace: `X:\Nasa Space Apps Challenge\nasa-modis-viirs`.
 - Repository: https://github.com/sheikh2583/NASA-Space-App, branch `main`.
-- Live demo: https://sheikh2583.github.io/NASA-Space-App/.
+- Live demo: https://nasa-space-app-e6vz.onrender.com.
 - Entry scripts (Windows `.ps1` / Linux `.sh`): `scripts/setup.*`, `scripts/train.*`, `scripts/start.*`, `scripts/teammate_train.*`.
 - Shared workflow: `scripts/workflow.py`; training and the low-level pipeline default to CUDA, GPU 0, eight helper threads.
 
-Hosting migration: the root `Dockerfile` and `render.yaml` now define one Free Render service for React plus live FastAPI. Use [deployment guide](../guides/deployment.md) as the current deployment guide. No Render URL has been verified yet. The old Pages URL is a legacy snapshot; its workflow is now manual-only. `deployment/runtime.json` pins the published existing-data ZIP and checksum, eliminating manual data setup on Render. Serving never trains. Python CI now runs only reviewed non-fitting deployment tests; historical broad test counts below predate the no-training policy.
+Hosting migration: the root `Dockerfile` and `render.yaml` now define one Free Render service for React plus live FastAPI. Use [deployment guide](../guides/deployment.md) as the current deployment guide. No Render URL has been verified yet. Pages publication and snapshot mode have been retired. `deployment/runtime.json` pins the published existing-data ZIP and checksum, eliminating manual data setup on Render. Serving never trains. Python CI now runs only reviewed non-fitting deployment tests; historical broad test counts below predate the no-training policy.
 
 The canonical `docs/guides/training.md` now starts with copyable Windows/Linux fast paths using the project interpreter directly, separate quick/full steps, and timing estimates for both GPUs. It distinguishes training-only Python checks from Node-dependent smoke/UI workflows, explains input transfer to another GPU host, supplies console logging/recovery commands, and ends with a final-run acceptance checklist. Updating the guide did not launch training or replace scientific artifacts.
 
@@ -44,17 +44,17 @@ The old drawing-first UX and Leaflet Draw dependency are removed. Inspired by Dh
 
 `scripts/export_area_catalog.py` exports original geoBoundaries ADM1 geometry only for loaded regions. There are eight Bangladesh divisions, Punjab/Haryana/Delhi, and two smaller examples. OSM supplies key-free map tiles; geoBoundaries supplies the administrative outlines. Name filtering is entirely local, with no Nominatim/API key. Polygon and MultiPolygon requests are now explicitly documented in the API contract. Refer to [AREA_SELECTION.md](../science/area-selection.md) for sources, licenses, boundary vintage, and cell-edge semantics.
 
-`scripts/export_hosted_demo.py` now exports the catalog and all 13 sets of real API responses. The public snapshot was deliberately refreshed from the accepted current local science after QA. The geometry catalog and snapshot total about 8.7 MB uncompressed; these are intentional public artifacts. Exact-area/date matching prevents misleading substitution of another region's results. Synthetic validation is refused. Local mock responses remain fixture examples and are labeled synthetic.
+`scripts/export_area_catalog.py` supplies the public named-area catalog. Live requests use the combined Render API; saved-response snapshot delivery and its exporter have been retired. Local mock responses remain fixture examples and are labeled synthetic.
 
 Request-generation checks prevent stale summary/secondary responses from replacing the latest selection; cell-layer responses also use cleanup guards. For interface changes, keep keyboard selectors, Bangla, a no-results state, and supported-area limits clear.
 
 ## Hosting and sharing
 
-`render.yaml` links the combined Docker service to `main` with automatic deployment on commits once a human creates the Render service. `/version.json` identifies the deployed SHA and `live-api` mode. The root Dockerfile forces same-origin live frontend requests; no API URL or FIRMS key is required. The Pages snapshot workflow is retained only for manual legacy publication.
+`render.yaml` links the combined Docker service to `main` with automatic deployment on commits once a human creates the Render service. `/version.json` identifies the deployed SHA and `live-api` mode. The root Dockerfile forces same-origin live frontend requests; no API URL or FIRMS key is required. Pages publication and snapshot mode have been retired.
 
-Render service creation and its actual Docker build remain to be verified in the user's account. The old API-only `ws2_platform/Dockerfile` is not the Render entrypoint. The new root image uses minimal serving requirements and an allowlisted, checksum-verified GitHub Release data bundle. Local serving checks covered UI, health, docs, all AOI products, day/month queries and CSV with training-library imports blocked. Five transport/routing tests and twelve frontend tests passed. Peak sampled Windows RSS was about 430 MiB; Render/Linux capacity remains unverified. The key-free OSM basemap stays in place; never expose FIRMS_MAP_KEY.
+Render service creation and its actual Docker build remain to be verified in the user's account. The root `Dockerfile` is the only supported image; the API-only image has been retired. The new root image uses minimal serving requirements and an allowlisted, checksum-verified GitHub Release data bundle. Local serving checks covered UI, health, docs, all AOI products, day/month queries and CSV with training-library imports blocked. Five transport/routing tests and twelve frontend tests passed. Peak sampled Windows RSS was about 430 MiB; Render/Linux capacity remains unverified. The key-free OSM basemap stays in place; never expose FIRMS_MAP_KEY.
 
-Generate `share/firesense-source.zip` with `python scripts/workflow.py share`. It contains source, current docs, fixtures, optional-platform requirements, named boundaries, and the public snapshot, and excludes raw data, trained models, dependencies, credentials, run logs, and `codex/`.
+Generate `share/firesense-source.zip` with `python scripts/workflow.py share`. It contains source, current docs, fixtures, optional-platform requirements, named boundaries, and the public area catalog, and excludes raw data, trained models, dependencies, credentials, run logs, and `codex/`.
 
 ## Verification and remaining work
 

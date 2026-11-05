@@ -16,7 +16,7 @@
 
 | Doc | Content |
 |---|---|
-| [Method (English)](science/method_en.md) · [Bangla](science/method_bn.md) | The short public method text shown in the app |
+| [Method (English)](science/method_en.md) | The short public method text shown in the app. [Bangla](science/method_bn.md) is an unreviewed draft and is not shown in the app. |
 | [Pipeline](science/pipeline.md) | The project in plain words, stage by stage |
 | [Decisions](science/decisions.md) | Numbered science and data decisions (these win over older notes) |
 | [CUDA pipeline](science/cuda-pipeline.md) | How the GPU learners, device checks and selection work |

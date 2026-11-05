@@ -11,7 +11,7 @@ requires: []
 branch: ws1/T00-install-plan
 touches: [scripts/team.csv, docs/plan/STATUS.md]
 creates: []
-checks: [CHECK-PLAN, CHECK-TESTS, CHECK-WEB, CHECK-SNAP]
+checks: ["CHECK-PLAN", "CHECK-TESTS", "CHECK-WEB"]
 ---
 ## Goal
 The plan, its tools and the tested libraries are already on `main`; Sheikh merged them by hand. Finish the install
@@ -35,13 +35,13 @@ without changing any number on the site:
 4. Run `python scripts/plan.py checks T00 --run`. These are the agent-safe checks only:
    - the reviewed non-fitting tests (CHECK-TESTS);
    - the web tests, string check and build, the way the Render image builds them (CHECK-WEB);
-   - the legacy snapshot build (CHECK-SNAP).
+   - the live frontend build (CHECK-WEB).
 5. Run `python scripts/plan.py set T00 done --note "plan installed; agent-safe baseline green"`, then hand over for
    commit. Sheikh commits, unless he asked for the pull-request flow.
 
 ## Acceptance
 - [ ] `python scripts/plan.py check`: 0 errors, 0 warnings.
-- [ ] The CHECK-TESTS, CHECK-WEB and CHECK-SNAP results are pasted into the hand-over, with the number of tests
+- [ ] The CHECK-TESTS and CHECK-WEB results are pasted into the hand-over, with the number of tests
   passed.
 - [ ] After Sheikh pushes, Render rebuilds. The data is unchanged, so `/health` still reports the same
   `data_through`; T17 checks this with a script.

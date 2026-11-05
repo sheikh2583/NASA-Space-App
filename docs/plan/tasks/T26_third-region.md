@@ -10,11 +10,11 @@ needs: [T40]
 requires: [real-data]
 branch: ws1/T26-third-region
 touches: [common/regions.py, ws2_platform/cells.py, ws2_platform/api/make_fixtures.py, ws3_anomaly/periods.py,
-          ws4_outlook/season_profile.py, ws5_frontend/src/config.ts, ws5_frontend/src/snapshot.ts, ws5_frontend/src/App.tsx,
-          ws5_frontend/src/i18n/en.json, ws5_frontend/src/i18n/bn.json, ws5_frontend/public/demo/snapshot.json,
-          scripts/export_hosted_demo.py, README.md, docs/results/training-results.md]
+          ws4_outlook/season_profile.py, ws5_frontend/src/config.ts, ws5_frontend/src/api.ts, ws5_frontend/src/App.tsx,
+          ws5_frontend/src/i18n/en.json, ws5_frontend/src/i18n/bn.json, ws5_frontend/public/demo/areas.json,
+          scripts/export_area_catalog.py, README.md, docs/results/training-results.md]
 creates: []
-checks: [CHECK-PLAN, "python -m pytest -q ws4_outlook/tests/test_season_profile.py ws2_platform/tests/test_tiny_api.py", CHECK-FILES, CHECK-SNAP]
+checks: [CHECK-PLAN, "python -m pytest -q ws4_outlook/tests/test_season_profile.py ws2_platform/tests/test_tiny_api.py", CHECK-FILES, CHECK-WEB]
 human_checks: [CHECK-PY, CHECK-QA, CHECK-SMOKE]
 ---
 ## Goal

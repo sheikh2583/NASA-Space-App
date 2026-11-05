@@ -9,9 +9,9 @@ size: M
 needs: [T48]
 requires: []
 branch: ws1/T50-product-regressions
-touches: [ws2_platform/api/app.py, ws5_frontend/src/lib/format.ts, ws5_frontend/src/lib/format.test.ts, ws5_frontend/src/components/Calendar.tsx, ws5_frontend/src/components/Calendar.test.tsx, ws5_frontend/src/snapshot.ts, ws5_frontend/src/snapshot.test.ts, ws5_frontend/src/areas.test.ts, ws5_frontend/src/i18n/en.json]
+touches: [ws2_platform/api/app.py, ws5_frontend/src/lib/format.ts, ws5_frontend/src/lib/format.test.ts, ws5_frontend/src/components/Calendar.tsx, ws5_frontend/src/components/Calendar.test.tsx, ws5_frontend/src/api.ts, ws5_frontend/src/api.test.ts, ws5_frontend/src/areas.test.ts, ws5_frontend/src/i18n/en.json]
 creates: [ws2_platform/tests/test_partial_month.py, docs/results/PRODUCT_REGRESSIONS_2026-11-05.md]
-checks: [CHECK-PLAN, "python -m pytest -q ws2_platform/tests/test_partial_month.py", CHECK-WEB, CHECK-SNAP]
+checks: ["CHECK-PLAN", "python -m pytest -q ws2_platform/tests/test_partial_month.py", "CHECK-WEB"]
 human_checks: []
 ---
 ## Goal

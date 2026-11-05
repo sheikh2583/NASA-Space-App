@@ -11,9 +11,9 @@ requires: [real-data]
 branch: ws1/T04-incomplete-periods
 touches: [ws2_platform/api/app.py, contracts/openapi.yaml, docs/project/contract-changes.md, ws5_frontend/src/types.ts,
           ws5_frontend/src/components/SeriesChart.tsx, ws5_frontend/src/components/Calendar.tsx,
-          ws5_frontend/src/i18n/en.json, ws5_frontend/src/i18n/bn.json, ws5_frontend/public/demo/snapshot.json]
+          ws5_frontend/src/i18n/en.json, ws5_frontend/src/i18n/bn.json, ws5_frontend/public/demo/areas.json]
 creates: [ws2_platform/tests/test_api_complete.py, ws5_frontend/src/components/Calendar.test.tsx]
-checks: [CHECK-PLAN, "python -m pytest -q ws2_platform/tests/test_api_complete.py ws2_platform/tests/test_tiny_api.py", CHECK-WEB, CHECK-SNAP]
+checks: ["CHECK-PLAN", "python -m pytest -q ws2_platform/tests/test_api_complete.py ws2_platform/tests/test_tiny_api.py", "CHECK-WEB"]
 human_checks: [CHECK-PY]
 ---
 ## Goal
@@ -73,7 +73,7 @@ looks like a collapse. Mark periods that run past the end of the data, and draw 
 - [ ] `test_api_complete.py` passes in CI, using tiny data.
 - [ ] `Calendar.test.tsx` passes.
 - [ ] Snapshot: exactly one Punjab point and one Bangladesh point have `complete: false` (the 2 Nov 2026 week).
-- [ ] CHECK-WEB and CHECK-SNAP pass.
+- [ ] CHECK-WEB passes (live frontend test, string check and build).
 
 ## Stop and ask if
 - Any point other than the last one comes out incomplete on the real data.

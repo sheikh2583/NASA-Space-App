@@ -11,9 +11,9 @@ requires: [real-data]
 branch: ws1/T15-season-flags-ui
 touches: [ws2_platform/api/app.py, ws2_platform/tests/test_api_season.py, contracts/json_schemas/season_profile.schema.json,
           ws5_frontend/src/types.ts, ws5_frontend/src/components/Calendar.tsx, ws5_frontend/src/components/SeasonCard.tsx,
-          ws5_frontend/src/i18n/en.json, ws5_frontend/src/i18n/bn.json, ws5_frontend/public/demo/snapshot.json]
+          ws5_frontend/src/i18n/en.json, ws5_frontend/src/i18n/bn.json, ws5_frontend/public/demo/areas.json]
 creates: []
-checks: [CHECK-PLAN, "python -m pytest -q ws2_platform/tests/test_api_season.py ws2_platform/tests/test_tiny_api.py ws3_anomaly/tests/test_season_flags.py", CHECK-WEB, CHECK-SNAP, CHECK-FILES]
+checks: ["CHECK-PLAN", "python -m pytest -q ws2_platform/tests/test_api_season.py ws2_platform/tests/test_tiny_api.py ws3_anomaly/tests/test_season_flags.py", "CHECK-WEB", "CHECK-FILES"]
 human_checks: [CHECK-PY]
 ---
 ## Goal

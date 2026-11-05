@@ -76,7 +76,6 @@ Web app packages (`ws5_frontend/package.json` "dependencies"):
 - d3-scale, d3-scale-chromatic: calendar colour scales (ISC)
 - i18next, react-i18next: interface text (MIT)
 - @fontsource/ibm-plex-sans: the interface font (OFL-1.1)
-- @fontsource/noto-sans-bengali: Bengali-script font for place names (OFL-1.1)
 
 ## Papers and articles
 

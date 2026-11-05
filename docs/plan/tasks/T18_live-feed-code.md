@@ -9,13 +9,13 @@ size: L
 needs: [T03, T04, T07]
 requires: [real-data]
 branch: ws1/T18-live-feed-code
-touches: [ws3_anomaly/ingest/firms.py, ws3_anomaly/tests/test_ingest.py, scripts/export_hosted_demo.py,
+touches: [ws3_anomaly/ingest/firms.py, ws3_anomaly/tests/test_ingest.py, scripts/export_area_catalog.py,
           ws2_platform/api/app.py, contracts/openapi.yaml, docs/project/contract-changes.md, ws5_frontend/src/App.tsx,
           ws5_frontend/src/components/Panels.tsx, ws5_frontend/src/i18n/en.json, ws5_frontend/src/i18n/bn.json,
           docs/guides/deployment.md]
 creates: [ws3_anomaly/ingest/live.py, ws3_anomaly/tests/test_live.py, ws3_anomaly/live_inputs.json,
           ws2_platform/tests/test_api_live.py, ws5_frontend/src/live.ts, ws5_frontend/src/live.test.ts]
-checks: [CHECK-PLAN, "python -m pytest -q ws3_anomaly/tests/test_ingest.py ws3_anomaly/tests/test_live.py ws2_platform/tests/test_api_live.py ws2_platform/tests/test_tiny_api.py", CHECK-WEB, CHECK-SNAP]
+checks: ["CHECK-PLAN", "python -m pytest -q ws3_anomaly/tests/test_ingest.py ws3_anomaly/tests/test_live.py ws2_platform/tests/test_api_live.py ws2_platform/tests/test_tiny_api.py", "CHECK-WEB"]
 ---
 ## Goal
 Punjab's paddy season peaks in early November, during judging. Show "this season so far" with near-real-time FIRMS

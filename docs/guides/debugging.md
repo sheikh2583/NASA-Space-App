@@ -57,7 +57,7 @@ Terminal 2, the UI:
 npm run dev --prefix ws5_frontend -- --host 127.0.0.1 --strictPort
 ```
 
-For fixture mode, set `VITE_DATA_MODE=synthetic` in `ws5_frontend/.env` and leave `VITE_DEMO_MODE` empty. Use the browser's DevTools (Console and Network) for requests. `/health` reports the method version, cell count and data-through date, and `/docs` lets you try requests. Quick health check from any shell:
+For fixture mode, set `VITE_DATA_MODE=synthetic` in `ws5_frontend/.env`. Use the browser's DevTools (Console and Network) for requests. `/health` reports the method version, cell count and data-through date, and `/docs` lets you try requests. Quick health check from any shell:
 
 ```bash
 python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=30).read().decode())"
@@ -74,7 +74,7 @@ python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1
 | CUDA unavailable / CPU rejected | Check the driver and GPU ID, then `python scripts/workflow.py gpu-check` (human-only). |
 | npm `EPERM` / `EBUSY` on Windows | Stop this project's Vite, test and preview processes, then rerun setup. |
 | Port 8000 or 5173 busy | Stop the earlier server (Ctrl+C). The launcher refuses busy ports on purpose. |
-| UI can't reach the API | Check `VITE_API_BASE_URL`, clear `VITE_DEMO_MODE`, and restart Vite. |
+| UI can't reach the API | Check `VITE_API_BASE_URL` and restart Vite. The UI has no offline fallback: it always calls the API. |
 | Stale results | Restart the API after data changes and Vite after `.env` changes. |
 | Map tiles fail | Check the network and the OSM tile policy. The FIRMS key isn't used for tiles. |
 

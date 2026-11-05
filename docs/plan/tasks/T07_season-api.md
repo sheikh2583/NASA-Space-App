@@ -10,11 +10,11 @@ needs: [T00]
 requires: [real-data]
 branch: ws1/T07-season-api
 touches: [ws2_platform/api/app.py, ws2_platform/api/mock_server.py, ws2_platform/api/make_fixtures.py,
-          contracts/openapi.yaml, docs/project/contract-changes.md, scripts/export_hosted_demo.py, tools/verify_files.py,
-          ws5_frontend/src/snapshot.test.ts, ws5_frontend/public/demo/snapshot.json]
+          contracts/openapi.yaml, docs/project/contract-changes.md, scripts/export_area_catalog.py, tools/verify_files.py,
+          ws5_frontend/src/api.test.ts, ws5_frontend/public/demo/areas.json]
 creates: [ws2_platform/tests/test_api_season.py, contracts/fixtures/punjab_season.json,
           contracts/fixtures/bangladesh_season.json]
-checks: [CHECK-PLAN, "python -m pytest -q ws2_platform/tests/test_api_season.py ws2_platform/tests/test_tiny_api.py ws4_outlook/tests/test_season_profile.py", CHECK-WEB, CHECK-SNAP, CHECK-FILES]
+checks: ["CHECK-PLAN", "python -m pytest -q ws2_platform/tests/test_api_season.py ws2_platform/tests/test_tiny_api.py ws4_outlook/tests/test_season_profile.py", "CHECK-WEB", "CHECK-FILES"]
 human_checks: [CHECK-PY]
 ---
 ## Goal

@@ -13,7 +13,7 @@ touches: [ws5_frontend/src/App.tsx, ws5_frontend/src/components/SeasonCard.tsx, 
           ws5_frontend/src/i18n/en.json, ws5_frontend/src/i18n/bn.json]
 creates: [ws5_frontend/src/components/Brief.tsx, ws5_frontend/src/components/Brief.test.tsx,
           ws5_frontend/src/lib/miniMap.ts, ws5_frontend/src/lib/miniMap.test.ts]
-checks: [CHECK-PLAN, CHECK-WEB, CHECK-SNAP]
+checks: ["CHECK-PLAN", "CHECK-WEB"]
 ---
 ## Goal
 Influence comes from use. A division or state officer, an NGO or a journalist needs one page they can print or

@@ -10,9 +10,9 @@ needs: [T00]
 requires: [real-data]
 branch: ws1/T13-interval-report
 touches: [ws4_outlook/conformal.py, ws4_outlook/run.py, ws5_frontend/src/components/Pages.tsx,
-          ws5_frontend/src/i18n/en.json, ws5_frontend/src/i18n/bn.json, ws5_frontend/public/demo/snapshot.json]
+          ws5_frontend/src/i18n/en.json, ws5_frontend/src/i18n/bn.json, ws5_frontend/public/demo/areas.json]
 creates: [ws4_outlook/interval_report.py, ws4_outlook/tests/test_interval_report.py]
-checks: [CHECK-PLAN, "python -m pytest -q ws4_outlook/tests/test_interval_report.py", CHECK-FILES, CHECK-WEB, CHECK-SNAP]
+checks: ["CHECK-PLAN", "python -m pytest -q ws4_outlook/tests/test_interval_report.py", "CHECK-FILES", "CHECK-WEB"]
 human_checks: [CHECK-QA]
 ---
 ## Goal

@@ -4,7 +4,7 @@ FireSense combines NASA FIRMS **MODIS** and **VIIRS** fire detections into one c
 
 - The release record end is data_through in deployment/runtime.json; the UI reads the actual served end from runtime metadata. Values before 2012 are modeled, weather links are associations (not causes), and historical forecast-skill scores need corrected validation.
 - Current numbers, with their sources: [training results](docs/results/training-results.md).
-- Hosting: one Render service for the UI and API ([deployment](docs/guides/deployment.md)). The [legacy Pages snapshot](https://sheikh2583.github.io/NASA-Space-App/) is still online.
+- Hosting: one Render service for the UI and API ([deployment](docs/guides/deployment.md)). [Open FireSense](https://nasa-space-app-e6vz.onrender.com).
 
 > **Coding agents:** read [AGENTS.md](AGENTS.md) first. Training, model fits, CUDA probes and training setup are **human-only**.
 

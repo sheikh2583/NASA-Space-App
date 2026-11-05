@@ -12,7 +12,7 @@ branch: ws1/T23-story-mode
 touches: [ws5_frontend/src/App.tsx, ws5_frontend/src/styles.css, ws5_frontend/src/i18n/en.json,
           ws5_frontend/src/i18n/bn.json, docs/project/demo-script.md]
 creates: [ws5_frontend/src/components/Story.tsx, ws5_frontend/src/lib/story.ts, ws5_frontend/src/lib/story.test.ts]
-checks: [CHECK-PLAN, CHECK-WEB, CHECK-SNAP]
+checks: ["CHECK-PLAN", "CHECK-WEB"]
 ---
 ## Goal
 Presentation is a fifth of the score, and Best Storytelling is an award. A guided tour, driven entirely by our own

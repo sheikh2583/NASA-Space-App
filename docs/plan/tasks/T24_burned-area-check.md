@@ -10,9 +10,9 @@ needs: [T33]
 requires: [real-data, earthdata-files]
 branch: ws1/T24-burned-area-check
 touches: [ws5_frontend/src/components/Pages.tsx, ws5_frontend/src/i18n/en.json, ws5_frontend/src/i18n/bn.json,
-          ws5_frontend/public/demo/snapshot.json, docs/science/method_en.md]
+          ws5_frontend/public/demo/areas.json, docs/science/method_en.md]
 creates: [ws6_validation/mcd64.py, ws6_validation/tests/test_mcd64.py]
-checks: [CHECK-PLAN, "python -m pytest -q ws6_validation/tests/test_mcd64.py", CHECK-FILES, CHECK-WEB, CHECK-SNAP]
+checks: ["CHECK-PLAN", "python -m pytest -q ws6_validation/tests/test_mcd64.py", "CHECK-FILES", "CHECK-WEB"]
 human_checks: [CHECK-QA]
 ---
 ## Goal

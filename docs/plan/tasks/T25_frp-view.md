@@ -9,12 +9,12 @@ size: S
 needs: [T07]
 requires: [real-data]
 branch: ws1/T25-frp-view
-touches: [ws2_platform/api/app.py, contracts/openapi.yaml, docs/project/contract-changes.md, scripts/export_hosted_demo.py,
-          ws5_frontend/src/types.ts, ws5_frontend/src/snapshot.ts, ws5_frontend/src/App.tsx,
+touches: [ws2_platform/api/app.py, contracts/openapi.yaml, docs/project/contract-changes.md, scripts/export_area_catalog.py,
+          ws5_frontend/src/types.ts, ws5_frontend/src/api.ts, ws5_frontend/src/App.tsx,
           ws5_frontend/src/components/AnalysisControls.tsx, ws5_frontend/src/components/SeriesChart.tsx,
           ws5_frontend/src/i18n/en.json, ws5_frontend/src/i18n/bn.json]
 creates: [ws2_platform/tests/test_api_frp.py, ws5_frontend/public/demo/frp_bd.json, ws5_frontend/public/demo/frp_pb.json]
-checks: [CHECK-PLAN, "python -m pytest -q ws2_platform/tests/test_api_frp.py ws2_platform/tests/test_tiny_api.py", CHECK-WEB, CHECK-SNAP]
+checks: ["CHECK-PLAN", "python -m pytest -q ws2_platform/tests/test_api_frp.py ws2_platform/tests/test_tiny_api.py", "CHECK-WEB"]
 human_checks: [CHECK-PY]
 ---
 ## Goal

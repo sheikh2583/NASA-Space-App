@@ -18,7 +18,7 @@ The other team members are dormant for now. One tool answers "what next?": `pyth
 
 **Hosting** is one free Render Docker service (`docs/guides/deployment.md`). It builds the UI and serves the live FastAPI from one
 origin, with data from a pinned GitHub Release (`deployment/runtime.json`). Every push to `main` rebuilds it, and it
-never trains. GitHub Pages is legacy and manual-only. `snapshot.json` and CHECK-SNAP keep that fallback working.
+never trains. GitHub Pages, snapshot mode and the static regional fallback have been retired; the UI always calls the live API.
 
 | File | What it is |
 |---|---|
@@ -117,7 +117,7 @@ use. In the default flow, that is the hand-over.
      or any training is **Sheikh's**, even when an older card says "on the laptop, run …". Don't run it; list it
      under "Needs Sheikh". Standalone analyses that only read saved outputs and write a new file are agent work
      (`ws2_platform.coverage`, `ws3_anomaly.blindspot`, `ws6_validation.mcd64`, `ws6_validation.truth_checks`,
-     `export_hosted_demo.py`, `export_area_catalog.py`, `release_runtime.py`).
+     `export_area_catalog.py`, `release_runtime.py`).
 6. `python scripts/plan.py checks <ID> --run`. It runs only the card's agent-safe `checks` and refuses anything else.
    Every one must pass.
    - Never weaken, skip or delete a test to make it pass.
@@ -226,8 +226,7 @@ Windows too.
 |---|---|
 | CHECK-PLAN | `python scripts/plan.py check` |
 | CHECK-TESTS | `python -m pytest -q` on the reviewed non-fitting test files (`SAFE_TESTS` in `scripts/plan.py`) |
-| CHECK-WEB | `npm test`, `npm run check:strings`, `npm run build` (in `ws5_frontend`), with the Render image's settings (`VITE_API_BASE_URL=/`, `VITE_DEMO_MODE=live`, `VITE_DATA_MODE=real`) |
-| CHECK-SNAP | `npm run build` with `VITE_DEMO_MODE=snapshot` and `VITE_DATA_MODE=real` (the legacy Pages fallback) |
+| CHECK-WEB | `npm test`, `npm run check:strings`, `npm run build` (in `ws5_frontend`), with the Render image's settings (`VITE_API_BASE_URL=/`, `VITE_DATA_MODE=real`) |
 | CHECK-FILES | `python tools/verify_files.py --all` (reads every contracted file in `data/processed`; skips when there is no data) |
 | CHECK-GUARD | the ownership guard for the current branch (pull-request flow) |
 

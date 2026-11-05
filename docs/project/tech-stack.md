@@ -19,10 +19,9 @@ Versions: Python 3.11, Node.js 22.12+ for frontend work, and XGBoost 3.2.0 for t
 | Web app | React, Vite, TypeScript, project CSS | versions locked in package-lock.json | Shammo |
 | Map | Leaflet, OSM tiles, geoBoundaries ADM1 | country/name/administrative filters and clickable named boundaries | Shammo |
 | Charts | D3 (calendar heatmap), Recharts (line with band) | each fits its job | Shammo |
-| i18n | i18next + react-i18next; Noto Sans Bengali (bundled with @fontsource) | English/Bangla toggle; font works offline | Shammo |
+| i18n | i18next + react-i18next | English-only interface; Bengali place names are searchable | Shammo |
 | Tests (web) | Vitest for logic; real phone for layout | small, quick | Shammo |
-| Static hosting | GitHub Pages, Netlify or Cloudflare Pages (free) | web app and the static fallback JSON, on separate sites | Shammo, Sattyam |
-| API hosting | Hugging Face Spaces (Docker) or Render free tier | free containers; may sleep, so the fallback exists | Sattyam |
+| Hosting | One Render free-tier Docker service (root `Dockerfile`) | serves the UI and the live API from one origin; may sleep, first request can take a minute | Sattyam |
 | Source control | GitHub: PRs, CODEOWNERS, branch protection | clear ownership; reviews | Sheikh |
 | Large files | shared drive (Google Drive) or a private Kaggle dataset | git stays small | Sheikh |
 | Training compute | NVIDIA Windows/Linux, RTX 4070 Laptop or RTX 3090 Desktop | single-device CUDA training; the 3090 timing remains an estimate | Sheikh, Samin |

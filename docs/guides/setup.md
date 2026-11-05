@@ -85,7 +85,6 @@ The UI opens at <http://127.0.0.1:5173>, and the API docs are at <http://127.0.0
 | `API_BASE_URL` | `.env` | API address for scripts and tests, normally `http://localhost:8000` |
 | `VITE_API_BASE_URL` | `ws5_frontend/.env` | API address the browser calls; locally `http://localhost:8000` |
 | `VITE_DATA_MODE` | `ws5_frontend/.env` | `synthetic` (mock) or `real`; the start scripts set it for you |
-| `VITE_DEMO_MODE` | `ws5_frontend/.env` | Empty for the live API; `snapshot` only for the legacy static build |
 
 Vite reads `VITE_*` values when it starts, so restart it after changing them. Never commit `.env` files.
 

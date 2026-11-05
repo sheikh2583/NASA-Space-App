@@ -9,9 +9,9 @@ size: M
 needs: [H02, T16]
 requires: [real-data, gh-auth]
 branch: ws1/T40-report-outage-run
-touches: [docs/results/training-results.md, ws5_frontend/public/demo/snapshot.json, deployment/runtime.json]
+touches: [docs/results/training-results.md, ws5_frontend/public/demo/areas.json, deployment/runtime.json]
 creates: []
-checks: [CHECK-PLAN, CHECK-TESTS, CHECK-FILES, CHECK-WEB, CHECK-SNAP]
+checks: ["CHECK-PLAN", "CHECK-TESTS", "CHECK-FILES", "CHECK-WEB"]
 ---
 ## Goal
 Sheikh has run the full training with the outage handling (`scripts/train.ps1 -Pack`, which includes QA, results

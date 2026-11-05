@@ -48,7 +48,7 @@ The same steps as manual commands (use `.venv\Scripts\python` on Windows):
 - **Full run** uses all six holdouts with both Terra+Aqua and Terra-only inputs. Run it before reporting any model comparison.
 - Selection uses held-out agreement (CCC). The current method is **B1**, and a successful CUDA fit doesn't force the learned model to win ([training results](../results/training-results.md)). Never bypass a failing scientific gate.
 
-Stage order: `ingest → grid → sensors → cells → panel → v0 → model → intervals → drift → v1 → anomalies → outlook → validation → fixtures → fallback → qa → results`.
+Stage order: `synth (skipped for real inputs) → ingest → grid → cells → sensors → panel → v0 → model → intervals → interval_report → drift → v1 → anomalies → outlook → validation → fixtures → qa → results`.
 
 ## How long it takes
 

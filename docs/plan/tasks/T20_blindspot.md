@@ -10,9 +10,9 @@ needs: [T00]
 requires: [real-data]
 branch: ws1/T20-blindspot
 touches: [ws5_frontend/src/components/Pages.tsx, ws5_frontend/src/i18n/en.json, ws5_frontend/src/i18n/bn.json,
-          ws5_frontend/public/demo/snapshot.json]
+          ws5_frontend/public/demo/areas.json]
 creates: [ws3_anomaly/blindspot.py, ws3_anomaly/tests/test_blindspot.py]
-checks: [CHECK-PLAN, "python -m pytest -q ws3_anomaly/tests/test_blindspot.py", CHECK-FILES, CHECK-WEB, CHECK-SNAP]
+checks: ["CHECK-PLAN", "python -m pytest -q ws3_anomaly/tests/test_blindspot.py", "CHECK-FILES", "CHECK-WEB"]
 human_checks: [CHECK-QA]
 ---
 ## Goal

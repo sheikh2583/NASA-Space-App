@@ -9,12 +9,12 @@ size: M
 needs: [T07]
 requires: [real-data]
 branch: ws1/T21-recurrence-map
-touches: [ws2_platform/api/app.py, contracts/openapi.yaml, docs/project/contract-changes.md, scripts/export_hosted_demo.py,
+touches: [ws2_platform/api/app.py, contracts/openapi.yaml, docs/project/contract-changes.md, scripts/export_area_catalog.py,
           ws5_frontend/src/types.ts, ws5_frontend/src/components/MapView.tsx, ws5_frontend/src/App.tsx,
-          ws5_frontend/src/snapshot.ts, ws5_frontend/src/i18n/en.json, ws5_frontend/src/i18n/bn.json]
+          ws5_frontend/src/api.ts, ws5_frontend/src/i18n/en.json, ws5_frontend/src/i18n/bn.json]
 creates: [ws2_platform/recurrence.py, ws2_platform/tests/test_recurrence.py, ws5_frontend/public/demo/recurrence_bd.json,
           ws5_frontend/public/demo/recurrence_pb.json]
-checks: [CHECK-PLAN, "python -m pytest -q ws2_platform/tests/test_recurrence.py ws2_platform/tests/test_tiny_api.py", CHECK-WEB, CHECK-SNAP]
+checks: ["CHECK-PLAN", "python -m pytest -q ws2_platform/tests/test_recurrence.py ws2_platform/tests/test_tiny_api.py", "CHECK-WEB"]
 human_checks: [CHECK-PY]
 ---
 ## Goal

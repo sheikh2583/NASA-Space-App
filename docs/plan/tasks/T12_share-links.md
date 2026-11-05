@@ -11,7 +11,7 @@ requires: []
 branch: ws1/T12-share-links
 touches: [ws5_frontend/src/App.tsx, ws5_frontend/src/i18n/en.json, ws5_frontend/src/i18n/bn.json]
 creates: [ws5_frontend/src/lib/urlState.ts, ws5_frontend/src/lib/urlState.test.ts]
-checks: [CHECK-PLAN, CHECK-WEB, CHECK-SNAP]
+checks: ["CHECK-PLAN", "CHECK-WEB"]
 ---
 ## Goal
 A planner or journalist can send a link that opens exactly "Punjab, week of 4 Nov 2024, in Bangla". The video and

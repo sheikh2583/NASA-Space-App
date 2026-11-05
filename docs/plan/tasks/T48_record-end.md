@@ -9,9 +9,9 @@ size: M
 needs: ["T00"]
 requires: []
 branch: ws1/T48-record-end
-touches: ["ws5_frontend/src/config.ts", "ws5_frontend/src/App.tsx", "ws5_frontend/src/api.ts", "ws5_frontend/src/snapshot.ts", "ws5_frontend/src/types.ts", "ws5_frontend/src/components/AnalysisControls.tsx", "ws5_frontend/src/i18n/en.json", "ws5_frontend/src/i18n/bn.json", "scripts/export_hosted_demo.py", "README.md", "docs/guides/deployment.md"]
-creates: ["ws5_frontend/src/lib/recordEnd.ts", "ws5_frontend/src/lib/recordEnd.test.ts", "scripts/tests/test_snapshot_record_end.py"]
-checks: ["CHECK-PLAN", "python -m pytest -q scripts/tests/test_snapshot_record_end.py", "CHECK-WEB", "CHECK-SNAP"]
+touches: ["ws5_frontend/src/config.ts", "ws5_frontend/src/App.tsx", "ws5_frontend/src/api.ts", "ws5_frontend/src/types.ts", "ws5_frontend/src/components/AnalysisControls.tsx", "ws5_frontend/src/i18n/en.json", "ws5_frontend/src/i18n/bn.json", "scripts/export_area_catalog.py", "README.md", "docs/guides/deployment.md"]
+creates: ["ws5_frontend/src/lib/recordEnd.ts", "ws5_frontend/src/lib/recordEnd.test.ts"]
+checks: ["CHECK-PLAN", "python -m pytest -q ws2_platform/tests/test_season_record_end.py", "CHECK-WEB"]
 human_checks: [CHECK-QA]
 ---
 ## Goal
