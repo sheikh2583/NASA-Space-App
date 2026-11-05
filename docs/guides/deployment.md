@@ -39,6 +39,11 @@ References: [Render Docker builds](https://render.com/docs/docker), [Blueprint s
 
 ## Verify the deployed service
 
+The GitHub Actions CI workflow has been removed. Render builds directly from commits; the
+Dockerfile still runs frontend tests, string checks and the production build. Local Python
+checks remain available. Keep the Render service's auto-deploy trigger set to On Commit,
+rather than After CI Checks Pass. The separate manual Pages and ownership workflows remain.
+
 Use the exact `onrender.com` URL assigned by Render:
 
 1. Open `/health`. It must report `status: ok`, a nonzero cell count, and `data_through` matching `deployment/runtime.json`.
