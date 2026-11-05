@@ -175,6 +175,8 @@
   "validation.limitations": "Limitations",
   "validation.harmonization": "Modeled vs observed (held-out tests)",
   "validation.intervals": "Uncertainty band coverage (target 90%)",
+  "validation.conditional_limit": "90% is the nominal target, not guaranteed coverage in every activity group. Terra-only and positive-activity groups can be substantially under-covered. Pre-2012 values are modeled.",
+  "validation.stop_condition": "Review required: at least one group with 500 or more samples has coverage below 80%. These bands have not passed conditional validation.",
   "validation.by_stratum": "Where the bands hold",
   "validation.by_stratum_note": "Held-out coverage by area size, activity magnitude, season and satellite input. Rows below 85% are highlighted.",
   "validation.drift": "Drift between sensors",

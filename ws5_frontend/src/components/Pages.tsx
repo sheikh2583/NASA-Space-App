@@ -62,9 +62,13 @@ export function ValidationPage() {
         {h?.region_week && <Table rows={h.region_week} cols={["holdout", "method", "rel_bias", "rmse_log1p", "spearman", "lins_ccc", "n"]} />}
       </PieceCard>
       <PieceCard title={t("validation.intervals")} p={P.intervals}>
+        <p className="warn">{t("validation.conditional_limit")}</p>
         {iv?.coverage && <Table rows={iv.coverage.filter((r) => r.res === "week")} cols={["landcover", "season", "n", "coverage", "mean_width"]} />}
       </PieceCard>
       <PieceCard title={t("validation.by_stratum")} p={P.intervals_by_stratum}>
+        {ivs?.rows?.some((row) => typeof row.n === "number" && row.n >= 500 &&
+          typeof row.coverage === "number" && row.coverage < 0.8) &&
+          <p className="warn" role="status">{t("validation.stop_condition")}</p>}
         <p className="note">{t("validation.by_stratum_note")}</p>
         {ivs?.rows && <Table rows={ivs.rows} cols={["stratum", "n", "coverage", "interval_score"]}
           rowClassName={(row) => typeof row.coverage === "number" && row.coverage < 0.85 ? "warn" : undefined} />}

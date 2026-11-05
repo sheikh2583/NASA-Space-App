@@ -176,6 +176,8 @@
   "validation.limitations": "সীমাবদ্ধতা",
   "validation.harmonization": "মডেলকৃত বনাম পর্যবেক্ষিত (আলাদা রাখা পরীক্ষা)",
   "validation.intervals": "অনিশ্চয়তা পরিসরের আওতা (লক্ষ্য ৯০%)",
+  "validation.conditional_limit": "90% is a nominal target; coverage can be substantially lower within activity groups. Pre-2012 values are modeled.",
+  "validation.stop_condition": "Review required: a group with at least 500 samples has coverage below 80%.",
   "validation.by_stratum": "কোথায় পরিসরটি নির্ভরযোগ্য",
   "validation.by_stratum_note": "এলাকার আকার, কার্যকলাপের মাত্রা, ঋতু ও স্যাটেলাইট ইনপুট অনুযায়ী আলাদা রাখা পরীক্ষার আওতা। ৮৫%-এর কম সারি চিহ্নিত করা হয়েছে।",
   "validation.drift": "সেন্সরগুলোর মধ্যে বিচ্যুতি",
