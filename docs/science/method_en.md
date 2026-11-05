@@ -8,7 +8,7 @@ We express every week in **Suomi NPP terms**:
 - **Adjusted** (after 2 Nov 2026): NOAA-20 detections scaled by a ratio measured in the years both satellites flew.
 - **Modeled** (before 2012): estimated from MODIS, using the relationship seen while MODIS and VIIRS overlapped.
 
-Adjusted and modeled weeks carry a **90% uncertainty band**. The band was checked on areas held out of the fitting.
+Adjusted and modeled weeks carry an uncertainty band with a **nominal 90% target**. Held-out diagnostics show substantially weaker coverage for some positive-activity and Terra-only groups. This is not a conditional 90% guarantee.
 
 A week is **unusual** when it is clearly above the same week in other years. The app also shows whether the week stays above normal across its whole uncertainty band; before 2012, flags lean on modeled values and are marked so. Runs of unusual weeks become **critical periods**, ranked by size. Each period is marked as likely agricultural when most of its fires fall in cropland.
 
@@ -52,4 +52,4 @@ Numerical forecast revalidation is pending; current observed-season status is a 
 - Punjab 15 Sep–31 Dec 2024, SNPP: FIRMS 5,917, ours 5,907, close.
 - FIRMS comparisons above: measured in ws6_validation/truth_checks.md, run 2026-11-04. UTC dates and our local-solar dates can shift a few night-pass detections.
 - Held-out agreement: B1 selected at mean CCC 0.8900 versus XGBoost CUDA 0.8775 across Terra+Aqua and Terra-only holdouts; measured in docs/results/training-results.md, run results/runs/20261104-211232-599349.
-- Nominal 90% band coverage: weekly 0.934 and monthly 0.924; measured in docs/results/training-results.md, run results/runs/20261104-211232-599349. Both are inside the 0.85–0.97 acceptance range.
+- Historical marginal coverage: weekly 0.934 and monthly 0.924; measured in docs/results/training-results.md, run results/runs/20261104-211232-599349. These overall figures mask conditional failures; detailed held-out diagnostics require review and do not validate coverage in the actual pre-2012 record.
