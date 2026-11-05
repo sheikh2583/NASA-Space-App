@@ -5,7 +5,7 @@
   python scripts/run_pipeline.py --quick    # fewer holdouts in the model step
   python scripts/run_pipeline.py --from v1  # resume from a step
 
-Steps: synth, ingest, grid, sensors, cells, panel, v0, model, intervals, drift, v1, anomalies, outlook,
+Steps: synth, ingest, grid, cells, sensors, panel, v0, model, intervals, drift, v1, anomalies, outlook,
 validation, fixtures, fallback, qa, results.
 """
 from __future__ import annotations
@@ -46,8 +46,8 @@ def steps(quick: bool):
         ("synth", None if real else [os.path.join("tools", "synth_firms.py")]),
         ("ingest", ["-m", "ws3_anomaly.ingest.normalize", *firms_in] + (["--clip", "demo"] if real else [])),
         ("grid", ["-m", "ws2_platform.grid"]),
-        ("sensors", ["-m", "ws2_platform.sensors"]),
         ("cells", ["-m", "ws2_platform.cells"] + cells_args(bool(real))),
+        ("sensors", ["-m", "ws2_platform.sensors"]),
         ("panel", ["-m", "ws1_harmonize.run", "panel"]),
         ("v0", ["-m", "ws1_harmonize.run", "v0"]),
         ("model", model),
@@ -62,6 +62,18 @@ def steps(quick: bool):
         ("qa", ["-m", "ws6_validation.qa"]),
         ("results", [os.path.join("scripts", "results.py")]),
     ]
+
+
+def selected_steps(quick: bool, start: str | None = None):
+    """Plan execution only. A sensors resume rebuilds cells from current boundary inputs."""
+    todo = steps(quick)
+    names = [name for name, _ in todo]
+    if start:
+        selected = todo[names.index(start):]
+        if start == "sensors":
+            selected.insert(0, todo[names.index("cells")])
+        return selected
+    return todo
 
 
 def validate_resume_backend(start: str | None, backend: str) -> None:
@@ -99,10 +111,7 @@ def main():
     compute.configure_cuda_training()
     hardware = compute.probe_cuda()
     validate_resume_backend(a.start, a.backend)
-    todo = steps(a.quick)
-    names = [n for n, _ in todo]
-    if a.start:
-        todo = todo[names.index(a.start):]
+    todo = selected_steps(a.quick, a.start)
     cuda_stages, cpu_stages = stage_placement(todo, a.backend)
     stamp = dt.datetime.now().strftime("%Y%m%d-%H%M%S-%f")
     run_dir = os.path.join(ROOT, "results", "runs", stamp)
