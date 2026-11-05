@@ -58,4 +58,4 @@ Regenerate the other columns from the cards with `python scripts/plan.py board -
 | T35 | agent | Submission assets (slides page, recorded story video) and a 13 Nov rules re-check | Samiul | T29, T30 | todo |  |
 | H04 | human | Sheikh: submit on the Space Apps site | Sheikh | T35 | todo |  |
 | H05 | human | Sheikh: event days (14-15 Nov) | Sheikh | H04 | todo |  |
-| T50 | agent | Repair partial-month, calendar and snapshot regressions | Sattyam | T48 | doing | five directly reproduced product regressions; no scientific changes |
+| T50 | agent | Repair partial-month, calendar and snapshot regressions | Sattyam | T48 | done | 8 API and 42 web tests pass; live/static builds pass; five product regressions repaired |

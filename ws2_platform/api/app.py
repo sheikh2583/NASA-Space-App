@@ -105,15 +105,18 @@ def _scored(s: Store, sel, agri: bool = False):
     return sc
 
 
-def _coverage(t: pd.Timestamp, res: str, data_end: pd.Timestamp, end: pd.Timestamp) -> tuple[bool, int]:
+def _coverage(t: pd.Timestamp, res: str, data_end: pd.Timestamp, end: pd.Timestamp,
+              start: pd.Timestamp | None = None) -> tuple[bool, int]:
     """Whether a period starting at t is fully covered by data, and how many of its days have data.
-    Weeks are measured against the last day with data; months against the requested end (already capped at it)."""
+    Weeks use full-history data coverage; months intersect the requested start/end with the data end."""
     if res == "week":
         period_end = t + pd.Timedelta(days=6)
         return bool(period_end <= data_end), max(0, (min(period_end, data_end) - t).days + 1)
     if res == "month":
         period_end = t + pd.offsets.MonthEnd(0)
-        return bool(period_end <= end), max(0, (min(period_end, end) - t).days + 1)
+        covered_start = max(t, start) if start is not None else t
+        covered_end = min(period_end, end, data_end)
+        return bool(covered_start == t and covered_end == period_end), max(0, (covered_end - covered_start).days + 1)
     return True, 1
 
 
@@ -140,7 +143,7 @@ def build_summary(req: AOIRequest) -> dict:
     for _, r in ser.iterrows():
         f = flags.get(r["week_start"])
         t0 = pd.Timestamp(r["week_start"])
-        complete, n_days = _coverage(t0, req.res, s.data_end, end)
+        complete, n_days = _coverage(t0, req.res, s.data_end, end, pd.Timestamp(req.start))
         pt = {"t": t0.date().isoformat(), "value": _num(r["value"]), "lo": _num(r["lo"]), "hi": _num(r["hi"]),
               "source": r["source"] or "modeled_from_modis", "modeled_share": round(float(r["modeled_share"]), 3),
               "drift_flag": bool(r["drift_flag"]), "complete": complete, "n_days": n_days}
