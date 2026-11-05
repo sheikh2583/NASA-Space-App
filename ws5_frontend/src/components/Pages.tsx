@@ -6,13 +6,13 @@ import { date, num } from "../lib/format";
 
 type Row = Record<string, unknown>;
 
-function Table({ rows, cols }: { rows: Row[]; cols: string[] }) {
+function Table({ rows, cols, rowClassName }: { rows: Row[]; cols: string[]; rowClassName?: (row: Row) => string | undefined }) {
   return (
     <table className="t">
       <thead><tr>{cols.map((c) => <th key={c}>{c}</th>)}</tr></thead>
       <tbody>
         {rows.map((r, i) => (
-          <tr key={i}>{cols.map((c) => <td key={c} className={typeof r[c] === "number" ? "n" : ""}>{typeof r[c] === "number" ? (c === "year" ? num(r[c] as number, 0).replace(/[,.\s\u00a0]/g, "") : num(r[c] as number, 3)) : String(r[c] ?? "")}</td>)}</tr>
+          <tr key={i} className={rowClassName?.(r)}>{cols.map((c) => <td key={c} className={typeof r[c] === "number" ? "n" : ""}>{typeof r[c] === "number" ? (c === "year" ? num(r[c] as number, 0).replace(/[,.\s\u00a0]/g, "") : num(r[c] as number, 3)) : String(r[c] ?? "")}</td>)}</tr>
         ))}
       </tbody>
     </table>
@@ -43,6 +43,7 @@ export function ValidationPage() {
   const P = v.pieces;
   const h = P.harmonization?.metrics as { region_week?: Row[]; method_chosen?: Row } | undefined;
   const iv = P.intervals?.metrics as { coverage?: Row[] } | undefined;
+  const ivs = P.intervals_by_stratum?.metrics as { rows?: Row[] } | undefined;
   const dr = P.drift?.metrics as { flagged_region_years?: Row[] } | undefined;
   const os = P.outlook_skill?.metrics as { by_region?: Row[] } | undefined;
   const qa = P.qa?.metrics as { checks?: Row[]; summary?: string[] } | undefined;
@@ -62,6 +63,11 @@ export function ValidationPage() {
       </PieceCard>
       <PieceCard title={t("validation.intervals")} p={P.intervals}>
         {iv?.coverage && <Table rows={iv.coverage.filter((r) => r.res === "week")} cols={["landcover", "season", "n", "coverage", "mean_width"]} />}
+      </PieceCard>
+      <PieceCard title={t("validation.by_stratum")} p={P.intervals_by_stratum}>
+        <p className="note">{t("validation.by_stratum_note")}</p>
+        {ivs?.rows && <Table rows={ivs.rows} cols={["stratum", "n", "coverage", "interval_score"]}
+          rowClassName={(row) => typeof row.coverage === "number" && row.coverage < 0.85 ? "warn" : undefined} />}
       </PieceCard>
       <PieceCard title={t("validation.drift")} p={P.drift}>
         {dr?.flagged_region_years && <Table rows={dr.flagged_region_years.slice(0, 20)} cols={["region_id", "year", "reason"]} />}

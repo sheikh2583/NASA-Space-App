@@ -175,6 +175,8 @@
   "validation.limitations": "Limitations",
   "validation.harmonization": "Modeled vs observed (held-out tests)",
   "validation.intervals": "Uncertainty band coverage (target 90%)",
+  "validation.by_stratum": "Where the bands hold",
+  "validation.by_stratum_note": "Held-out coverage by area size, activity magnitude, season and satellite input. Rows below 85% are highlighted.",
   "validation.drift": "Drift between sensors",
   "validation.outlook": "Forecast skill",
   "validation.qa": "Data and system checks",
