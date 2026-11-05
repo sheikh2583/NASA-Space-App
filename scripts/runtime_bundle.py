@@ -14,6 +14,8 @@ REQUIRED = {'cells.parquet', 'harmonized.parquet', 'sensor_days.parquet',
             'interval_table.json', 'drivers_region.json', 'outlook_region.json'}
 VALIDATION = {'validation/harmonization.json', 'validation/intervals.json',
               'validation/drift.json', 'validation/outlook_skill.json', 'validation/qa.json'}
+LEGACY_NAMES = REQUIRED | VALIDATION
+VALIDATION = VALIDATION | {'validation/intervals_by_stratum.json'}
 MAX_BYTES = 64 * 1024 * 1024
 
 
@@ -48,7 +50,7 @@ def unpack(archive: Path, output: Path, expected_sha256: str) -> None:
         raise ValueError('Refusing to overwrite an existing runtime data directory')
     with zipfile.ZipFile(archive) as package:
         names = package.namelist()
-        if len(names) != len(set(names)) or set(names) != REQUIRED | VALIDATION:
+        if len(names) != len(set(names)) or set(names) not in (LEGACY_NAMES, REQUIRED | VALIDATION):
             raise ValueError('Runtime archive has missing, duplicate, or unexpected files')
         if sum(info.file_size for info in package.infolist()) > MAX_BYTES:
             raise ValueError('Expanded runtime archive is too large')
