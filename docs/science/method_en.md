@@ -10,7 +10,7 @@ We express every week in **Suomi NPP terms**:
 
 Adjusted and modeled weeks carry an uncertainty band with a **nominal 90% target**. Held-out diagnostics show substantially weaker coverage for some positive-activity and Terra-only groups. This is not a conditional 90% guarantee.
 
-A week is **unusual** when it is clearly above the same week in other years. The app also shows whether the week stays above normal across its whole uncertainty band; before 2012, flags lean on modeled values and are marked so. Runs of unusual weeks become **critical periods**, ranked by size. Each period is marked as likely agricultural when most of its fires fall in cropland.
+A week is **unusual** when it is clearly above the same week in other years. The app also shows whether the week stays above normal across its whole uncertainty band; before 2012, flags lean on modeled values and are marked so. Runs of unusual weeks become **critical periods**, ranked by size. Each period reports the share of detections in cropland or a cropland-associated season rule; these do not prove the cause of burning.
 
 **Associated conditions** are weather patterns that tend to occur alongside burning. They are associations, not proof of what started a fire.
 
