@@ -29,7 +29,7 @@ Regenerate the other columns from the cards with `python scripts/plan.py board -
 | T11 | agent | Retired: region picker (done on main by the named-area explorer) | Sattyam | T07 | cut | retired 4 Nov: named-area explorer on main (04adbc4, 0c9241d) |
 | T12 | agent | Shareable links (view, area, period, language in the URL) | Shammo | T00 | done | English-only UI complete, including an English-only area-search placeholder. |
 | T13 | agent | Interval report by stratum (measurement only) | Samin | T00 | review | reopened: three season strata breach n>=500 and coverage<0.80 stop rule; T46 remediation |
-| T42 | agent | Redact FIRMS credentials at every error boundary | Monazir | T00 | review | 11 offline redaction tests pass; ready for commit; no real requests or fitting |
+| T42 | agent | Redact FIRMS credentials at every error boundary | Monazir | T00 | done | 11 offline redaction regressions pass; credentials sanitized at error boundaries |
 | T43 | agent | Correct clean-run pipeline dependency ordering | Sheikh | T00 | todo |  |
 | T44 | agent | Eliminate forecast feature and target leakage | Samin | T00 | todo |  |
 | T45 | agent | Correct alert transitions and disable unsupported forecast alerts | Samin | T44 | todo |  |

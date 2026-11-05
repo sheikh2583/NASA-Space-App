@@ -15,7 +15,9 @@ import datetime as dt
 import io
 import logging
 import os
+import re
 import time
+from urllib.parse import quote, quote_plus
 
 import pandas as pd
 import requests
@@ -26,6 +28,18 @@ SOURCES = ("MODIS_SP", "MODIS_NRT", "VIIRS_SNPP_SP", "VIIRS_SNPP_NRT", "VIIRS_NO
 RETIRED = {"VIIRS_SNPP_NRT": "SNPP near-real-time ended on 2 Nov 2026; use VIIRS_NOAA20_NRT (decision 17)"}
 MAX_DAYS = 10
 log = logging.getLogger("firms")
+
+
+def _redact(text, key):
+    """Remove the credential in URL, escaped-body and ordinary exception representations."""
+    text = str(text)
+    if not key:
+        return text
+    variants = {str(key), quote(str(key), safe=""), quote_plus(str(key)),
+                repr(str(key))[1:-1]}
+    for value in sorted(variants, key=len, reverse=True):
+        text = re.sub(re.escape(value), lambda match: "***", text, flags=re.IGNORECASE)
+    return text
 
 
 def windows(start: dt.date, end: dt.date, size: int = MAX_DAYS):
@@ -44,17 +58,26 @@ def url(key: str, source: str, bbox, first: dt.date, n_days: int) -> str:
 
 def fetch_window(session, key, source, bbox, first, n_days, retries=4, pause=2.0) -> pd.DataFrame:
     """One API call with exponential back-off. An 'Invalid' or HTML body raises; an empty CSV is a valid zero."""
-    last = None
+    if not isinstance(retries, int) or retries < 1:
+        raise ValueError("retries must be a positive integer")
+    last = "FIRMS request failed"
     for attempt in range(retries):
         try:
             r = session.get(url(key, source, bbox, first, n_days), timeout=120)
             if r.status_code == 200 and r.text.lstrip().startswith(("latitude", "country_id")):
                 return pd.read_csv(io.StringIO(r.text))
-            last = RuntimeError(f"HTTP {r.status_code}: {r.text[:200]!r}")
+            # Redact BEFORE truncation/repr so a partial or escaped key cannot survive.
+            last = f"HTTP {r.status_code}: {_redact(r.text, key)[:200]!r}"
         except requests.RequestException as e:
-            last = e
-        time.sleep(pause * 2 ** attempt)
-    raise last
+            last = _redact(e, key)
+        except Exception as e:
+            # Parsing failures must also lose their original exception context.
+            last = _redact(e, key)
+            break
+        if attempt + 1 < retries:
+            time.sleep(pause * 2 ** attempt)
+    # Raise outside the handler: no original URL-bearing exception is retained as context.
+    raise RuntimeError(_redact(last, key)) from None
 
 
 def download(source, bbox, start, end, out_dir, key=None, session=None, pause_between=1.0):
@@ -65,7 +88,13 @@ def download(source, bbox, start, end, out_dir, key=None, session=None, pause_be
     if not key:
         raise RuntimeError("Set FIRMS_MAP_KEY in your .env (each person registers their own key).")
     session = session or requests.Session()
-    os.makedirs(out_dir, exist_ok=True)
+    directory_error = None
+    try:
+        os.makedirs(out_dir, exist_ok=True)
+    except OSError as e:
+        directory_error = _redact(e, key)
+    if directory_error is not None:
+        raise RuntimeError(directory_error) from None
     gaps, paths = [], []
     for first, n in windows(start, end):
         path = os.path.join(out_dir, f"{source}_{'_'.join(f'{v:g}' for v in bbox)}_{first}_{n}.csv")
@@ -75,8 +104,9 @@ def download(source, bbox, start, end, out_dir, key=None, session=None, pause_be
                 df.to_csv(path + ".part", index=False)
                 os.replace(path + ".part", path)
             except Exception as e:  # logged and listed; the rest continues
-                log.warning("gap %s %s+%d: %s", source, first, n, e)
-                gaps.append((first.isoformat(), n, str(e)))
+                message = _redact(e, key)
+                log.warning("gap %s %s+%d: %s", _redact(source, key), first, n, message)
+                gaps.append((first.isoformat(), n, message))
                 continue
             time.sleep(pause_between)
         paths.append(path)
