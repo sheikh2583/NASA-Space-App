@@ -246,9 +246,13 @@ def aoi_season(req: AOIRequest):
                     "seasons": []}
             notes = ["No season windows are configured for this area."]
         else:
-            prof = season_mod.season_profile(s.full_history(sel), as_of=as_of, area=area)
+            history = s.full_history(sel)
+            # Only complete weeks belong in the profile, even when as_of is the next day.
+            history = history[pd.to_datetime(history["week_start"]) + pd.Timedelta(days=6) <= s.data_end]
+            prof = season_mod.season_profile(history, as_of=as_of, area=area)
             notes = [season_mod.DEFINITION]
-        return {**prof, **envelope("season", notes), "profile_version": prof["schema_version"]}
+        return {**prof, **envelope("season", notes), "profile_version": prof["schema_version"],
+                "record_data_through": s.data_end.date().isoformat()}
     return _cached(_key("season", req), run)
 
 

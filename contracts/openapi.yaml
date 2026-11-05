@@ -227,6 +227,10 @@ components:
             data_through: { type: string, nullable: true }
             definition: { type: string }
             profile_version: { type: string }
+            record_data_through:
+              type: string
+              format: date
+              description: Full served record end; data_through remains the last complete week used by the profile.
             seasons: { type: array, items: { type: object } }
     SummaryResponse:
       allOf:
