@@ -33,7 +33,7 @@ Regenerate the other columns from the cards with `python scripts/plan.py board -
 | T43 | agent | Correct clean-run pipeline dependency ordering | Sheikh | T00 | done | 3 planning-only tests pass via explicit session override; named guard flags runner imports; no stages executed |
 | T44 | agent | Eliminate forecast feature and target leakage | Samin | T00 | done | 4 pure fold-isolation tests pass; old forecast scores qualified; numerical revalidation pending |
 | T45 | agent | Correct alert transitions and disable unsupported forecast alerts | Samin | T44 | done | 8 pure alert tests pass; watch promotes; unsupported batch forecast alerts explicitly off |
-| T46 | agent | Correct interval area counts and report every stop-condition failure | Samin | T00 | todo |  |
+| T46 | agent | Correct interval area counts and report every stop-condition failure | Samin | T00 | done | 4 diagnostic tests and 35 web tests pass; all-dimensional stop warnings; bands unchanged; T13 stays review |
 | T47 | agent | Include detailed interval diagnostics in runtime releases | Sheikh | T46 | todo |  |
 | T48 | agent | Use runtime metadata consistently for record-end dates | Shammo | T00 | todo |  |
 | T49 | agent | Verify and publish the reviewed correctness repairs | Sheikh | T42, T43, T44, T45, T46, T47, T48 | todo |  |

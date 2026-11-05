@@ -31,6 +31,8 @@ def _row(frame: pd.DataFrame, *, res: str, sat_combo: str, dimension: str, value
         "value": value,
         "stratum": f"{res} | {sat_combo} | {dimension}:{value}",
         "n": n,
+        "below_lower": float((frame["y"] < frame["lo"]).mean()) if n else None,
+        "above_upper": float((frame["y"] > frame["hi"]).mean()) if n else None,
         "coverage": _finite(metrics.coverage(frame["y"], frame["lo"], frame["hi"])),
         "interval_score": _finite(metrics.interval_score(frame["y"], frame["lo"], frame["hi"], alpha=0.1)),
         "median_relative_width": _finite(
@@ -49,9 +51,14 @@ def _magnitude_labels(values: pd.Series) -> pd.Series:
     positive = values[values > 0]
     if len(positive):
         # Ranking first gives deterministic, similarly sized groups even when many totals are tied.
-        quartile = pd.qcut(positive.rank(method="first"), 4, labels=MAGNITUDE_STRATA[1:])
-        labels.loc[positive.index] = quartile.astype("object")
+        ranks = positive.rank(method="first").to_numpy() - 1
+        labels.loc[positive.index] = [f"q{min(4, int(rank * 4 / len(positive)) + 1)}" for rank in ranks]
     return labels
+
+
+def stop_rows(rows):
+    return [row for row in rows if row.get("n", 0) >= 500 and
+            row.get("coverage") is not None and row["coverage"] < 0.80]
 
 
 def report(oof: pd.DataFrame, cells: pd.DataFrame, table: dict, n: int = 4000, seed: int = 7) -> dict:
@@ -72,6 +79,8 @@ def report(oof: pd.DataFrame, cells: pd.DataFrame, table: dict, n: int = 4000, s
 
             rows.append(_row(samples, res=res, sat_combo=sat_combo,
                              dimension="satellite_combination", value=sat_combo))
+            rows.append(_row(samples[samples["y"] > 0], res=res, sat_combo=sat_combo,
+                             dimension="activity", value="positive"))
             for value, low, high in AREA_STRATA:
                 rows.append(_row(samples[samples["n_cells"].between(low, high)], res=res,
                                  sat_combo=sat_combo, dimension="area_size", value=value))
@@ -81,4 +90,7 @@ def report(oof: pd.DataFrame, cells: pd.DataFrame, table: dict, n: int = 4000, s
             for value in SEASON_STRATA:
                 rows.append(_row(samples[samples["season"] == value], res=res,
                                  sat_combo=sat_combo, dimension="season", value=value))
-    return {"rows": rows, "nominal": LEVEL}
+    failures = stop_rows(rows)
+    return {"rows": rows, "nominal": LEVEL, "stop_rows": failures,
+            "acceptance_status": "stop_condition" if failures else "reported",
+            "area_size_basis": "unique contributing OOF cell IDs, not drawn rectangle size"}

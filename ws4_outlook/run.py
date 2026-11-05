@@ -60,7 +60,9 @@ def step_interval_report():
         table = json.load(f)
     piece("intervals_by_stratum", interval_report.report(oof, cells, table), [
         "Coverage is measured on random rectangles from held-out test blocks only.",
-        "Terra-only inputs cover a short early-record period, so some strata have few samples.",
+        "Terra-only diagnostics use overlap-era holdouts, not observed truth for pre-2012.",
+        "Area-size groups count unique contributing OOF cells; absent cells are not counted as evaluated.",
+        "Nominal 90% does not guarantee conditional coverage; every stop-condition row is reported.",
         "Relative interval width is a diagnostic, not an optimization target."])
 
 

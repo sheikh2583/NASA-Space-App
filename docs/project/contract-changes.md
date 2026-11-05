@@ -3,6 +3,7 @@ Adding a field is fine. After G0 (H3) never rename or remove one. Sheikh approve
 
 | Time | Contract | Old shape | New shape | Affected people | Acknowledged by |
 |---|---|---|---|---|---|
+| 2026-11-05 (T46/I11) | intervals_by_stratum metrics | Drawn rectangle size labelled n_cells | n_cells counts contributing unique cells; drawn_n_cells retained; adds activity/tails, stop_rows and acceptance_status | Samin, Sattyam, Shammo | Measurement repair authorized; no recalibration |
 | 2026-11-05 (T44/I10) | forecast skill semantics | Global-feature leave-one-season-out scores | Forward-season fire-history features, frozen training climatology and calendar target embargo; JSON field shapes unchanged; old scores historical/leakage-affected | Samin, Sattyam, Samiul | User authorized correctness repairs; numerical revalidation pending |
 | 2026-11-04 | openapi.yaml AOIRequest.geometry | Polygon described; backend already accepts GeoJSON via Shapely | Polygon or MultiPolygon explicitly documented for named ADM1 selection; existing request fields unchanged | Frontend, API, QA | User requested named-area inspector filters |
 | 2026-11-03 (pre-event) | parquet_schemas.json | grid_daily keyed by (cell_id, date, sensor); no sensor_days; source and split types as prose | grid_daily adds sat, key (cell_id, date, sat); new sensor_days; depends_on_modeled_history on anomalies and critical_periods; predictions_oof.sat_combo; _enums and _keys blocks | Sattyam, Sheikh, Monazir, Samin, Samiul | pending Sheikh |
