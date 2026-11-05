@@ -113,13 +113,15 @@ def test_status_source_comes_from_the_evaluated_week(source):
     assert outlook.current_status(w, end, record_end=end)["data_source"] == source
 
 
-@pytest.mark.parametrize("values", [[], [30.0], [np.nan]])
-def test_absent_reference_history_returns_null_percentiles_and_strict_json(values):
+@pytest.mark.parametrize("values,level", [([], "insufficient_history"), ([30.0], "insufficient_history"),
+                                          ([np.nan], "incomplete_coverage")])
+def test_absent_reference_history_returns_null_percentiles_and_strict_json(values, level):
     w = pd.DataFrame({"week_start": pd.date_range("2026-10-26", periods=len(values), freq="7D"), "value": values})
     result = outlook.outlook(w, as_of="2026-11-02", record_end="2026-11-01")
-    assert result["current_status"]["level"] == "insufficient_history"
+    assert result["current_status"]["level"] == level
     assert result["current_status"]["week_percentile"] is None
     assert result["season_to_date_percentile"] is None
+    assert result["season_to_date_status"] == level
     assert "within the usual range" not in result["current_status"]["message"]
     assert "nan" not in result["current_status"]["message"].lower()
     json.dumps(result, allow_nan=False)

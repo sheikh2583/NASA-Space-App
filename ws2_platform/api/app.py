@@ -177,7 +177,10 @@ def build_summary(req: AOIRequest) -> dict:
     for _, r in ser.iterrows():
         f = flags.get(r["week_start"])
         t0 = pd.Timestamp(r["week_start"])
-        complete, n_days = _coverage(t0, req.res, s.data_end, end, pd.Timestamp(req.start))
+        complete, calendar_days = _coverage(t0, req.res, s.data_end, end, pd.Timestamp(req.start))
+        # n_days counts days with an operating sensor; a period is complete only if every covered day was observed.
+        n_days = int(r["n_days"]) if "n_days" in r and pd.notna(r["n_days"]) else calendar_days
+        complete = complete and n_days >= calendar_days
         pt = {"t": t0.date().isoformat(), "value": _num(r["value"]), "lo": _num(r["lo"]), "hi": _num(r["hi"]),
               "source": r["source"] or "modeled_from_modis", "modeled_share": round(float(r["modeled_share"]), 3),
               "drift_flag": bool(r["drift_flag"]), "complete": complete, "n_days": n_days}
@@ -263,7 +266,8 @@ def aoi_outlook(req: AOIRequest):
         return {**envelope(notes=["Current status is computed for the drawn area; skill and alerts come from its main region."]),
                 "region": {"region_id": reg["region_id"], "region_name": reg["region_name"]} if reg else {"region_id": "", "region_name": ""},
                 "as_of": live["as_of"], "current_status": live["current_status"],
-                "season_to_date_percentile": live["season_to_date_percentile"], "expected_range": live["expected_range"],
+                "season_to_date_percentile": live["season_to_date_percentile"],
+                "season_to_date_status": live["season_to_date_status"], "expected_range": live["expected_range"],
                 "skill": ro.get("skill", {"n_seasons": 0}), "status": ro.get("status", "no_demonstrated_skill"),
                 "alert": ro.get("alert", {"level": "none", "rule": "Forecast alerts are off."})}
     return _cached(_key("outlook", req), run)

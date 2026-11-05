@@ -92,15 +92,16 @@ def oof(panel: pd.DataFrame, method: str = "lgbm"):
             return baselines.fit(panel[mask & ov])
         return model.fit(panel, mask, rounds=ROUNDS)
 
-    def predict_any(m, rows, combo):
+    def predict_any(m, mask, combo):
         if method == "b1":
-            sub_ = rows.assign(sat_combo=combo)
+            sub_ = panel[mask].assign(sat_combo=combo)
             return baselines.predict_b1(m, sub_), baselines.predict_b0_frp(m, sub_)
-        return model.predict(m, rows, combo)
+        # Full-panel feature context, then the held-out rows (same context as the final prediction).
+        return model.predict(m, panel, combo, rows=mask)
 
     def emit(mask, m, fold):
         for combo in ("terra_aqua", "terra_only"):
-            pc, pf = predict_any(m, panel[mask], combo)
+            pc, pf = predict_any(m, mask, combo)
             frames.append(pd.DataFrame({
                 "cell_id": panel.loc[mask, "cell_id"].values, "date": panel.loc[mask, "week_start"].dt.date.values,
                 "y_true_count": panel.loc[mask, "snpp_n"].values, "y_pred_count": pc,

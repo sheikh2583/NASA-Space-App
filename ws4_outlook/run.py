@@ -38,10 +38,16 @@ def piece(producer, metrics, limitations):
                    "limitations": limitations}, f, indent=1)
 
 
+def _daily_oof(oof):
+    """Held-out OOF split into cell-days so monthly samples are calendar months (see ws4_outlook.conformal)."""
+    grid = pd.read_parquet(f"{P}/grid_daily.parquet", columns=["cell_id", "date", "sat", "n_det"])
+    return conformal.daily_oof(oof, grid)
+
+
 def step_intervals():
     oof = pd.read_parquet(f"{P}/predictions_oof.parquet")
     cells = pd.read_parquet(f"{P}/cells.parquet")
-    table, cov = conformal.build_table(oof, cells)
+    table, cov = conformal.build_table(oof, cells, daily=_daily_oof(oof))
     with open(f"{P}/interval_table.json", "w") as f:
         json.dump(table, f, indent=1)
     allrow = [r for r in cov["coverage"] if r["landcover"] == "all"]
@@ -50,6 +56,7 @@ def step_intervals():
         "Calibrated on 2012 onward (where SNPP observations exist); coverage before 2012 is not guaranteed.",
         "Coverage is measured on randomly drawn rectangles in held-out test blocks; very large or unusual areas may differ.",
         "Rows below 90% coverage are reported as they are; the band is then too narrow for that land cover and season.",
+        "Monthly samples are calendar months: SNPP daily truth against the weekly estimate split over its days.",
         "Built on SYNTHETIC data; rerun on real data before quoting."])
 
 
@@ -58,12 +65,13 @@ def step_interval_report():
     cells = pd.read_parquet(f"{P}/cells.parquet")
     with open(f"{P}/interval_table.json") as f:
         table = json.load(f)
-    piece("intervals_by_stratum", interval_report.report(oof, cells, table), [
+    piece("intervals_by_stratum", interval_report.report(oof, cells, table, daily=_daily_oof(oof)), [
         "Coverage is measured on random rectangles from held-out test blocks only.",
         "Terra-only diagnostics use overlap-era holdouts, not observed truth for pre-2012.",
         "Area-size groups count unique contributing OOF cells; absent cells are not counted as evaluated.",
         "Nominal 90% does not guarantee conditional coverage; every stop-condition row is reported.",
-        "Relative interval width is a diagnostic, not an optimization target."])
+        "Relative interval width is a diagnostic, not an optimization target.",
+        "Monthly rows are calendar months (daily allocation), matching the served monthly totals."])
 
 
 def step_drift():

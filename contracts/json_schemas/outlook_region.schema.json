@@ -44,7 +44,11 @@
           "format": "date"
         },
         "season_to_date_percentile": {
-          "type": "number"
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Null when the season so far is not fully observed or has no comparable earlier seasons"
         },
         "expected_range": {
           "type": "object",
@@ -112,7 +116,10 @@
           "type": "object",
           "properties": {
             "week_percentile": {
-              "type": "number"
+              "type": [
+                "number",
+                "null"
+              ]
             },
             "level": {
               "enum": [
@@ -120,7 +127,9 @@
                 "low",
                 "none",
                 "watch",
-                "high"
+                "high",
+                "insufficient_history",
+                "incomplete_coverage"
               ]
             },
             "data_through": {
@@ -132,9 +141,13 @@
             },
             "data_source": {
               "enum": [
+                "observed_viirs",
+                "adjusted_from_noaa20",
+                "modeled_from_modis",
+                "mixed",
+                "harmonized",
                 "VIIRS_NOAA20_NRT",
-                "VIIRS_NOAA21_NRT",
-                "harmonized"
+                "VIIRS_NOAA21_NRT"
               ]
             }
           },
@@ -143,6 +156,13 @@
             "level",
             "data_through",
             "message"
+          ]
+        },
+        "season_to_date_status": {
+          "enum": [
+            "ok",
+            "insufficient_history",
+            "incomplete_coverage"
           ]
         }
       }

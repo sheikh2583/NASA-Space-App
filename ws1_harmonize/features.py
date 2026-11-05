@@ -30,9 +30,20 @@ def _neighbour_sum(p: pd.DataFrame, col: str) -> np.ndarray:
     return total
 
 
+def _calendar_offset(p: pd.DataFrame, col: str, days: int) -> np.ndarray:
+    """col of the same cell exactly `days` calendar days away; 0 when that week is not in the panel.
+    A row shift would treat the next available row as adjacent even across missing weeks."""
+    key = p.set_index(["cell_id", "week_start"])[col]
+    target = pd.MultiIndex.from_arrays([p["cell_id"].values, p["week_start"].values + np.timedelta64(days, "D")])
+    return key.reindex(target).fillna(0).values
+
+
 def build_features(panel: pd.DataFrame, combo: str | None = None) -> pd.DataFrame:
     """Feature frame aligned with panel rows. combo='terra_only' zeroes Aqua inputs (used for Nov 2000 - Jul 2002
-    and to teach the model Terra-only inputs on overlap years)."""
+    and to teach the model Terra-only inputs on overlap years).
+
+    Lag and neighbour features read the rows passed in, so pass the full panel and select rows afterwards
+    (training_frame and predict do this); a filtered panel would lose context."""
     p = panel.sort_values(["cell_id", "week_start"])
     combo_s = pd.Series(combo, index=p.index) if combo else p["sat_combo"]
     aqua_on = (combo_s == "terra_aqua").astype("float32").values
@@ -50,8 +61,8 @@ def build_features(panel: pd.DataFrame, combo: str | None = None) -> pd.DataFram
     f["aqua_scan"] = np.where(aqua_on > 0, p["aqua_scan_w"], np.nan)
     tmp = p[["cell_id", "week_start"]].assign(m=f["modis_n"].values)
     f["nb_modis_n"] = _neighbour_sum(tmp, "m")
-    f["prev_modis_n"] = tmp.groupby("cell_id")["m"].shift(1).fillna(0).values
-    f["next_modis_n"] = tmp.groupby("cell_id")["m"].shift(-1).fillna(0).values
+    f["prev_modis_n"] = _calendar_offset(tmp, "m", -7)
+    f["next_modis_n"] = _calendar_offset(tmp, "m", 7)
     doy = p["week_start"].dt.dayofyear.values
     f["doy_sin"], f["doy_cos"] = np.sin(2 * np.pi * doy / 365.25), np.cos(2 * np.pi * doy / 365.25)
     f["lat_coarse"], f["lon_coarse"] = np.round(p["lat_c"], 0), np.round(p["lon_c"], 0)

@@ -23,7 +23,10 @@ def test_last_week_is_partial_and_earlier_weeks_are_complete(tiny_api):
     pts = doc["series"]
     last = [p for p in pts if p["t"] == "2016-12-26"]
     assert len(last) == 1 and last[0]["complete"] is False and last[0]["n_days"] == 6
-    earlier = [p for p in pts if p["t"] < "2016-12-26"]
+    # The tiny record starts on Thursday 1 Jan 2004: its first week has 4 observed days and is not complete.
+    first = [p for p in pts if p["t"] == "2003-12-29"]
+    assert len(first) == 1 and first[0]["complete"] is False and first[0]["n_days"] == 4
+    earlier = [p for p in pts if "2003-12-29" < p["t"] < "2016-12-26"]
     assert earlier and all(p["complete"] is True and p["n_days"] == 7 for p in earlier)
 
 

@@ -24,17 +24,19 @@ def fake_history(monkeypatch, history, record_end):
     api._cache.clear()
 
 
-@pytest.mark.parametrize("values", [[], [30.0], [np.nan]])
-def test_short_reference_history_is_http_200_with_nulls_and_valid_contract(tiny_api, monkeypatch, values):
+@pytest.mark.parametrize("values,level", [([], "insufficient_history"), ([30.0], "insufficient_history"),
+                                          ([np.nan], "incomplete_coverage")])
+def test_short_reference_history_is_http_200_with_nulls_and_valid_contract(tiny_api, monkeypatch, values, level):
     history = pd.DataFrame({"week_start": pd.date_range("2026-10-26", periods=len(values), freq="7D"),
                             "value": values, "source": ["observed_viirs"] * len(values)})
     fake_history(monkeypatch, history, "2026-11-01")
     response = tiny_api.post("/aoi/outlook", json=tiny_request("bd"))
     assert response.status_code == 200
     result = response.json()
-    assert result["current_status"]["level"] == "insufficient_history"
+    assert result["current_status"]["level"] == level
     assert result["current_status"]["week_percentile"] is None
     assert result["season_to_date_percentile"] is None
+    assert result["season_to_date_status"] == level
     assert result["current_status"]["data_through"] == "2026-11-01"
     if values and np.isfinite(values[0]):
         assert result["current_status"]["data_source"] == "observed_viirs"

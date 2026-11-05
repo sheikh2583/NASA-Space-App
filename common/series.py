@@ -71,8 +71,9 @@ def weekly_series(harmonized: pd.DataFrame, cells: pd.DataFrame, region_ids=None
                   table: dict | None = None, source_calendar: pd.Series | None = None) -> pd.DataFrame:
     """Aggregate cell-day values to an AOI series.
 
-    Returns columns week_start, value, lo, hi, modeled_share, source, drift_flag (week_start is the period start
-    for any res). lo/hi are NaN when no interval table is given or res == 'day'. Observed SNPP days contribute
+    Returns columns week_start, value, lo, hi, modeled_share, source, drift_flag, n_days (week_start is the period
+    start for any res; n_days counts days in the period with an operating sensor, so a partially observed period
+    can be told apart from a verified zero). lo/hi are NaN when no interval table is given or res == 'day'. Observed SNPP days contribute
     to lo and hi unchanged (decision 21); the interval is applied to the adjusted and modeled part.
     source_calendar may supply the sensor_days-derived daily sources once per immutable Store.
     """
@@ -139,4 +140,5 @@ def weekly_series(harmonized: pd.DataFrame, cells: pd.DataFrame, region_ids=None
             his.append(obs + (hi if hi is not None else row["nonobs"]))
         out["lo"], out["hi"] = los, his
     out = out.reset_index().rename(columns={"period": "week_start"})
-    return out[["week_start", "value", "lo", "hi", "modeled_share", "source", "drift_flag"]]
+    out["n_days"] = out["n_days"].astype(int)
+    return out[["week_start", "value", "lo", "hi", "modeled_share", "source", "drift_flag", "n_days"]]

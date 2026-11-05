@@ -25,7 +25,7 @@ LEVEL_WORDS = {"none": "within the usual range", "watch": "higher than usual", "
 
 def _prep(weekly: pd.DataFrame, as_of, *, record_end=None) -> pd.DataFrame:
     """Keep weeks complete by the issue date and, when supplied, the actual record end."""
-    w = weekly[["week_start", "value"] + [c for c in ("lo", "hi", "source") if c in weekly]].copy()
+    w = weekly[["week_start", "value"] + [c for c in ("lo", "hi", "source", "n_days") if c in weekly]].copy()
     w["week_start"] = pd.to_datetime(w["week_start"])
     cutoff = pd.Timestamp(as_of)
     if record_end is not None:
@@ -33,20 +33,44 @@ def _prep(weekly: pd.DataFrame, as_of, *, record_end=None) -> pd.DataFrame:
     return w[w["week_start"] + pd.Timedelta(days=6) <= cutoff].sort_values("week_start").reset_index(drop=True)
 
 
+def _known(w: pd.DataFrame) -> pd.Series:
+    """A week's value is known when it has a value and, if the series reports operating days, all 7 days were
+    observed. A verified zero is known; a week with no or partial satellite coverage is not (never zero)."""
+    ok = w["value"].notna()
+    if "n_days" in w:
+        ok &= w["n_days"].fillna(0) >= 7
+    return ok
+
+
+def _coverage_days(row) -> int:
+    if "n_days" in row and pd.notna(row["n_days"]):
+        return int(row["n_days"])
+    return 0 if pd.isna(row["value"]) else 7
+
+
 def current_status(weekly: pd.DataFrame, as_of, data_through=None, *, record_end=None) -> dict:
-    w = _prep(weekly, as_of, record_end=record_end).dropna(subset=["value"])
+    w = _prep(weekly, as_of, record_end=record_end)
     if w.empty:
         through = data_through or record_end or as_of
         return {"week_percentile": None, "level": "insufficient_history",
                 "data_through": pd.Timestamp(through).date().isoformat(),
                 "message": "No complete week with data is available for this area."}
+    w["known"] = _known(w).values
     last = w.iloc[-1]
     data_source = last.get("source", "harmonized")
     if pd.isna(data_source):
-        data_source = "harmonized"
+        data_source = None
     through = data_through or (last["week_start"] + pd.Timedelta(days=6)).date().isoformat()
+    week_txt = last["week_start"].strftime("%d %b %Y")
+    if not last["known"]:
+        out = {"week_percentile": None, "level": "incomplete_coverage", "data_through": str(through),
+               "message": (f"Satellites observed {_coverage_days(last)} of 7 days in the week of {week_txt}, "
+                           "so it is not compared with earlier years.")}
+        return {**out, "data_source": data_source} if data_source else out
+    data_source = data_source or "harmonized"
+    ref = w[w["known"]]
     wk = week_of_year([last["week_start"]]).iloc[0]
-    same = w[(week_of_year(w["week_start"]).values == wk) & (w["week_start"] < last["week_start"])]["value"]
+    same = ref[(week_of_year(ref["week_start"]).values == wk) & (ref["week_start"] < last["week_start"])]["value"]
     if same.empty:
         return {"week_percentile": None, "level": "insufficient_history", "data_through": str(through),
                 "data_source": data_source, "message": "Not enough same-week history to compare burning activity."}
@@ -70,7 +94,6 @@ def current_status(weekly: pd.DataFrame, as_of, data_through=None, *, record_end
         level = "low"
     else:
         level = "none"
-    week_txt = last["week_start"].strftime("%d %b %Y")
     n = int(same.notna().sum())
     if small and typical < MIN_CHANGE:
         msg = f"Little or no burning in the week of {week_txt}, as usual for this time of year."
@@ -81,18 +104,30 @@ def current_status(weekly: pd.DataFrame, as_of, data_through=None, *, record_end
             "data_source": data_source, "message": msg}
 
 
+_NO_RANGE = {"q10": 0.0, "q50": 0.0, "q90": 0.0}
+
+
 def season_position(weekly: pd.DataFrame, as_of, *, record_end=None) -> dict:
-    # C07: missing-to-zero handling is unchanged pending a separate scientific specification.
-    w = cumulative_by_season(_prep(weekly, as_of, record_end=record_end).fillna({"value": 0}))
+    """Season-to-date percentile. A season is comparable up to a week only while every week so far is known
+    (_known); unknown or partially observed weeks never count as zero (C07)."""
+    w = _prep(weekly, as_of, record_end=record_end)
     if w.empty:
-        return {"season_to_date_percentile": None, "expected_range": {"q10": 0.0, "q50": 0.0, "q90": 0.0}}
+        return {"season_to_date_percentile": None, "season_to_date_status": "insufficient_history",
+                "expected_range": dict(_NO_RANGE)}
+    w["known"] = _known(w).values
+    w = cumulative_by_season(w)
+    w["season_ok"] = w.groupby("season")["known"].transform(lambda s: s.astype(int).cummin().astype(bool))
     cur = w.iloc[-1]
-    prev = w[(w["season"] < cur["season"]) & (w["week_of_season"] == cur["week_of_season"])]["cum_value"].values
+    if not cur["season_ok"]:
+        return {"season_to_date_percentile": None, "season_to_date_status": "incomplete_coverage",
+                "expected_range": dict(_NO_RANGE)}
+    prev = w[(w["season"] < cur["season"]) & (w["week_of_season"] == cur["week_of_season"]) & w["season_ok"]]["cum_value"].values
     if not prev.size:
-        return {"season_to_date_percentile": None, "expected_range": {"q10": 0.0, "q50": 0.0, "q90": 0.0}}
+        return {"season_to_date_percentile": None, "season_to_date_status": "insufficient_history",
+                "expected_range": dict(_NO_RANGE)}
     pct = percentile_of(float(cur["cum_value"]), prev)
-    q = np.quantile(prev, [0.1, 0.5, 0.9]) if prev.size else [0, 0, 0]
-    return {"season_to_date_percentile": round(float(pct), 1),
+    q = np.quantile(prev, [0.1, 0.5, 0.9])
+    return {"season_to_date_percentile": round(float(pct), 1), "season_to_date_status": "ok",
             "expected_range": {"q10": round(float(q[0]), 1), "q50": round(float(q[1]), 1), "q90": round(float(q[2]), 1)}}
 
 

@@ -57,6 +57,30 @@ describe("StatusCard", () => {
     expect(text).toContain(`Evaluated week source: ${label}`);
     expect(text).not.toContain("Near-real-time source");
   });
+
+  it("says when the latest week was not fully observed instead of comparing it", async () => {
+    const text = textOf(await renderHtml(<StatusCard o={outlookWith("incomplete_coverage", null)} />, "en"));
+    expect(text).toContain("Incomplete coverage");
+    expect(text).toContain("did not observe every day");
+    expect(text).not.toContain("Not enough complete same-week history");
+    expect(text).not.toContain("Percentile");
+  });
+});
+
+describe("OutlookPanel with incomplete coverage", () => {
+  it("explains unobserved weeks rather than missing history", async () => {
+    const o: OutlookResponse = {
+      schema_version: "0.2.0", units: "detections", day_convention: "local_solar_date",
+      region: { region_id: "r", region_name: "Test region" }, as_of: "2026-11-02",
+      current_status: outlookWith("incomplete_coverage", null).current_status,
+      season_to_date_percentile: null, season_to_date_status: "incomplete_coverage",
+      expected_range: { q10: 0, q50: 0, q90: 0 },
+      skill: { n_seasons: 0 }, status: "no_demonstrated_skill", alert: { level: "none" },
+    };
+    const text = textOf(await renderHtml(<OutlookPanel o={o} />, "en"));
+    expect(text).toContain("not fully observed");
+    expect(text).not.toContain("Not enough earlier seasons");
+  });
 });
 
 describe("OutlookPanel with insufficient history", () => {

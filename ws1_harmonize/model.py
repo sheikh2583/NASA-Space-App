@@ -24,8 +24,9 @@ def training_frame(panel: pd.DataFrame, mask: np.ndarray | None = None):
     if mask is not None:
         ok &= mask
     p = panel[ok]
-    fa = build_features(p, "terra_aqua")
-    ft = build_features(p, "terra_only")
+    # Features come from the full panel (same MODIS context as prediction); only the rows are selected.
+    fa = build_features(panel, "terra_aqua")[ok]
+    ft = build_features(panel, "terra_only")[ok]
     X = pd.concat([fa, ft], ignore_index=True)
     y = np.concatenate([p["snpp_n"].values, p["snpp_n"].values])
     yf = np.concatenate([p["snpp_frp"].values, p["snpp_frp"].values])
@@ -46,8 +47,11 @@ def fit(panel: pd.DataFrame, mask: np.ndarray | None = None, rounds: int = 300) 
     return {"count": count, "frp": frp, "backend": compute.backend(), "features": list(X.columns), "n_train_rows": int(len(X))}
 
 
-def predict(models: dict, panel: pd.DataFrame, combo: str | None = None):
+def predict(models: dict, panel: pd.DataFrame, combo: str | None = None, rows: np.ndarray | None = None):
+    """Predict panel rows (or only `rows`, a boolean mask) with features built from the whole panel."""
     X = build_features(panel, combo)[models["features"]]
+    if rows is not None:
+        X = X[np.asarray(rows, dtype=bool)]
     if models.get("backend") == "cuda":
         return compute.predict_cuda(models["count"], X), compute.predict_cuda(models["frp"], X)
     return models["count"].predict(X), models["frp"].predict(X)

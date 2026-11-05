@@ -26,6 +26,30 @@ def run_pytest(path, env_extra=None):
     return {"check": path, "result": "pass" if r.returncode == 0 else "fail", "detail": tail, **m}
 
 
+def interval_acceptance(report: dict | None) -> dict:
+    """Scientific acceptance of the uncertainty bands from intervals_by_stratum.json, kept separate from the
+    engineering checks. A missing report is never read as accepted."""
+    if not report:
+        return {"status": "missing", "stop_rows": [], "positive_activity_coverage": {}}
+    m = report.get("metrics", {})
+    rows = m.get("rows", [])
+    positive = {f"{r['res']}|{r['sat_combo']}": r.get("coverage") for r in rows
+                if r.get("dimension") == "activity" and r.get("value") == "positive"}
+    stop = [{"stratum": r.get("stratum"), "n": r.get("n"), "coverage": r.get("coverage")} for r in m.get("stop_rows", [])]
+    return {"status": m.get("acceptance_status", "missing"), "stop_rows": stop, "positive_activity_coverage": positive,
+            "month_target": m.get("month_target", "legacy_whole_weeks_by_monday_month")}
+
+
+def bands_sentence(acceptance: dict) -> str:
+    if acceptance["status"] == "reported":
+        return "no large group fell below 80% coverage, though 90% remains a nominal, not per-group, target"
+    if acceptance["status"] == "stop_condition":
+        pos = ", ".join(f"{k} {v:.2f}" for k, v in acceptance["positive_activity_coverage"].items() if v is not None)
+        return (f"SCIENTIFIC STOP CONDITION: {len(acceptance['stop_rows'])} groups with 500 or more samples fall below 80% "
+                f"coverage (weeks/months with burning: {pos}); the bands are not accepted")
+    return "the detailed interval report is missing, so the bands are not accepted"
+
+
 def flag_rates() -> dict:
     an = pd.read_parquet(f"{P}/anomalies_region_week.parquet")
     an["year"] = pd.to_datetime(an["week_start"]).dt.year
@@ -72,23 +96,29 @@ def main(argv=None):
     hv = json.load(open(f"{P}/validation/harmonization.json"))["metrics"]["method_chosen"] if os.path.exists(f"{P}/validation/harmonization.json") else {}
     iv = json.load(open(f"{P}/validation/intervals.json"))["metrics"]["coverage"] if os.path.exists(f"{P}/validation/intervals.json") else []
     cov = {r["res"]: r["coverage"] for r in iv if r["landcover"] == "all"}
+    detail_path = f"{P}/validation/intervals_by_stratum.json"
+    acceptance = interval_acceptance(json.load(open(detail_path)) if os.path.exists(detail_path) else None)
+    bands = bands_sentence(acceptance)
     summary = [
         f"What was checked: {len(checks)} groups of automated checks on the data files, every API endpoint against the contract, "
         f"and the demo path for Bangladesh and Punjab ({n_pass} of {len(checks)} passed).",
         f"How well it held up: the {'per-region ratio (B1)' if hv.get('method') == 'b1' else 'learned model'} was chosen by held-out agreement "
-        f"(selection mean Lin's CCC {hv.get('selection_mean_ccc', hv.get('mean_ccc', {}))}); the 90% bands covered {cov.get('week', 'n/a')} of held-out weekly totals.",
+        f"(selection mean Lin's CCC {hv.get('selection_mean_ccc', hv.get('mean_ccc', {}))}; selection diagnostics, not an untouched confirmation). "
+        f"Uncertainty bands: overall held-out weekly coverage {cov.get('week', 'n/a')} against a nominal 90%, but {bands}.",
         "Where it is weak: values before 2012 are modeled and whole unusually-strong seasons may be flagged only at their edges. "
         + ("This run uses downloaded FIRMS observations." if real_data else "This development run uses synthetic FIRMS-like observations."),
     ]
     limitations = [
-        "Values before VIIRS began in 2012 are modeled from MODIS and include calibrated uncertainty.",
+        "Values before VIIRS began in 2012 are modeled from MODIS; their bands are calibrated on 2012+ overlap years and are not validated against pre-2012 observations.",
+        "Passing engineering checks is not scientific acceptance; see scientific_acceptance for the interval stop condition.",
         "The manual FIRMS web-viewer comparison (QA_CHECKLIST) must be done by a person on real data.",
         "Bangla text has not yet been reviewed by a fluent reader.",
     ]
     if not real_data:
         limitations.insert(0, "Synthetic data: the checks prove the pipeline and contracts, not real-world accuracy.")
     piece = {"schema_version": "1.0", "generated_at": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
-             "producer": "qa", "metrics": {"summary": summary, "checks": checks, "seam_flag_rates": fr, "planted_anomalies": pl},
+             "producer": "qa", "metrics": {"summary": summary, "checks": checks, "scientific_acceptance": {"intervals": acceptance},
+                                                     "seam_flag_rates": fr, "planted_anomalies": pl},
              "limitations": limitations}
     os.makedirs(f"{P}/validation", exist_ok=True)
     with open(f"{P}/validation/qa.json", "w") as f:

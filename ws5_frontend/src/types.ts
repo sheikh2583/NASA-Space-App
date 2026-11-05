@@ -2,7 +2,7 @@
 export type Source = "observed_viirs" | "adjusted_from_noaa20" | "modeled_from_modis" | "mixed";
 export type Res = "day" | "week" | "month";
 export type Level = "none" | "watch" | "high";
-export type StatusLevel = Level | "low" | "very_low" | "insufficient_history";
+export type StatusLevel = Level | "low" | "very_low" | "insufficient_history" | "incomplete_coverage";
 
 export interface AOIRequest {
   area_id?: string;
@@ -71,6 +71,7 @@ export interface CurrentStatus {
 }
 export interface OutlookResponse extends Envelope {
   region: Region; as_of: string; current_status: CurrentStatus; season_to_date_percentile: number | null;
+  season_to_date_status?: "ok" | "insufficient_history" | "incomplete_coverage";
   expected_range: { q10: number; q50: number; q90: number };
   skill: { vs_climatology?: number; vs_persistence?: number; ci?: [number, number]; n_seasons?: number };
   status: "skill" | "no_demonstrated_skill"; alert: { level: Level; rule?: string };

@@ -12,7 +12,8 @@ export function StatusCard({ o }: { o: OutlookResponse }) {
       <div className="status">
         <div className={`level ${cs.level}`}>{t(`status.level_${cs.level}`)}</div>
         <div>{cs.week_percentile === null
-          ? t("status.insufficient_history") : t("status.percentile", { p: num(cs.week_percentile) })}</div>
+          ? t(cs.level === "incomplete_coverage" ? "status.incomplete_coverage" : "status.insufficient_history")
+          : t("status.percentile", { p: num(cs.week_percentile) })}</div>
         <div className="meta">{t("status.data_through", { date: date(cs.data_through) })}</div>
         <div className="meta">{cs.data_source
           ? t("status.source", { source: t(`source.${cs.data_source}`, { defaultValue: cs.data_source }) }) : null}</div>
@@ -83,7 +84,7 @@ export function OutlookPanel({ o }: { o: OutlookResponse }) {
     <section className="card" aria-labelledby="outlook-h">
       <div className="card-title"><h2 id="outlook-h">{t("outlook.title")}</h2><HelpButton topic="outlook" /></div>
       {o.season_to_date_percentile === null
-        ? <p>{t("outlook.insufficient_history")}</p>
+        ? <p>{t(o.season_to_date_status === "incomplete_coverage" ? "outlook.incomplete_coverage" : "outlook.insufficient_history")}</p>
         : <>
           <p>{t("outlook.std", { p: num(o.season_to_date_percentile) })}</p>
           <p className="meta">{t("outlook.range", { q10: num(r.q10), q50: num(r.q50), q90: num(r.q90) })}</p>

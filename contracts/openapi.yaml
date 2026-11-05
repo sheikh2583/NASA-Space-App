@@ -218,7 +218,7 @@ components:
         drift_flag: { type: boolean }
         anomaly: { $ref: '#/components/schemas/Anomaly' }
         complete: { type: boolean, description: false when the period extends past the last day with data }
-        n_days: { type: integer, minimum: 0, description: days of the period that have data }
+        n_days: { type: integer, minimum: 0, description: days of the period (within the request and record) with an operating satellite }
     SeasonProfileResponse:
       description: >-
         Season profile. The full shape of each entry in seasons is contracts/json_schemas/season_profile.schema.json
@@ -339,8 +339,8 @@ components:
       enum: [none, watch, high]
     StatusLevel:
       type: string
-      description: Current-status level; insufficient_history means no complete week or same-week reference is available.
-      enum: [very_low, low, none, watch, high, insufficient_history]
+      description: Current-status level; insufficient_history means no complete week or same-week reference is available; incomplete_coverage means the latest complete week was not observed on all 7 days, so it is not compared.
+      enum: [very_low, low, none, watch, high, insufficient_history, incomplete_coverage]
     CurrentStatus:
       type: object
       description: Core, never cut (decision 14). Evaluates the latest week complete by both as_of and the actual record end.
@@ -363,7 +363,11 @@ components:
             region: { $ref: '#/components/schemas/Region' }
             as_of: { type: string, format: date }
             current_status: { $ref: '#/components/schemas/CurrentStatus' }
-            season_to_date_percentile: { type: number, nullable: true, description: Null when no earlier same-position season is available }
+            season_to_date_percentile: { type: number, nullable: true, description: Null when the season so far is not fully observed or no earlier same-position season is available }
+            season_to_date_status:
+              type: string
+              description: Why season_to_date_percentile is or is not available. Unobserved weeks are never counted as zero.
+              enum: [ok, insufficient_history, incomplete_coverage]
             expected_range:
               type: object
               description: Historical range; interpret only when season_to_date_percentile is non-null.

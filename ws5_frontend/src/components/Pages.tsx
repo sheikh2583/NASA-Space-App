@@ -79,7 +79,7 @@ export function ValidationPage() {
           typeof row.coverage === "number" && row.coverage < 0.8) &&
           <p className="warn" role="status">{t("validation.stop_condition")}</p>}
         <p className="note">{t("validation.by_stratum_note")}</p>
-        {ivs?.rows && <Table rows={ivs.rows} cols={["stratum", "n", "coverage", "interval_score"]}
+        {ivs?.rows && <Table rows={ivs.rows} cols={["stratum", "n", "coverage", "mean_width", "interval_score"]}
           rowClassName={(row) => typeof row.coverage === "number" && row.coverage < 0.85 ? "warn" : undefined} />}
       </PieceCard>
       <PieceCard title={t("validation.drift")} p={P.drift}>

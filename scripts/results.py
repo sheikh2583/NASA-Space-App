@@ -30,6 +30,7 @@ def build_summary() -> dict:
         "intervals": intervals.get("metrics", {}),
         "drift": drift.get("metrics", {}),
         "outlook": outlook.get("metrics", {}),
+        "scientific_acceptance": qa.get("metrics", {}).get("scientific_acceptance", {}),
         "qa": {
             "passed": sum(c.get("passed", 1) for c in checks if c.get("result") == "pass"),
             "failed": sum(c.get("failed", 1) for c in checks if c.get("result") == "fail"),
@@ -40,13 +41,16 @@ def build_summary() -> dict:
 
 def markdown(summary: dict) -> str:
     qa = summary["qa"]
+    acceptance = (summary.get("scientific_acceptance") or {}).get("intervals", {})
     model = summary.get("model") or {}
     lines = [
         "# Latest pipeline results",
         "",
         f"Generated: `{summary['generated_at']}`  ",
         f"Data mode: **{summary['data_mode']}**  ",
-        f"QA: **{qa['passed']} passed, {qa['failed']} failed**",
+        f"QA (engineering checks): **{qa['passed']} passed, {qa['failed']} failed**  ",
+        f"Interval acceptance (scientific): **{acceptance.get('status', 'missing')}**"
+        + (f" ({len(acceptance.get('stop_rows', []))} large groups below 80% coverage)" if acceptance.get("stop_rows") else ""),
         "",
         "## Selected model",
         "",

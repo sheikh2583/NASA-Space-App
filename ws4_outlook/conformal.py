@@ -9,6 +9,11 @@
    lo = (pred + 1) e^-q - 1, bounded below by lo_mult x pred with lo_mult taken at the bin's lower edge.
 4. Coverage on the same sampling over test blocks, by land cover and season, next to the nominal 90%.
 Caveat: calibration uses 2012+ overlap rows; coverage before 2012 has no guarantee (docs/project/known-gaps.md, item 10).
+
+Monthly target: the served monthly value sums days into calendar months, so monthly samples are built the same way
+(daily_oof): SNPP daily detections as truth, and each held-out weekly estimate split over its days with the rule
+write_harmonized uses for the served table. Only calendar months fully covered by overlap weeks are sampled. Without
+daily rows (tiny tests) the legacy target, whole weeks grouped by their Monday's month, is used and labelled.
 """
 from __future__ import annotations
 
@@ -24,10 +29,100 @@ LEVEL = 0.9
 BINS = [2.0, 10.0, 50.0, 250.0, None]
 
 
+CALENDAR_MONTH = "calendar_month_daily_allocation"
+LEGACY_MONTH = "legacy_whole_weeks_by_monday_month"
+
+
+def month_target(daily: pd.DataFrame | None) -> str:
+    return CALENDAR_MONTH if daily is not None else LEGACY_MONTH
+
+
+def daily_oof(oof: pd.DataFrame, grid: pd.DataFrame, splits=("calib", "test")) -> pd.DataFrame:
+    """Held-out weekly OOF rows -> cell-day rows (cell_id, date, y_true_count, y_pred_count, block_id, split, sat_combo).
+
+    Truth is the SNPP daily detection count. The weekly prediction is split over its days in proportion to MODIS
+    daily detections (Terra only for terra_only), else booked on the Monday: write_harmonized.disaggregate, the
+    rule behind the served table. Raises if daily SNPP truth does not add up to the weekly OOF truth."""
+    from ws1_harmonize.panel import week_start
+    from ws1_harmonize.write_harmonized import disaggregate
+
+    o = oof[oof["split"].isin(splits)].copy()
+    o["week_start"] = pd.to_datetime(o["date"])
+    keys = o[o["sat_combo"] == o["sat_combo"].iloc[0]][["cell_id", "week_start", "y_true_count", "block_id", "split"]] \
+        if len(o) else o[["cell_id", "week_start", "y_true_count", "block_id", "split"]]
+    g = grid[grid["cell_id"].isin(keys["cell_id"].unique())][["cell_id", "date", "sat", "n_det"]].copy()
+    g["date"] = pd.to_datetime(g["date"])
+    snpp = g[g["sat"] == "SNPP"].assign(week_start=lambda x: week_start(x["date"]).values)
+    snpp = snpp.merge(keys[["cell_id", "week_start"]], on=["cell_id", "week_start"])
+    weekly = snpp.groupby(["cell_id", "week_start"])["n_det"].sum()
+    check = keys.set_index(["cell_id", "week_start"])["y_true_count"].astype("float64")
+    diff = (weekly.reindex(check.index).fillna(0) - check).abs()
+    if (diff > 1e-6).any():
+        raise ValueError(f"Daily SNPP truth disagrees with weekly OOF truth for {int((diff > 1e-6).sum())} cell-weeks")
+    truth = snpp.groupby(["cell_id", "date"])["n_det"].sum().rename("y_true_count").reset_index()
+    frames = []
+    for combo, rows in o.groupby("sat_combo"):
+        panel = rows[["cell_id", "week_start"]].assign(sat_combo=combo).reset_index(drop=True)
+        pred = rows["y_pred_count"].to_numpy("float64")
+        d = disaggregate(panel, pred, np.zeros_like(pred), g)
+        d = d.rename(columns={"modeled_count": "y_pred_count"})[["cell_id", "date", "y_pred_count"]]
+        d["date"] = pd.to_datetime(d["date"])
+        d = d.merge(truth, on=["cell_id", "date"], how="outer").fillna({"y_pred_count": 0.0, "y_true_count": 0.0})
+        frames.append(d.assign(sat_combo=combo))
+    out = pd.concat(frames, ignore_index=True) if frames else pd.DataFrame(
+        columns=["cell_id", "date", "y_pred_count", "y_true_count", "sat_combo"])
+    labels = keys.drop_duplicates("cell_id").set_index("cell_id")
+    out["block_id"] = out["cell_id"].map(labels["block_id"])
+    out["split"] = out["cell_id"].map(labels["split"])
+    return out
+
+
+def _complete_months(week_starts) -> list:
+    """Calendar months whose every day lies in one of the given (overlap) weeks."""
+    weeks = pd.to_datetime(pd.Series(pd.unique(week_starts)))
+    if weeks.empty:
+        return []
+    days = pd.DatetimeIndex(np.unique(np.concatenate([(weeks + pd.Timedelta(days=k)).values for k in range(7)])))
+    months = days.to_period("M")
+    counts = pd.Series(1, index=months).groupby(level=0).sum()
+    return [m.start_time for m, c in counts.items() if c == m.days_in_month]
+
+
+def _calendar_month_samples(d: pd.DataFrame, daily: pd.DataFrame, cells: pd.DataFrame, split: str, n: int, rng, *,
+                            sat_combo: str, max_side: int) -> pd.DataFrame:
+    block_cells = {b: np.sort(g["cell_id"].unique()) for b, g in d.groupby("block_id")}
+    blocks = list(block_cells)
+    periods = _complete_months(d["date"])
+    dd = daily[(daily["split"] == split) & (daily["sat_combo"] == sat_combo)].copy()
+    dd["period"] = pd.to_datetime(dd["date"]).dt.to_period("M").dt.start_time
+    sums = dd[dd["period"].isin(periods)].groupby(["period", "cell_id"])[["y_true_count", "y_pred_count"]].sum()
+    lc_of = cells.set_index("cell_id")["landcover_dom"]
+    rows = []
+    for _ in range(n if blocks and periods else 0):
+        ids = block_cells[blocks[rng.integers(len(blocks))]]
+        c0 = ids[rng.integers(len(ids))]
+        h, w = rng.integers(1, max_side + 1, 2)
+        i0, j0 = divmod(int(c0), N_COLS)
+        sel = np.intersect1d(ids, [(i0 + a) * N_COLS + (j0 + b) for a in range(h) for b in range(w)])
+        t = periods[rng.integers(len(periods))]
+        if not sel.size:
+            continue
+        v = sums.reindex(pd.MultiIndex.from_product([[t], sel])).fillna(0.0)
+        lcs = lc_of.reindex(sel).dropna()
+        lc = lcs.mode().iloc[0] if len(lcs) else "unknown"
+        rows.append((t, lc, float(v["y_true_count"].sum()), float(v["y_pred_count"].sum()), int(sel.size), int(h * w)))
+    return pd.DataFrame(rows, columns=["period", "landcover", "y", "pred", "n_cells", "drawn_n_cells"])
+
+
 def _aggregate_samples(oof: pd.DataFrame, cells: pd.DataFrame, split: str, n: int, res: str, rng, *,
-                       sat_combo: str = "terra_aqua", max_side: int = 10) -> pd.DataFrame:
+                       sat_combo: str = "terra_aqua", max_side: int = 10, daily: pd.DataFrame | None = None) -> pd.DataFrame:
     d = oof[(oof["split"] == split) & (oof["sat_combo"] == sat_combo)].copy()
     d["date"] = pd.to_datetime(d["date"])
+    if res == "month" and daily is not None:
+        out = _calendar_month_samples(d, daily, cells, split, n, rng, sat_combo=sat_combo, max_side=max_side)
+        out["season"] = pd.to_datetime(out["period"]).dt.month.map(season_label)
+        out["score"] = np.abs(np.log((out["y"] + 1) / (out["pred"] + 1)))
+        return out
     d = d.merge(cells[["cell_id", "landcover_dom"]], on="cell_id", how="left")
     if res == "month":
         d["period"] = d["date"].dt.to_period("M").dt.start_time
@@ -68,12 +163,13 @@ def _conformal_q(scores: np.ndarray) -> float:
     return float(np.sort(scores)[k - 1])
 
 
-def build_table(oof: pd.DataFrame, cells: pd.DataFrame, n_samples: int = 6000, seed: int = 1) -> tuple[dict, dict]:
+def build_table(oof: pd.DataFrame, cells: pd.DataFrame, n_samples: int = 6000, seed: int = 1,
+                daily: pd.DataFrame | None = None) -> tuple[dict, dict]:
     rng = np.random.default_rng(seed)
     entries, cover_rows = [], []
     for res in ("week", "month"):
-        cal = _aggregate_samples(oof, cells, "calib", n_samples, res, rng)
-        test = _aggregate_samples(oof, cells, "test", n_samples // 2, res, rng)
+        cal = _aggregate_samples(oof, cells, "calib", n_samples, res, rng, daily=daily)
+        test = _aggregate_samples(oof, cells, "test", n_samples // 2, res, rng, daily=daily)
         cal["bin"] = _bin_of(cal["pred"].values)
         groups = [("all", cal)] + [(f"landcover:{lc}|season:{s}", g) for (lc, s), g in cal.groupby(["landcover", "season"])]
         for stratum, g in groups:
@@ -101,4 +197,5 @@ def build_table(oof: pd.DataFrame, cells: pd.DataFrame, n_samples: int = 6000, s
                            "coverage": round(metrics.coverage(test["y"], test["lo"], test["hi"]), 3),
                            "mean_width": round(float((test["hi"] - test["lo"]).mean()), 2),
                            "interval_score": round(metrics.interval_score(test["y"], test["lo"], test["hi"], 1 - LEVEL), 2)})
-    return {"version": "v1-conformal", "level": LEVEL, "entries": entries}, {"coverage": cover_rows, "nominal": LEVEL}
+    return ({"version": "v1-conformal", "level": LEVEL, "entries": entries},
+            {"coverage": cover_rows, "nominal": LEVEL, "month_target": month_target(daily)})
