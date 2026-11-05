@@ -9,6 +9,7 @@
     "area": {"type": ["string", "null"]},
     "as_of": {"type": "string", "format": "date"},
     "data_through": {"type": ["string", "null"]},
+    "record_data_through": {"type": "string", "format": "date", "description": "API full record end; profile data_through remains the complete-week analysis cutoff."},
     "units": {"type": "string"},
     "definition": {"type": "string"},
     "seasons": {"type": "array", "items": {"$ref": "#/definitions/season"}}

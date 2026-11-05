@@ -3,15 +3,15 @@ id: T49
 title: Verify and publish the reviewed correctness repairs
 kind: agent
 owner: Sheikh
-authors: ["Sheikh", "Shammo", "Samiul"]
+authors: ["Sheikh", "Shammo", "Samiul", "Samin", "Sattyam"]
 phase: P1
 size: M
 needs: ["T42", "T43", "T44", "T45", "T46", "T47", "T48"]
 requires: []
 branch: ws1/T49-repair-release
-touches: ["deployment/runtime.json", "ws5_frontend/public/demo/snapshot.json", "docs/results/training-results.md", "docs/guides/deployment.md"]
-creates: ["docs/results/CORRECTNESS_REPAIR_2026-11-05.md"]
-checks: ["CHECK-PLAN", "CHECK-FILES"]
+touches: ["deployment/runtime.json", "ws5_frontend/public/demo/snapshot.json", "docs/results/training-results.md", "docs/guides/deployment.md", "ws4_outlook/run.py", "ws5_frontend/src/i18n/en.json", "docs/science/method_en.md", "ws2_platform/api/app.py", "contracts/openapi.yaml", "contracts/json_schemas/season_profile.schema.json", "docs/project/contract-changes.md", "scripts/export_hosted_demo.py"]
+creates: ["docs/results/CORRECTNESS_REPAIR_2026-11-05.md", "ws2_platform/tests/test_season_record_end.py"]
+checks: ["CHECK-PLAN", "CHECK-FILES", "python -m pytest -q ws2_platform/tests/test_season_record_end.py"]
 human_checks: [CHECK-QA]
 ---
 ## Goal

@@ -23,7 +23,7 @@ def record_end(client):
 def validate_record_dates(area, expected):
     for endpoint in ("outlook", "season"):
         result = area.get(endpoint, {})
-        actual = result.get("data_through") if endpoint == "season" else result.get("current_status", {}).get("data_through")
+        actual = result.get("record_data_through", result.get("data_through")) if endpoint == "season" else result.get("current_status", {}).get("data_through")
         if actual is not None and actual != expected:
             raise ValueError(f"{endpoint} data_through disagrees with health metadata")
 
