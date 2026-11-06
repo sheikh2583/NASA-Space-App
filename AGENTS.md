@@ -2,32 +2,36 @@
 
 Applies to every coding agent working in this repository, including Codex, Claude, other assistants, and delegated agents. Read this before following task templates or workflow instructions elsewhere in the repository.
 
-## Strict no-training rule
+## Agent-operated training authorization — 6 November 2026
 
-**Coding agents must never execute model training or model fitting. Training is human-operated only.** This includes CPU and CUDA, real and synthetic data, quick and full runs, resumed stages, tiny probes, reference learners, and benchmarks.
+**Sheikh explicitly replaced the no-training policy:** "I give you full reign on training, update and override, now how about that". Agents may implement, train, fit, recalibrate, evaluate and regenerate scientific artifacts as needed for the project roadmap. This supersedes earlier no-training instructions, human-only execution labels and the H03 no-more-training freeze. Do not ask again for permission already granted here.
 
-- Do not execute `workflow.py train`, `workflow.py all`, `run_pipeline.py`, direct model/drift/outlook training stages, or library fitting/training calls.
-- Do not execute `gpu-check`, `compute.probe_cuda()`, or readiness commands (`prepare`, `prepare_training.py`): their verification fits models.
-- Do not run default or training-only setup scripts: they automatically run fitting probes. UI-only setup or dependency installation without probes is allowed after inspecting its execution path.
-- Do not run blanket Python tests, `smoke`, or `workflow.py test`: some tests fit learners. Run only individually reviewed checks that perform no fitting, including fixtures and imported setup code.
-- Do not start training indirectly through a launcher, subprocess, notebook, container entrypoint, remote service, scheduled job, CI dispatch, or another agent. Do not use a code push as a way to obtain training execution or metrics.
-- Do not create, overwrite, or regenerate trained models, calibration fits, model-selection results, or scientific training outputs as part of coding work.
+The authorization includes quick/full/resumed training, B1 and NOAA-20 ratios, learned candidates, drift/outlook fits, interval calibration, readiness/CUDA probes, setup paths that fit, fitting tests, blanket pytest, smoke and integrated QA. Inspect execution paths and use the project's supported CUDA configuration; authorization does not require changing CPU/CUDA implementation constraints.
 
-There is no automatic exception for validation, smoke testing, a small dataset, a fast run, or an available GPU. Earlier training permissions and old task templates do not override this policy. Generic requests to continue, fix, test, initialize, or deploy do not authorize training. Only a direct, explicit change to this policy by the user can change it; do not repeatedly ask for a training exception.
+Use an explicit scientific-run card or run specification: hypothesis, inputs, fit/calibration/selection/test roles, configuration, acceptance criteria and output locations. Diagnose known failures before choosing a repair. Routine card checks remain non-fitting so ordinary UI/documentation work cannot unexpectedly start training.
+
+- Preserve existing validated outputs and raw inputs. Use fresh run directories or verified backups before a runner replaces shared output paths; run only one scientific pipeline per checkout/output tree at a time.
+- Record source revision plus any uncommitted patch, input/artifact hashes, seeds, configuration, environment/device, commands, logs and all relevant holdout results. Keep attempted and failed runs attributable.
+- Keep fitting, calibration, selection and evaluation separated. Do not tune on an inspected test set and call it untouched confirmation. Keep B1 eligible; do not force the learned candidate to win.
+- A successful CUDA fit or engineering QA result is not scientific acceptance. Preserve stop conditions, disclose conditional failures and keep unsupported forecast alerts off.
+- Publication uses a new immutable runtime release only after its evidence is reviewed. Never overwrite an existing release asset or claim a deploy from a push alone.
+- This authorizes scientific execution, not secret disclosure, destructive cleanup, unrequested paid/cloud jobs, participant outreach or changes to the established Git flow.
+
+See [the authorization record](docs/project/training-authorization.md) for precedence and integration with the legacy plan runner.
 
 ## Permitted coding work
 
-- Edit and review pipeline/model code, requirements, scripts, tests, UI, and documentation without executing fits.
-- Inspect existing datasets, saved models, validation metrics, logs, and run reports without modifying scientific artifacts.
-- Run static checks, compilation, dependency checks, frontend checks, and individually reviewed tests that do not fit models.
+- Edit and review pipeline/model code, requirements, scripts, tests, UI, and documentation.
+- Inspect existing datasets, saved models, validation metrics, logs and reports; generate new scientific artifacts through the documented run workflow above.
+- Run static checks, compilation, dependency checks, frontend checks, reviewed tests and planned scientific validation, including fitting where needed.
 - Serve, query, package, and deploy the API/UI using existing validated processed artifacts, after checking that startup/request/build paths do not train. Hosting does not require retraining.
-- Prepare training commands and documentation for a human to run manually. Clearly label them human-only.
+- Prepare and execute reproducible training and validation commands; distinguish routine checks from scientific runs and genuinely human tasks such as user interviews.
 
-If a code change needs numerical validation that requires fitting, finish the permitted implementation and static checks, provide the manual validation commands, and explicitly report that training validation was not run. Never invent new scores or present historical results as validation of changed code.
+When a code change needs numerical validation, perform the planned fitting/evaluation and report actual results and limitations. If execution is unavailable, state the specific blocker and what was not run. Never invent new scores or present historical results as validation of changed code.
 
 Preserve unrelated user edits and the local `codex/` proposal folder. Keep credentials, raw downloads, trained models, and generated run artifacts outside Git; never print secrets. See `CLAUDE.md` for scientific and project conventions, subject to this policy.
 
-## Work plan (subject to the no-training rule above)
+## Work plan
 
 1. **What to do next** comes from the plan, not from you. Run `python scripts/plan.py next`, then follow
    `docs/plan/README.md` section 3 ("The loop"). Read the card in full (`python scripts/plan.py show <ID>`) and
@@ -38,10 +42,18 @@ Preserve unrelated user edits and the local `codex/` proposal folder. Keep crede
    - A card's `checks` hold only agent-safe checks. `python scripts/plan.py check` rejects anything else, and
      `python scripts/plan.py checks <ID> --run` refuses it again at run time. It also scans each test file, and the
      `conftest.py` files it loads, for fitting code first.
-   - Human-only checks (`CHECK-PY`: blanket pytest; `CHECK-SMOKE`; `CHECK-QA`: `workflow.py validate`) sit in the
-     card's `human_checks`. `checks --run` prints them as "Sheikh runs: …"; never run them yourself.
-   - If `checks --run` refuses a step, stop and tell Sheikh. Don't run that step another way.
-4. **Commits.** Follow Sheikh's instructions for the task. Sheikh normally commits and pushes himself.
+   - Scientific checks (`CHECK-PY`: blanket pytest; `CHECK-SMOKE`; `CHECK-QA`: `workflow.py validate`) remain in
+     the legacy `human_checks` field. The helper's "Sheikh runs" label is historical; agents may execute these
+     commands as a separate documented scientific run after reviewing side effects and preserving the baseline.
+   - A refusal from the routine check runner is not permission to hide fitting in ordinary checks. Review/classify
+     the command and record it in the scientific-run spec, or repair the guard/card if its classification is wrong.
+     Never weaken a scientific assertion merely to make a command pass.
+4. **Commits.** Sheikh explicitly authorized automatic commits and pushes on 6 November 2026: "auto commit push
+   using my credentials in the ssh in this pc". Commit verified scaffold/card changes and push through the configured
+   local SSH authentication to the existing repository. Use the configured Git identity; do not claim unperformed
+   human reviews. This supersedes earlier instructions reserving every commit/push for Sheikh.
+   - Preserve unrelated edits, stage only reviewed task paths, verify checks before committing and use normal
+     fast-forward pushes. Stop/report a real authentication or remote-history conflict rather than overwrite it.
    - When asked to use the plan's commit flow, `python scripts/plan.py split --card <ID> -m "<ID>: …" --run` makes
      one commit per folder owner, with that owner's `--author` (`docs/plan/team.yaml`).
    - Never force-push.
@@ -54,9 +66,9 @@ Preserve unrelated user edits and the local `codex/` proposal folder. Keep crede
    - Detections are not burned area.
    - Changing scientific outputs needs the card's spec, a contract line, and a decision in a pull request Sheikh
      merges.
-   - All training, quick or full, is Sheikh's manual step (H02, H03, with `scripts/train.ps1` / `train.sh`), and so
-     are pipeline stages (`python -m <package>.run`) and `workflow.py validate`. Afterwards you re-report the metrics
-     on every holdout, from the saved outputs.
+   - Agents may execute training, pipeline stages and `workflow.py validate` under the run policy above. H02/H03
+     remain historical completed runs; new validation belongs to new scientific-run cards. Re-report metrics on
+     every holdout from the new saved outputs, including failed acceptance criteria.
 7. **Numbers.** Measured numbers come from data at runtime or from `docs/results/training-results.md`, with their source.
    Never from memory.
 8. **Tests.**

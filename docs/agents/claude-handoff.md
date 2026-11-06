@@ -1,6 +1,6 @@
 # Claude handoff
 
-**Policy update: strict no training by coding agents.** Read [AGENTS.md](../../AGENTS.md) first. All training, fitting tests, CUDA probes, readiness checks, and setup modes that fit models are human-only. Historical run evidence below is not authorization to repeat it. Agents may implement code and deploy/query existing validated artifacts; report fitting-dependent validation as not run.
+**Policy update, 6 November 2026: agent-operated training is authorized.** Read [AGENTS.md](../../AGENTS.md) and the [authorization record](../project/training-authorization.md). Sheikh explicitly replaced the no-training rule and training freeze. Training, calibration, fitting tests and integrated QA may run under a documented scientific-run spec with preserved baselines. Earlier execution restrictions below are historical; old run evidence remains historical evidence.
 
 Updated 4 November 2026, Asia/Dhaka. The current [README](../../README.md), [training guide](../guides/training.md), and source supersede older CPU-era setup/training and prototype backlog instructions. The local `codex/` directory is an unchanged historical proposal folder, not a patch queue to apply automatically.
 

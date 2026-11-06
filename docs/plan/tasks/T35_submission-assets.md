@@ -1,51 +1,33 @@
 ---
-id: T35
-title: Submission assets (slides page, recorded story video) and a 13 Nov rules re-check
-kind: agent
-owner: Samiul
-authors: [Samiul, Sheikh]
-phase: P3
-size: M
-needs: [T29, T30]
-requires: [network]
-branch: ws1/T35-submission-assets
-touches: [docs/RULES_CHECK.md, docs/project/submission-checklist.md]
-creates: [docs/submission/slides.html, scripts/record_story.mjs]
-checks: [CHECK-PLAN]
+id: "T35"
+title: "Submission assets (slides page, recorded story video) and a 13 Nov rules re-check"
+kind: "agent"
+owner: "Samiul"
+authors: ["Samiul","Sheikh"]
+phase: "P3"
+size: "M"
+needs: ["T29","T30"]
+requires: ["network"]
+branch: "ws1/T35-submission-assets"
+touches: ["docs/RULES_CHECK.md","docs/project/submission-checklist.md","docs/submission/project_page.md","docs/submission/slides.md","docs/submission/video_script.md"]
+creates: ["docs/submission/slides.html","scripts/record_story.mjs"]
+checks: ["CHECK-PLAN"]
 ---
 ## Goal
-Turn the T29 drafts into assets Sheikh can submit as they are: a slide deck that prints to PDF, and a 30-second
-screen recording of story mode.
+Produce usable submission assets aligned with actually verified current format requirements (Q05).
 
 ## Steps
-1. **Rules re-check.** On or after 13 Nov, read the 2026 Participant Guide and the Project Submission Guide (linked
-   from https://www.spaceappschallenge.org/2026/). Update `docs/RULES_CHECK.md` and `docs/project/submission-checklist.md`
-   with the exact fields and limits: video length, slide count, deadline. If they differ from T29's assumptions, adapt
-   steps 2-3.
-2. **`docs/submission/slides.html`.** A self-contained page (inline CSS, no external scripts). Each slide from
-   `docs/submission/slides.md` is a 16:9 `<section>` with `page-break-after: always`. It uses the app's colours and
-   fonts (IBM Plex Sans, Noto Sans Bengali, both from Google Fonts).
-   - Numbers must keep their source comments.
-   - Check it in the browser's print preview: one slide per page.
-   - Export the PDF to `share/submission/slides.pdf` with Chrome headless:
-     `"<chrome path>" --headless=new --print-to-pdf=share/submission/slides.pdf docs/submission/slides.html`.
-3. **`scripts/record_story.mjs`.** A Playwright script, run with `npx --yes playwright@1.48.2`. It doesn't go into
-   `package.json`.
-   - Open what judges will see: `$RENDER_URL/#s=1`. Load it once first, so the service is awake. Without
-     `RENDER_URL`, use the local live build (`python scripts/workflow.py dev`, port 5173). Record at 1280 × 720
-     (`recordVideo`).
-   - Press Next on the timings from `docs/submission/video_script.md` (about 30 seconds in total), then save to
-     `share/submission/story.webm`.
-   - If `ffmpeg` exists, also write an mp4:
-     `ffmpeg -y -i story.webm -c:v libx264 -preset veryfast -crf 23 story.mp4`.
-4. Check: the video is 28-32 seconds long (`ffprobe` if available; otherwise state "duration not measured"), and the
-   PDF has at most 7 pages (or the guide's limit).
-5. Run the checks, mark the card done, `split`, push and open the PR. `share/` is git-ignored, so list the asset paths
-   and sizes in the PR, and tell Sheikh where they are.
+1. Recheck official challenge resources, participant/submission/judging guides and local deadline. Record retrieval date and exact supported limits; inaccessible/unpublished details remain unknown, not guessed from old years.
+2. Preserve Sheikh's responsibility for organizer/eligibility decisions. No automated outreach and no invented approval. Update RULES_CHECK with current access evidence without erasing dated findings.
+3. Adapt T29 drafts to verified limits. Apply relevant presentation/document/media skills during actual artifact production.
+4. Render a self-contained slide page/PDF and record the supported live/local-production journey with available approved tooling. Save generated media under ignored share/submission; source scripts/text stay in Git.
+5. Verify actual duration, page count, readability, URLs, captions and claims. Rehearse a contingency recording while identifying it honestly as a recording.
+6. Record tool/format limitations explicitly. A visual artifact that exists but was not inspected is not verified.
 
 ## Acceptance
-- [ ] `share/submission/slides.pdf` and `story.webm` (or `.mp4`) exist and are within the guide's limits.
-- [ ] `RULES_CHECK.md` is updated from the 2026 guides, or says they weren't published yet.
+- [ ] Final assets are visually inspected, measurable and within verified constraints, or clearly marked blocked by unavailable requirements.
+- [ ] No unsupported claim is introduced by slides/voice-over.
+- [ ] Sources/licences/AI use and exact submission prerequisites are documented.
 
 ## Stop and ask if
-- The guide requires something we can't produce, such as live voice-over or a specific template.
+Official instructions conflict with the intended submission or an essential tool/format/rights decision is unavailable. Do not label provisional limits as NASA rules.

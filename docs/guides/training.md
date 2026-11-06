@@ -1,6 +1,6 @@
 # Training
 
-**Human-only.** Coding agents must not run anything on this page ([AGENTS.md](../../AGENTS.md)).
+**Agent-operated training is authorized as of 6 November 2026.** Follow [AGENTS.md](../../AGENTS.md) and the [authorization record](../project/training-authorization.md): preserve the baseline, declare the scientific run, review side effects and record all results. Earlier human-only labels are superseded.
 
 Training needs an NVIDIA GPU on Windows or Linux, the [setup](setup.md) in training or everything mode, and the [input data](data.md). Training a teammate's laptop from an input ZIP? Use [teammate training](teammate-training.md) instead.
 
@@ -16,7 +16,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\train.ps1
 bash scripts/train.sh
 ```
 
-It stops at the first failure and tells you which log to read. Every step is logged to `results/logs/<timestamp>-<step>.log`. Rerunning is safe.
+It stops at the first failure and tells you which log to read. Every step is logged to `results/logs/<timestamp>-<step>.log`. Verify the preserved baseline and run record before rerunning, because stages replace shared output paths.
 
 | Option | Windows | Linux |
 |---|---|---|
@@ -76,7 +76,7 @@ Accept a full run only when **all** of these hold:
 - The command finished with exit code 0 and printed `Pipeline complete`.
 - `execution.json` says `status: passed`, `quick: false` and `start_stage: null`. A resumed run is valid, but its time doesn't count as a full-run benchmark.
 - `data/interim/sheikh/method.json` records the selected method and agreement for both Terra+Aqua and Terra-only.
-- All five QA groups pass (`data/processed/validation/`, `results/latest.md`), including the historical seam. Read the interval coverage and forecast skill; don't assume them from the exit code.
+- All engineering QA groups pass (`data/processed/validation/`, `results/latest.md`), including the historical seam. Separately inspect scientific acceptance, every detailed interval stop row, positive-activity coverage, the calendar-month target and artifact provenance. Passing engineering groups does not accept failed bands. Forecast claims require valid forward evaluation; otherwise alerts remain off. Don't assume scientific quality from the exit code.
 
 | Output | Where |
 |---|---|

@@ -1,29 +1,23 @@
-# Does the plan match the official challenge?
+# Alignment with the MODIS/VIIRS challenge
 
-The official description (pasted by the lead) asks for a web application that harmonizes the MODIS and VIIRS active-fire hotspot records
-into a burning-activity calendar, so that early-warning staff, emergency responders, scientists and land managers can examine historical
-fire patterns, unusual conditions and critical periods within a selected area. It covers wildfires and agricultural burns, and wants a
-consistent picture of when and where burning has occurred.
+Reviewed 6 November 2026 against source `e97d49f`. The instrument is **VIIRS**. The official title is [Harmonization of MODIS and VIIRS Hot Spots](https://www.spaceappschallenge.org/2026/challenges/modis-and-viirs-hot-spots/).
 
-Only the description was available. The official rules, resources and hardware notes have not been seen (docs/project/known-gaps.md, item 1).
+The indexed official summary was available; the full page returned HTTP 502 during this review. A [local organizer mirror](https://hackathlone.com/challenges/modis-and-viirs-hot-spots) corroborated the brief. This is an assessment of the verified summary, not a certification against an unseen resource sheet or submission rules.
 
-| What the challenge asks for | Where the plan covers it | Status |
+The task centers on comparable hotspot history, a geographic burning-activity calendar and exploration of patterns and unusual periods for monitoring audiences. FireSense addresses that core through a regional reference-sensor reconstruction.
+
+| Capability | Delivered implementation | Qualification |
 |---|---|---|
-| Records split across sensors made comparable | harmonization pipeline (Sheikh, Samin) | covered; pre-2012 values are modeled and labeled |
-| A burning-activity calendar from active-fire hotspots | calendar heatmap (Shammo) on harmonized series | covered |
-| A selected area of interest | map drawing and /aoi/ endpoints | covered |
-| Historical patterns over two decades | series from 2000 to the present with the 2012 seam shown | covered |
-| Unusual conditions | anomaly flags (Monazir) | covered |
-| Critical periods | ranked critical periods (Monazir) | covered |
-| Wildfires and agricultural burns | agri_tag and agri_share on periods; cropland land cover | covered after this update (agri_share added) |
-| When and WHERE burning occurred | calendar covers when; /aoi/cells map layer covers where (Sattyam, Shammo) | gap found and fixed: the where layer was missing |
-| Use for early warning, responders and land managers | current-status card (never cut), data-through date, export; forecast alerts are optional | gap found and fixed: alerts were cut first; the status card is now core |
-| The whole planet | pipeline is global-capable; demo loads South Asia only | not fully met; stated in the app and pitch |
-| A web application | React app plus API plus static fallback | covered |
+| Harmonize instrument records | Separate MODIS configurations, B1 ratios, NOAA-20 adjustment and source provenance | Holdout performance and uncertainty must retain their revision/target context |
+| Calendar and historical exploration | Weekly calendar, time series, comparison and CSV | Modeled/adjusted counts are not additional observed fires |
+| Area and spatial exploration | Named divisions/states, boundary clicks and cell map | Loaded geography is regional; arbitrary polygons do not download new data |
+| Unusual conditions and periods | Weekly anomaly scoring and ranked periods | Whole-season anomaly work remains planned |
+| Agricultural context | Cropland share and qualified seasonal fallback | Not a verified classifier of fire causes |
+| Monitoring use | Seasonal/current status and record-end labels | Historical planning support; not demonstrated operational early warning |
+| Web delivery | React and live FastAPI on Render | Snapshot/static fallback retired |
 
-## What changed in the kit because of this
-- New endpoint /aoi/cells and prompt P5.9 (where map layer and status card).
-- outlook_region.json gained current_status; critical_periods gained agri_share.
-- Cut order now cuts the forecast alerts and the forecast outlook first; the status card and the where-map are never cut (decision 14).
-- The pitch names the three audiences and states the South Asia scope (decision 15; prompt P6.7).
-- New gaps recorded as items 21 to 23 in docs/project/known-gaps.md.
+Global motivation in the brief does not by itself establish a mandatory globally populated demo. State the regional scope explicitly. Likewise, forecasting is not treated as a verified mandatory requirement; disabled alerts are preferable to unsupported prediction claims.
+
+The principal gap is **validity evidence**, not a missing model family: saved conditional interval coverage fails, and recent scientific repairs lack refreshed numerical validation. A focused user demo and observed user feedback would also strengthen the hackathon submission.
+
+For the evidence ledger, provisional judging rubric and honest rating, read the [dated assessment](review-2026-11-06.md). Planned slides, story mode, broader coverage or scientific checks earn no delivery credit until completed. Older plan figures remain historical planning context, not current validation.

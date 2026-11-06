@@ -1,6 +1,6 @@
 # Technology stack
 
-Current implementation, 4 November 2026. See [training](../guides/training.md) for the supported CUDA setup and [hosting](../guides/deployment.md) for the deployed demo.
+Stack overview, originally 4 November 2026; runtime query description corrected 6 November against `e97d49f`. See [architecture](architecture.md), [training](../guides/training.md) for the supported human-operated CUDA setup and [hosting](../guides/deployment.md) for deployment instructions.
 
 Principle: boring, widely documented tools, so AI agents write correct code; free tiers only.
 Versions: Python 3.11, Node.js 22.12+ for frontend work, and XGBoost 3.2.0 for training. Install the complete pinned training environment from `requirements-cuda.txt`; frontend packages use `package-lock.json`. UI-only initialization is available without NVIDIA.
@@ -9,7 +9,7 @@ Versions: Python 3.11, Node.js 22.12+ for frontend work, and XGBoost 3.2.0 for t
 |---|---|---|---|
 | Language (data, ML, API) | Python 3.11 | one language for everything except the web app | all |
 | Tables and files | pandas, pyarrow, Parquet files | compact, typed, fast to read; matches contracts/parquet_schemas.json | all |
-| Queries over files | DuckDB (SQL on Parquet) | fast AOI aggregation without running a database server | Sattyam, Sheikh |
+| Runtime queries | pandas/NumPy and Shapely over loaded Parquet artifacts | in-memory AOI selection and aggregation; the API Store does not use DuckDB | Sattyam, Sheikh |
 | Maths | NumPy, SciPy, statsmodels (STL) | baselines, tests, seasonal decomposition | Sheikh, Monazir, Samin |
 | ML | XGBoost CUDA, scikit-learn | Poisson/Tweedie harmonization, binary drift tests, quantile forecast fitting; verified CUDA placement | Sheikh, Samin |
 | Geometry | shapely 2, geopandas | polygons, cell-in-polygon lookup | Sattyam |

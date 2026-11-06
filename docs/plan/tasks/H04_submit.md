@@ -1,11 +1,11 @@
 ---
-id: H04
+id: "H04"
 title: "Sheikh: submit on the Space Apps site"
-kind: human
-owner: Sheikh
-phase: P3
-size: S
-needs: [T35]
+kind: "human"
+owner: "Sheikh"
+phase: "P3"
+size: "S"
+needs: ["T35","T63"]
 ---
 ## Goal
 Submitting needs your Space Apps login. Everything to paste and upload is ready from T29 and T35.

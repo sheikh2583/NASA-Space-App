@@ -1,283 +1,118 @@
-# FireSense win plan: operating manual
+# FireSense execution plan
 
-Goal: win NASA Space Apps 2026 (event 14-15 Nov, Bangladesh) with the MODIS + VIIRS burning-activity calendar.
+Updated 6 November 2026. The goal is a strong, honest submission to the MODIS/VIIRS harmonization challenge. A subjective 9/10 is an ambition, not a guaranteed score or an official judging threshold.
 
-This folder is the plan. The **coding agent** does everything it can, following the loop in section 3 exactly,
-always under the **strict no-training policy in `AGENTS.md`**. The agent never runs training, model fitting, CUDA
-probes, readiness checks, blanket pytest, smoke or QA.
+## 1. Source of truth
 
-**Sheikh** does only these things:
-- the two full training runs (`scripts/train.ps1 -Pack` / `scripts/train.sh --pack`), each with its human-only
-  checks;
-- confirming the Render service and putting the FIRMS key into its environment;
-- submitting on the Space Apps site;
-- the event days;
-- committing and pushing.
+Read [AGENTS.md](../../AGENTS.md) first. Sheikh explicitly authorizes agent-operated training, calibration, fitting tests, probes and integrated QA. Preserve baselines and use attributable scientific runs; earlier no-training/H03-freeze instructions are superseded.
 
-The other team members are dormant for now. One tool answers "what next?": `python scripts/plan.py next`.
+- [Executable scaffold](../project/hardening-scaffold.md): installed sequence, dependencies, gates, deferred scope and handover.
+- [Challenge contract](CHALLENGE_CONTRACT.md): verified core outcomes C01-C06 and internal quality controls Q01-Q05; source-access limits are explicit.
+- [STATUS.md](STATUS.md): actual card status and order.
+- [tasks/](tasks/): exact file scope, prerequisites, commands and acceptance per card.
+- [I13](../specs/I13_SCIENTIFIC_ACCEPTANCE.md): evaluation, leakage/support, conditional uncertainty and promotion.
+- [Run specs](runs/): S01 harmonization, S02 outlook and S03 integration/release validation.
+- [team.yaml](team.yaml): path ownership and commit authors; ownership does not imply delegated execution.
+- [Dated review](../project/review-2026-11-06.md): historical measured evidence and the original rating, not fresh validation of later changes.
 
-**Hosting** is one free Render Docker service (`docs/guides/deployment.md`). It builds the UI and serves the live FastAPI from one
-origin, with data from a pinned GitHub Release (`deployment/runtime.json`). Every push to `main` rebuilds it, and it
-never trains. GitHub Pages, snapshot mode and the static regional fallback have been retired; the UI always calls the live API.
+The application is English/live FastAPI plus React on one Render service with OSM tiles and a pinned runtime. Pages/snapshot/Bangla delivery is retired. No card may restore those paths merely because an older historical note mentions them.
 
-| File | What it is |
-|---|---|
-| `STATUS.md` | The board: one row per card, in work order. Only the Status and Note columns are edited, by hand or with `plan.py set`. Statuses: todo, doing, review, done, blocked, cut. |
-| `tasks/<ID>_<slug>.md` | One card per piece of work. |
-| `team.yaml` | People, commit authors, path ownership. |
-| `AGENT_PROMPT.md` | The text to paste into the agentic IDE. |
-| `../specs/` | Specs for changes to scientific outputs (I1 season profile, I8 coverage). |
+## 2. Starting point and scope
 
-Card kinds:
-- **T (agent):** the coding agent does it end to end. This includes rules checks, FIRMS truth checks, outage
-  verification, downloads with tokens from `.env`, Render data releases via `gh`, the device review, slides and the
-  video. Retired cards (T11, T39) stay on the board as `cut`.
-- **H (Sheikh):**
-  - H01: confirm the Render service and add the FIRMS key there;
-  - H02 and H03: full training runs, plus the batched human-only checks;
-  - H04: submit;
-  - H05: event days.
+This scaffold installation is planning work. It changes cards/docs/board, not application code, scientific artifacts or the measured score. T51 is the first new implementation card; T61 provides early user-study preparation.
 
-**Decisions** that change scientific outputs are written by the agent with the documented defaults (T05 for outages,
-T14 for season flags). Sheikh's commit of that card is the sign-off.
+`next` deliberately reads the committed board. Before the scaffold commit it may show no available card because
+T51 is absent from that older board. A dry dependency projection is not execution; do not mark work done or
+modify scheduler behavior to hide the pending commit.
 
-## 1. What the judges score, and how this plan answers it
+Default scope: comparable historical record, regional selection, calendar/season/unusual-period exploration, recent-versus-history comparisons, export/brief, scientific evidence and verified delivery. NRT (T18/T19), speculative blind-spot attribution (T20) and FRP (T25) are deferred/cut with explicit reopening prerequisites.
 
-| Criterion | Our answer | Cards |
+H02/H03 remain historical completed runs. New numerical validation belongs to T52-T59 and their run specs. H06 supplies real user observations; H04/H05 remain submission/event tasks. The agent does not contact people automatically.
+
+## 3. The loop
+
+**Execution authorization update, 6 November:** Sheikh authorized the agent to auto-commit and push through this PC's configured SSH credentials. This supersedes the earlier manual Git handover. Commit the verified scaffold before ordinary card implementation. Preserve unrelated edits and the local codex/ folder; do not reset a dirty tree to make the loop proceed.
+
+1. Check git status. Start a new card from the attributable committed state; synchronize only when safe for existing edits.
+2. Run `python scripts/plan.py next`. `next --all` shows eligible cards. Dependencies count as complete only according to the committed board.
+3. Run `python scripts/plan.py show <ID>`. Read the whole card and every named context/source/spec file before editing.
+4. Change only its touches/creates plus its STATUS row. If actual code requires additional scope, update the card through the authorized plan workflow before changing unrelated paths.
+5. Run `python scripts/plan.py checks <ID> --run` for routine checks. Never weaken/delete a test. If the same check fails twice, report the exact cause and unresolved scope rather than hide the failure.
+6. Execute separately declared scientific validation under AGENTS.md, the card and run spec. Required fits are authorized; they are not incidental UI/doc checks.
+7. Hand over changed behavior, challenge IDs, commands/results (including failures), source/run identity, dispositions, report paths and a suggested commit message.
+8. Use review for incomplete review handovers; done means verified work is committed. Auto-commit only reviewed task paths with the configured identity and push through SSH. In explicitly requested PR flow, use the plan's ws1/<ID>-... branch, folder-owner split/guard and PR. Never force-push or rewrite pushed history.
+9. Verify the push and continue with the next eligible card. Do not infer scientific acceptance from a done implementation row or deployment from a successful push.
+
+WAITING ON Sheikh means a genuinely human task such as H06 observations or submission, not renewed training permission. SKIPPED requirements may mean unavailable data/authentication. Report the concrete missing item without printing secrets and continue independent eligible work.
+
+## 4. Routine and scientific lanes
+
+Current `plan.py` supports check/next/show/checks/board/set/split. Its routine checks stay non-fitting and scan test files/conftest. This isolation is intentional.
+
+T52 will implement `python scripts/plan.py checks <ID> --scientific --run` and accurate scientific-lane messages. **That selector is planned, not implemented by this scaffolding change.** It will execute only the invoking card's scientific command list after spec/preservation checks.
+
+For compatibility, scientific commands currently live in the legacy human_checks field. The helper's old “Sheikh runs/human-only” messages are superseded by AGENTS.md, not a request for another training permission. The current policy permits documented separate scientific execution, but the installed dependency graph puts T52 before new scientific runs.
+
+| Lane | Examples | Execution conditions |
 |---|---|---|
-| Influence | Punjab and Bangladesh crop-residue smoke; a printable brief in English and Bangla; any region by name; live season status during judging week | T08, T11, T19, T22 |
-| Creativity | Season timing measured as a trend; the overpass blind-spot test; guided story mode | T07, T20, T23 |
-| Validity | Verified outage handling and retraining; interval report by stratum; independent burned-area check; FIRMS truth checks | T31, T32, T05, T06, T40, T13, T24 |
-| Relevance | A calendar for any named division or state, live on Render; when burning happens; whether it is unusual | T07, T15, T16, T17, T18 |
-| Presentation | Story mode, a 30-second video, 7 slides, a complete Bangla UI | T23, T34, T29, T35 |
+| Routine | CHECK-PLAN, reviewed pure pytest, CHECK-WEB, CHECK-FILES | Read execution paths; no fitting/probe/hidden stage |
+| Scientific | Full pytest, CUDA readiness, training, calibration, outlook, integrated QA | Declared run spec, preserved baseline, source/input/config record, output identity and honest evaluation |
+| Human evidence/action | Participant contact/observation, organizer decisions, submission | Sheikh's actual action/evidence; no agent simulation |
 
-Awards in reach: Best Use of Data, Best Use of Science, Local Impact, Best Storytelling.
-
-## 2. Measured facts this plan builds on (4 Nov 2026)
-
-**Training run.** Copied from the files named; never retype these from memory.
-- `docs/results/training-results.md`: "Current selected harmonization: **B1**, with selection CCC 0.8855 versus XGBoost CUDA
-  0.8696 across Terra+Aqua and Terra-only holdouts. All five scientific QA groups passed."
-- `docs/results/cuda-results.md`: "Nominal 90% interval coverage is 91.6% weekly and 93.7% monthly."
-
-**Season profile, from the snapshot on `main`** (`python -m ws4_outlook.season_profile --area pb|bd`; re-measured on
-4 Nov after the CUDA run, with the same results). These are the demo areas, before the outage fix.
-
-| Area and season | Typical window (p10-p90) | Timing trend since 2012 | Amount trend since 2012 |
-|---|---|---|---|
-| Punjab paddy | 21 Oct-12 Nov | 4.3 days per decade **later** (CI 1.0 to 6.6; 14 seasons) | 58% fewer per decade (CI 25 to 91%) |
-| Punjab wheat | 1-18 May | no clear shift | no clear change |
-| Bangladesh dry season | 26 Dec-2 Apr | no clear shift | 26% fewer per decade (CI 1 to 51%) |
-
-**Live defects found while checking this plan** (each has a card):
-
-| Defect | Card |
-|---|---|
-| The Punjab status card says "Normal" for a record-low week (percentile 0); Bangladesh says "High" for 3 detections against a typical 0 | T03 |
-| The Validation page said "Built on SYNTHETIC data" under three pieces of the real run. The source is fixed on `main` (`piece()`, `bf800af`); T02 confirms the saved outputs are clean | T02 |
-| The last week (2 Nov 2026) holds 1 day of data but is drawn as a full week | T04 |
-| Suomi NPP was down on 3-6 Nov 2024; those days count as zeros, also inside the training ratios | T32, T05, T06, H02, T40 |
-| The intervals sampler never draws areas over 100 cells, so large-area coverage is unmeasured | T13 |
-| The FIRMS downloader can put the API key into error messages and logs | T18, before any server-side use |
-
-Punjab 2026 so far: 455 detections, against a typical 21,656 by the same date. Check this against the FIRMS API before
-anyone repeats it (T31).
-
-## 3. The loop (the agent does exactly this)
-
-**Commit flow.** Sheikh commits and pushes to `main` himself; that is the default.
-- **Default (Sheikh commits):** the agent works on `main` in the working tree, finishes the card, and hands over: what
-  changed, the checks and the commit message to use. Then it **stops** until Sheikh has committed. The next card needs
-  a clean tree.
-- **Pull-request flow (only when Sheikh asks for it):** a branch `ws1/<ID>-…`, `plan.py split` (one commit per folder
-  owner, with that owner's `--author`), the ownership guard, a push of the branch, and a PR that Sheikh merges.
-- In both: never force-push, and never push to `main` yourself.
-
-Where a card says "`split`, push and open the PR", or "paste … into the PR", it means the finish step of the flow in
-use. In the default flow, that is the hand-over.
-
-1. `git status --short` must print nothing. Then `git switch main && git pull --ff-only`.
-2. `python scripts/plan.py next`. Possible outputs:
-
-   | Output | What to do |
-   |---|---|
-   | `NEXT <ID>` | Work on that card. |
-   | `WAITING ON Sheikh` | Tell Sheikh what his card needs: one line, with the file path. Carry on with any `NEXT` card. |
-   | `SKIPPED <ID>: needs …` (data, a secret or `RENDER_URL` in `.env`, `gh` login) | Tell Sheikh once what is missing; carry on. |
-   | `IN FLIGHT <ID>` | A `ws1/` branch for that card exists here and isn't merged yet; cards that need it wait. |
-   | No `NEXT` card | Stop. Report what is waiting and on whom. |
-
-3. `python scripts/plan.py show <ID>`. Read the whole card, then every file it names under Context and Steps,
-   **before editing anything**.
-4. Pull-request flow only: `git switch -c <branch from the card>`.
-5. Do the Steps in order:
-   - Change only the paths in the card's `touches` and `creates`, plus `docs/plan/STATUS.md` for your own row.
-   - If another file must change, stop and ask.
-   - A step that is a pipeline stage (`python -m <package>.run …`, `ws2_platform.sensors`), `workflow.py validate`,
-     or any training is **Sheikh's**, even when an older card says "on the laptop, run …". Don't run it; list it
-     under "Needs Sheikh". Standalone analyses that only read saved outputs and write a new file are agent work
-     (`ws2_platform.coverage`, `ws3_anomaly.blindspot`, `ws6_validation.mcd64`, `ws6_validation.truth_checks`,
-     `export_area_catalog.py`, `release_runtime.py`).
-6. `python scripts/plan.py checks <ID> --run`. It runs only the card's agent-safe `checks` and refuses anything else.
-   Every one must pass.
-   - Never weaken, skip or delete a test to make it pass.
-   - If a check fails twice for the same reason, stop and report the error.
-   - It ends by printing the card's `human_checks` as "Sheikh runs: …". Put those under "Needs Sheikh". Sheikh runs
-     them in a batch with his next training run (H02, H03), unless he asks for them sooner.
-7. `python scripts/plan.py set <ID> done --note "<one line>"`. A card counts as done once that row is committed on
-   `main`.
-8. Finish the card:
-   - **Default:** hand over in four groups:
-     - **Measured:** command, date, numbers;
-     - **Unit-tested:** test names;
-     - **Estimated;**
-     - **Needs Sheikh:** human checks, anything else.
-
-     Add the suggested commit message `<ID>: <summary>`, then stop.
-   - **Pull-request flow:**
-     - `python scripts/plan.py split --card <ID> -m "<ID>: <summary>" --run`;
-     - `python scripts/git/guard.py --range origin/main...HEAD --user sheikh2583 --branch <branch>` must print
-       `guard: ok`;
-     - `git push -u origin <branch>`, then open a PR titled `<ID>: <title>` with the same four groups.
-9. When Sheikh says it's committed, go back to step 1.
-
-**Merge conflicts** (pull-request flow). Rebase on `main`.
-- `STATUS.md`: keep both rows' changes.
-- Generated files (`ws5_frontend/public/demo/*.json`, `contracts/fixtures/*.json`): take `main`'s version, re-run the
-  command that generates them on the rebased branch, and commit.
-
-## 4. Rules that never bend
-
-- **No training by agents** (`AGENTS.md`). This rule comes first and overrides any card.
-  - No `workflow.py` train, all, smoke, test, prepare, gpu-check or validate.
-  - No pipeline stages, CUDA probes or blanket pytest.
-  - No test that fits a learner.
-
-  `plan.py check` and `plan.py checks --run` enforce this for card checks (section 6).
-- **Data and secrets.** Never commit `data/`, `.env`, models, logs, `node_modules`, `dist` or `share/`. Never print,
-  log or commit a key or token. `FIRMS_MAP_KEY` lives only in `.env` and in Render's environment; `EARTHDATA_TOKEN`
-  only in `.env`.
-- **Three kinds of values.** Keep observed VIIRS, adjusted NOAA-20 and modeled MODIS distinct, in data, API and UI.
-- **Wording.**
-  - Weather is "associated with", never "caused".
-  - The season window is a "central activity window", never the start or end of burning.
-  - Detections are not burned area.
-- **Changing scientific outputs** (numbers in `data/processed/`, the selected method, the bands) needs, in order:
-  - a spec;
-  - a contract line;
-  - a decision recorded in a card that Sheikh commits (T05, T14).
-
-  All training, quick or full, is Sheikh's manual step (H02, H03, with `scripts/train.ps1` / `train.sh`). The agent
-  then re-reports the metrics on every holdout, from the saved outputs (T40, T28).
-- **Hosting.** Render serves the live UI and API. Every user feature works there. In the legacy snapshot build it
-  works too, or shows a clear "needs the live service" state. New data reaches Render only through a new runtime
-  release (`scripts/release_runtime.py`, T16), never by replacing an existing release asset.
-- **Tests.**
-  - API tests use `tiny_api` / `tiny_request` (`ws2_platform/tests/conftest.py`).
-  - Component tests use `renderHtml` / `textOf` (`ws5_frontend/src/test/render.tsx`).
-  - New Python tests must fit nothing, so that `checks --run` accepts them. It scans each test file and its
-    `conftest.py` first.
-  - Don't add test libraries or other dependencies without Sheikh's OK.
-- **Text.** All UI text goes in `src/i18n/en.json` and `bn.json`, and `npm run check:strings` must pass. Bangla
-  drafts are marked for review (H05).
-- **Measured numbers** come from data at runtime, or are copied from `docs/results/training-results.md` with their source.
-  Never type or round them by memory.
-- **Basemap.** OpenStreetMap only. Never restore unauthenticated CARTO URLs.
-- **Git.**
-  - Sheikh commits and pushes to `main`. The agent never pushes to `main`, never force-pushes, and never rewrites a
-    pushed commit.
-  - In the pull-request flow, the PR user is sheikh2583, so branches start with `ws1/`. Commit authors are the folder
-    owners (`team.yaml`).
+Named checks and literal-command eligibility remain defined in scripts/plan.py. CHECK-PY, CHECK-SMOKE and CHECK-QA remain outside the ordinary lane. Smoke is not an automatic extra fit; run it only for a declared unresolved integration concern.
 
 ## 5. Card format
 
-```
+```yaml
 ---
-id: T07                      # T = agent, H = Sheikh; matches the file name T07_<slug>.md
-title: …                     # must equal the Title column in STATUS.md
-kind: agent                  # agent | human
-owner: Sattyam               # accountable person (team.yaml)
-authors: [Sattyam, Sheikh]   # agent cards: one commit each (plan.py split)
-phase: P1                    # P0..P4; needs may not point to a later phase
-size: M                      # S < 3 h, M 3-8 h, L > 8 h
-needs: [T00]                 # cards that must be merged (done) first
-requires: [real-data]        # real-data | secret:<NAME> | env:RENDER_URL | gh-auth | earthdata-files | network
-branch: ws1/T07-season-api   # agent cards
-touches: [...]               # existing paths the card may edit (or paths created by a card it needs)
-creates: [...]               # new paths; must not exist before the card runs
-checks: [CHECK-PLAN, "python -m pytest -q <reviewed test files>", ...]   # agent-safe only (section 6)
-human_checks: [CHECK-PY]     # optional: printed for Sheikh, never run by the agent
+id: T56
+title: ...
+kind: agent
+owner: Sheikh
+authors: [Sheikh, Samin]
+phase: P1
+size: L
+needs: [T55, T57]
+requires: [real-data]
+branch: ws1/T56-scientific-comparison
+touches: [...]
+creates: [...]
+checks: [CHECK-PLAN, CHECK-FILES]
+human_checks: ["python scripts/workflow.py train --backend cuda", CHECK-QA]
+scientific_spec: docs/plan/runs/S01_harmonization.md
 ---
-## Goal / ## Context (optional) / ## Steps / ## Acceptance / ## Stop and ask if     (agent cards)
-## Goal / ## Steps / ## Done when                                                  (human cards)
 ```
 
-`python scripts/plan.py check` enforces all of this: links, cycles, phases, owners, branches, paths, and the board
-columns. CI runs it through the tests.
+Agent bodies contain Goal, Steps, Acceptance, Stop and ask if; Context is recommended. Human cards use Goal, Steps, Done when. The actual T56 contains its complete commands/spec, not the abbreviated example.
 
-## 6. Named checks
+Scope paths must exist or be created by an ancestor; creates paths are unique and absent for todo cards. Authors include every path owner. Phase dependencies point only to the same/earlier phase. Preserve schema compatibility, branch and owner rules.
 
-`python scripts/plan.py checks <ID> --run` runs a card's `checks` with the right interpreter and environment, on
-Windows too.
+`python scripts/plan.py check` validates card/board/path/cycle structure. It does not execute fits or certify scientific results. `board --fix` regenerates structural columns while keeping statuses/notes. No general CI test workflow currently exists; record checks where actually run.
 
-**Agent-safe.** These may appear in `checks`:
+## 6. Scientific and release gates
 
-| Name | Command |
-|---|---|
-| CHECK-PLAN | `python scripts/plan.py check` |
-| CHECK-TESTS | `python -m pytest -q` on the reviewed non-fitting test files (`SAFE_TESTS` in `scripts/plan.py`) |
-| CHECK-WEB | `npm test`, `npm run check:strings`, `npm run build` (in `ws5_frontend`), with the Render image's settings (`VITE_API_BASE_URL=/`, `VITE_DATA_MODE=real`) |
-| CHECK-FILES | `python tools/verify_files.py --all` (reads every contracted file in `data/processed`; skips when there is no data) |
-| CHECK-GUARD | the ownership guard for the current branch (pull-request flow) |
+- Freeze hypotheses, roles, targets and acceptance criteria before candidate fitting. Keep inspected tests distinct from uninspected confirmation.
+- Preserve baseline/raw inputs and one-writer execution. Record source/patch, configuration, seeds, hardware, commands, hashes, attempted failures and every required holdout/combo.
+- Diagnose conditional failures before selecting at most two registered interval repairs. Do not tune on a test set or force the learned candidate to beat B1.
+- Preserve the existing severe-failure rule and report positive activity/zero prediction, width, score, support and dependence. Overall coverage is insufficient.
+- New monthly evidence must match served calendar-month daily allocation. Unsupported AOIs/groups are not accepted by extrapolation.
+- Separate engineering pass, scientific support and observed live delivery. A work card can finish with an honest limited/failure disposition; that is not a passed science gate.
+- Publish only a new immutable runtime asset. After the intended commit is pushed, check_render.py plus served runtime/target/hash/status inspection and the browser journey establish delivery. Never infer the host cause from a mismatch alone.
 
-A literal command in `checks` must also be agent-safe:
-- `python -m pytest -q <files>` naming files only (no folders, no `-k`), each either in `SAFE_TESTS` or created by
-  this card or a card it needs;
-- `npm`, `npx` and `git` commands;
-- `python` scripts and modules other than pipeline stages (`*.run`), `ws1_harmonize`, `ws6_validation.qa`,
-  `run_pipeline.py`, `prepare_training.py`, `smoke.py`, `teammate.py`, `bootstrap.py` and `results.py`;
-- `workflow.py build`, `share` or `dev`.
+Exact criteria and candidate limits are in I13 and the frozen run appendix. Unknown resources/rules stay verification items. Any changed scientific output needs the card/spec/contract decision through Sheikh's normal commit/review flow.
 
-Before running pytest, `checks --run` scans each test file, and every `conftest.py` it loads, for fitting code. If it
-finds any, it refuses, and Sheikh must review the file.
+## 7. Product, evidence and safety conventions
 
-**Human-only.** These go in `human_checks`. Sheikh runs them, batched, in H02 and H03:
+Keep observed VIIRS, adjusted NOAA-20 and modeled MODIS distinct. Detections are not burned area or distinct fires. Weather is association. Season timing is a central activity window. Sensitivity scenarios are not calibrated seasonal intervals.
 
-| Name | Command | Why it is human-only |
-|---|---|---|
-| CHECK-PY | `python -m pytest -q` | the whole suite includes tests that fit learners (`ws1_harmonize/tests`) and CUDA entry-point tests |
-| CHECK-SMOKE | `python scripts/workflow.py smoke` | runs a training workflow |
-| CHECK-QA | `python scripts/workflow.py validate` | runs whole test folders and rewrites `data/processed/validation/qa.json` |
+API regressions use tiny_api/tiny_request; component tests use renderHtml/textOf and current fixture data. Add dependencies only with Sheikh's approval. Preserve current English strings and OSM basemap; FIRMS credentials stay server-side.
 
-To review a new test file and make it reusable by every card, add it to `SAFE_TESTS` in `scripts/plan.py`, with
-Sheikh's OK.
+Never print/log/commit tokens or .env. Keep raw data, models, run outputs/logs, node_modules, dist and share outside Git. Generated screenshots/media stay in ignored output directories; committed reports point to their attributable evidence.
 
-## 7. Timeline, freeze and cut order
+## 8. Capacity, cuts and score
 
-| Dates | Phase | Exit gate |
-|---|---|---|
-| 4-6 Nov | P0 Truth | T00-T05 and T30-T32 committed: rules, licence, truth checks, wording, label check, partial weeks, outage registry, audit and decision. **H01:** Sheikh confirms Render and adds the FIRMS key |
-| 6-9 Nov | P1 Core | T06 code, then **H02: Sheikh trains**, then T40 reports and publishes to Render (with T16's release tool). T17 verifies Render. T07-T15: season profile and card, help, caveats, links, interval report, season flags (T11 retired) |
-| 8-12 Nov | P2 Differentiators | Live feed on Render (T18, T19; T39 retired); blind spot (T20); recurrence (T21); brief (T22); story (T23); burned area (T33, T24); FRP (T25) |
-| **12 Nov, 20:00 Dhaka** | **Feature freeze** | T27 automated QA, T34 device review, then **H03: Sheikh's final training and human checks**, then T28 publishes and tags v1.0-event |
-| 13 Nov | P3 Present | T29 drafts; T35 slides and video, plus the 2026 guide re-check; then **H04: Sheikh submits** |
-| 14-15 Nov | P4 Event | **H05**: fixes only; submit by 18:00 on day 2 |
+Use gate-based milestones and measure actual scientific-cycle cost. The earlier hour estimates predated training authorization and cannot guarantee the expanded schedule. Current format/deadline checks belong to T35; older internal dates are not a new official deadline.
 
-**Cut order** if late. Sheikh runs `python scripts/plan.py set <ID> cut`, and a cut card counts as finished:
+A cut records deliberate omission and limitations; it does not turn an unperformed user/scientific check into a success. If a dependency is cut, downstream claims must adapt. Final reassessment T63 retains deductions for missing support, central uncertainty failures or absent intended-user evidence.
 
-| Order | Cut |
-|---|---|
-| 1 | T26 third region (already cut by default) |
-| 2 | T25 FRP |
-| 3 | T33 and T24 burned area |
-| 4 | T22 brief |
-| 5 | T21 recurrence |
-| 6 | T19 and T18 live feed (Render keeps serving the pinned record) |
-| 7 | T15 season flags UI |
-
-**Never cut:** T00-T08, T10, T16, T17, T27, T28, T30-T32, T34, T35, T40 and the H cards. **Already cut:** T11, T39.
-
-**Critical path:** T00 → T32 → T05 → T06 → H02 → T40 → … → T34 → H03 → T28 → T29 → T35 → H04.
-- Commit T32, T05 and T06 quickly, so that the first training run (H02) can happen by 7 Nov. T16 must be committed
-  before T40.
-- The final training (H03) must finish by 12 Nov, 20:00.
+The best submission is a coherent, evidenced solution to the challenge. More features, models, test counts or completed cards alone do not establish a 9/10.

@@ -1,56 +1,33 @@
 ---
-id: T22
-title: Planner brief (one printable page, en/bn)
-kind: agent
-owner: Shammo
-authors: [Shammo]
-phase: P2
-size: M
-needs: [T08, T21]
+id: "T22"
+title: "Evidence-bearing planner brief in English"
+kind: "agent"
+owner: "Shammo"
+authors: ["Shammo"]
+phase: "P2"
+size: "M"
+needs: ["T08","T58","T60"]
 requires: []
-branch: ws1/T22-planner-brief
-touches: [ws5_frontend/src/App.tsx, ws5_frontend/src/components/SeasonCard.tsx, ws5_frontend/src/styles.css,
-          ws5_frontend/src/i18n/en.json, ws5_frontend/src/i18n/bn.json]
-creates: [ws5_frontend/src/components/Brief.tsx, ws5_frontend/src/components/Brief.test.tsx,
-          ws5_frontend/src/lib/miniMap.ts, ws5_frontend/src/lib/miniMap.test.ts]
-checks: ["CHECK-PLAN", "CHECK-WEB"]
+branch: "ws1/T22-planner-brief"
+touches: ["ws5_frontend/src/App.tsx","ws5_frontend/src/types.ts","ws5_frontend/src/components/SeasonCard.tsx","ws5_frontend/src/styles.css","ws5_frontend/src/i18n/en.json"]
+creates: ["ws5_frontend/src/components/Brief.tsx","ws5_frontend/src/components/Brief.test.tsx","ws5_frontend/src/lib/miniMap.ts","ws5_frontend/src/lib/miniMap.test.ts"]
+checks: ["CHECK-PLAN","CHECK-WEB"]
 ---
 ## Goal
-Influence comes from use. A division or state officer, an NGO or a journalist needs one page they can print or
-forward: when burning usually happens, how this season is going, and where.
+Give a monitoring/planning user a one-page export that remains understandable outside the app (C06).
 
 ## Steps
-1. **Opening the brief.** A "Planner brief" button on `SeasonCard` (`t("brief.open")`) sets `view` to `"brief"` for
-   the current area and season. If T12 is merged, the URL hash gets `v=brief`.
-2. **`lib/miniMap.ts`.** `cellsToSvgRects(cells, width, height)` maps cells (`lat_c`, `lon_c`, `share`) to
-   `{x, y, w, h, fill}` within a box, keeping the aspect ratio (cos(latitude) correction). No map tiles, so it
-   always prints. Test that the corners map to the box edges and that a 0.1° cell has positive size.
-3. **`components/Brief.tsx`.** Print layout on A4 portrait, with this CSS in `styles.css`:
-   `@media print { @page { size: A4; margin: 12mm } .topbar, .banner, .mapcol, nav { display: none } }`.
-   It contains:
-   - **Title:** `t("brief.title", { area, season })`, plus the "Data through" date and the generated date.
-   - **Box "When":** the typical window sentence from the season card, and a 52-week strip (SVG) with the band and the
-     peak tick.
-   - **Box "This season":** the season-to-date sentence and the current status level from T03.
-   - **Box "Where":** an inline SVG mini-map of the recurrence cells (T21, for the same season), the legend "share of
-     years, 2012-2025, observed", and a north arrow.
-   - **Box "Trend":** timing and amount trend sentences, only when the verdict isn't "no clear shift".
-   - **Box "Read with care":** four caveats as i18n keys (`brief.caveat_1`…`brief.caveat_4`), from the T10 text:
-     detections are not area; overpass times; pre-2012 modeled; not an alert service.
-   - **Footer:** the method version, the share link, and "Data: NASA FIRMS (MODIS, VIIRS)".
-   - A "Print or save as PDF" button calls `window.print()`, and is hidden in print.
-4. **`Brief.test.tsx`.** Render from `public/demo/snapshot.json` (`areas.pb`) and `public/demo/recurrence_pb.json`
-   (T21). Check that:
-   - the five box headings are present in en;
-   - the Bangla render has no English box headings;
-   - the SVG has at least one `<rect`.
-5. Run the checks. In the snapshot build, open the brief for Punjab paddy, then use Chrome's print preview in English
-   and in Bangla. Each must fit on **one** page; attach the two PDFs or screenshots to the PR.
-6. Mark the card done, `split`, push and open the PR.
+1. Read the challenge contract, claim register, T58 support/provenance contract and current view/share/season code.
+2. Add a brief view/button using current selected runtime data: area/season, central window, same-cutoff status, source/record dates, supported comparison, method/runtime identity and share link.
+3. Include an existing selected-period spatial view with its exact meaning. Recurrence may be added only when T21 is actually delivered; it is not a prerequisite for this useful brief.
+4. Add a concise limitations box: detections versus burned area, observed/adjusted/modeled, availability, uncertainty disposition and absence of demonstrated operational warning.
+5. Use tile-free inline graphics and English print CSS. Test longest names, unavailable products, low support, stale metadata, missing uncertainty and no-data state with src/test fixtures/renderHtml.
+6. Observe print preview and export A4 output for both main regions. It must fit one readable page without clipping or hidden caveats; save generated evidence outside Git.
 
 ## Acceptance
-- [ ] Tests pass. The brief prints on one A4 page per language for each demo area's main season.
-- [ ] No map tiles or external images are needed to print.
+- [ ] One readable page from actual selected data, with date/source/scientific status.
+- [ ] Brief and API/chart values agree; unavailable values are not invented.
+- [ ] No snapshot or Bangla dependency; printing needs no map network request.
 
 ## Stop and ask if
-- Bangla text overflows the page even at 10 pt.
+A critical field lacks provenance/support or readable layout requires hiding caveats. Narrow the content rather than conceal limitations.

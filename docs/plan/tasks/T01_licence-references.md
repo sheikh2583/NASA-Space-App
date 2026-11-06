@@ -10,12 +10,16 @@ needs: [T30]
 requires: []
 branch: ws1/T01-licence-references
 touches: [README.md, docs/project/submission-checklist.md]
-creates: [LICENSE, docs/REFERENCES.md, docs/AI_USE.md]
+creates: [LICENSE, docs/REFERENCES.md]
 checks: [CHECK-PLAN]
 ---
 ## Goal
 Give the repository a licence and two documents the submission needs: every external resource with a link, and an
 honest statement of AI use.
+
+**6 November scaffold reconciliation:** the historical status note records that AI_USE was left to the team, and
+the file is still absent. Its unfinished creation is now owned by T29; this removes duplicate creator ownership,
+not an assertion that the original disclosure was completed. The steps below remain the historical request.
 
 ## Context
 - The Space Apps judging guide requires an originality confirmation and a References field listing all external

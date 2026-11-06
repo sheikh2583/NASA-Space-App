@@ -1,60 +1,33 @@
 ---
-id: T29
-title: Draft the submission text, slide content and video script from measured numbers
-kind: agent
-owner: Samiul
-authors: [Samiul]
-phase: P3
-size: S
-needs: [T28]
+id: "T29"
+title: "Draft the submission text, slide content and video script from measured numbers"
+kind: "agent"
+owner: "Samiul"
+authors: ["Samiul","Sheikh"]
+phase: "P3"
+size: "S"
+needs: ["T28"]
 requires: []
-branch: ws1/T29-submission-draft
-touches: [docs/project/submission-checklist.md, docs/project/demo-script.md]
-creates: [docs/submission/project_page.md, docs/submission/slides.md, docs/submission/video_script.md]
-checks: [CHECK-PLAN]
+branch: "ws1/T29-submission-draft"
+touches: ["docs/project/submission-checklist.md","docs/project/demo-script.md"]
+creates: ["docs/submission/project_page.md","docs/submission/slides.md","docs/submission/video_script.md","docs/AI_USE.md"]
+checks: ["CHECK-PLAN"]
 ---
 ## Goal
-Write ready-to-edit drafts in which every claim traces to a measured number or a cited source. The agent turns them
-into assets (T35), and Sheikh submits (H04).
+Draft a concise submission whose claims trace to the verified release and challenge contract (Q05).
 
 ## Steps
-1. Read:
-   - `docs/results/training-results.md` (the "Release v1.0-event" section);
-   - `docs/REFERENCES.md`, `docs/AI_USE.md` and `docs/RULES_CHECK.md`;
-   - the Validation page pieces in `ws5_frontend/public/demo/snapshot.json`.
-2. **`docs/submission/project_page.md`:**
-   - a title;
-   - a summary of at most 300 words: problem, data, method, product, findings, users;
-   - "How we used NASA data", one bullet per product;
-   - the live site URL, the repository URL and the tag;
-   - "References" (copied from `docs/REFERENCES.md`) and "Use of AI" (from `docs/AI_USE.md`).
-3. **`docs/submission/slides.md`:** 7 slides at most, each with a title, 3 bullets and a speaker note.
-   1. Problem
-   2. Data (2000-2026, three satellite eras)
-   3. Method (harmonization, held-out CCC, calibrated bands, outage handling)
-   4. Findings (the three-part Punjab result, and the Bangladesh contrast)
-   5. Product (calendar, season card, brief, story, regions, live data)
-   6. Validation (held-out metrics, truth checks, the independent burned-area check)
-   7. Impact and next steps
-4. **`docs/submission/video_script.md`:** 30 seconds, 4 shots, each with seconds, the on-screen view (a story-mode
-   step) and voice-over. English, with subtitles noted if any Bangla is spoken:
-
-   | Seconds | Shot |
-   |---|---|
-   | 0-5 | Problem |
-   | 5-12 | 26 years, one record (the seam) |
-   | 12-22 | What we found (trends and blind spot) |
-   | 22-30 | Use it (regions, brief, Bangla, URL) |
-
-5. **Numbers.** Every number in the three files is copied from the release section, with the source in a trailing
-   HTML comment, for example `<!-- TRAINING_RESULTS v1.0-event, CCC -->`.
-6. Add the three files to `docs/project/submission-checklist.md`, and make sure `docs/project/demo-script.md` matches story mode.
-7. Run the checks, mark the card done, `split`, push and open the PR.
+1. Read RELEASE_DOSSIER, claim register, challenge contract, actual served validation, REFERENCES and the dated RULES_CHECK findings. Create the missing AI_USE disclosure from actual agent/tool/run history; do not imply a team review that did not occur.
+2. Draft project_page.md: problem/user task, NASA data, harmonization/reference/provenance, demonstrated product, scientific/user evidence, limitations and links/runtime identity. Use <=300 words as an internal draft target until T35 verifies actual fields.
+3. Draft <=7 slides as an internal format: problem; instruments/data; method/provenance; one supported comparison; user workflow/brief; validity including failures; impact/evidence/limits.
+4. Draft a timed short video from the actual supported journey. Thirty seconds is an internal draft target, not an official limit. Avoid claims of later burning, independent ground truth, translation, live forecasting or operational efficacy without evidence.
+5. Trace each numerical/headline claim to a dossier field/artifact and date using source comments. Include NASA/product/map attribution and an honest account of AI-assisted coding, analysis and media.
+6. Reconcile demo/checklist/AI disclosure. T35 verifies guides and adapts these drafts before final rendering.
 
 ## Acceptance
-- [ ] Each number has a source comment. No claim says "proves", "causes" or "detects all fires".
-- [ ] The project page summary is at most 300 words: `python -c "import re;t=open('docs/submission/project_page.md').read();print(len(re.findall(r'\w+', t.split('## ')[1])))"`
-  prints ≤ 300. Adjust the split if the headings differ.
+- [ ] Every scientific/user-impact claim is supported or explicitly limited.
+- [ ] Attribution and AI disclosure are concrete; no fabricated adoption or official judging weights.
+- [ ] Draft format targets are distinguished from verified submission mandates.
 
 ## Stop and ask if
-- `docs/RULES_CHECK.md` gives different limits for the video or the slides.
+A claim lacks evidence, rights/attribution are unclear or official format requirements conflict. Preserve limitations and request only the genuinely missing decision.

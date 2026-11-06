@@ -1,65 +1,35 @@
 ---
-id: T21
-title: Recurrence map (how often each place burns in a season)
-kind: agent
-owner: Sattyam
-authors: [Sattyam, Shammo, Sheikh]
-phase: P2
-size: M
-needs: [T07]
-requires: [real-data]
-branch: ws1/T21-recurrence-map
-touches: [ws2_platform/api/app.py, contracts/openapi.yaml, docs/project/contract-changes.md, scripts/export_area_catalog.py,
-          ws5_frontend/src/types.ts, ws5_frontend/src/components/MapView.tsx, ws5_frontend/src/App.tsx,
-          ws5_frontend/src/api.ts, ws5_frontend/src/i18n/en.json, ws5_frontend/src/i18n/bn.json]
-creates: [ws2_platform/recurrence.py, ws2_platform/tests/test_recurrence.py, ws5_frontend/public/demo/recurrence_bd.json,
-          ws5_frontend/public/demo/recurrence_pb.json]
-checks: ["CHECK-PLAN", "python -m pytest -q ws2_platform/tests/test_recurrence.py ws2_platform/tests/test_tiny_api.py", "CHECK-WEB"]
-human_checks: [CHECK-PY]
+id: "T21"
+title: "Observed hotspot recurrence by eligible season"
+kind: "agent"
+owner: "Sattyam"
+authors: ["Sattyam","Shammo","Sheikh"]
+phase: "P2"
+size: "M"
+needs: ["T07","T53","T58"]
+requires: ["real-data"]
+branch: "ws1/T21-recurrence-map"
+touches: ["ws2_platform/api/app.py","ws2_platform/api/query.py","contracts/openapi.yaml","docs/project/contract-changes.md","ws5_frontend/src/types.ts","ws5_frontend/src/components/MapView.tsx","ws5_frontend/src/App.tsx","ws5_frontend/src/api.ts","ws5_frontend/src/i18n/en.json"]
+creates: ["ws2_platform/recurrence.py","ws2_platform/tests/test_recurrence.py"]
+checks: ["CHECK-PLAN","python -m pytest -q ws2_platform/tests/test_recurrence.py ws2_platform/tests/test_tiny_api.py","CHECK-WEB"]
+human_checks: ["CHECK-PY"]
+scientific_spec: "docs/plan/runs/S03_release-validation.md"
 ---
 ## Goal
-Planners need *where* burning returns every year, not only when. Turn the observed seasons into a map of the share of
-years each cell burned.
-
-## Definition
-For each cell and season, the share of **observed-era complete seasons** in which the cell had at least one detection
-inside that season's window.
-- Use only `harmonized` rows with `source == "observed_viirs"`. Modeled years are excluded, and the legend says
-  "2012-2025, Suomi NPP observed".
-- **Denominator:** the season years where SNPP operated on at least 90% of the window's days, according to
-  `sensor_days`. This automatically respects the outage handling after T06.
-- Also report `mean_detections` per counted season.
+Show where detected activity recurs across eligible observed seasons without claiming a probability of fire (C02/C03).
 
 ## Steps
-1. **`ws2_platform/recurrence.py`,** `recurrence(harmonized, cells, sensor_days, cell_ids, season: Season, as_of) -> DataFrame`
-   with columns `cell_id`, `lat_c`, `lon_c`, `share`, `n_years` and `mean_detections`.
-   - Season windows come from `ws4_outlook.season_profile.Season.bounds`.
-   - Only seasons with `end <= as_of` count.
-2. **Tests** (`test_recurrence.py`), with `make_tiny_processed`, or direct frames:
-   - a cell burning in 7 of 10 observed seasons has `share == 0.7`;
-   - a season where SNPP was off for most of its window isn't counted in `n_years`;
-   - modeled rows never count.
-3. **API.**
-   - `POST /aoi/recurrence` takes an AOIRequest plus `season` (a season name; it defaults to the area's last
-     window).
-   - It returns `{…envelope, season, years: "2012-2025", cells: [{cell_id, lat_c, lon_c, share, n_years, mean_detections}]}`.
-   - Add it to OpenAPI and `docs/project/contract-changes.md`.
-   - Add a tiny-API test.
-4. **Snapshot**, in separate lazy files so the first page load stays small.
-   - `export_hosted_demo.py` writes `ws5_frontend/public/demo/recurrence_<key>.json` as
-     `{<season name>: [cells…]}`, with `share` rounded to 2 and `mean_detections` to 1.
-   - `snapshot.ts` serves `/aoi/recurrence` by fetching that file once (cached) and picking `body.season`.
-5. **UI.**
-   - `MapView` gets a layer toggle (`t("map.layer_week")` / `t("map.layer_recurrence")`). The recurrence layer
-     colours cells with a sequential scale from 0% to 100% and a legend "share of years".
-   - With more than one season, a season `<select>` appears.
-   - Clicking a cell shows `t("map.recurrence_popup", { n, N })`: "Burned in {{n}} of {{N}} seasons (2012-2025)".
-6. Republish. Run the checks, mark the card done, `split`, push and open the PR. Include a screenshot of each demo
-   area's main season.
+1. Read I1/I13, common/series.py, sensor-day conventions, current cell selection and map/API contracts.
+2. Compute per-cell share of eligible complete seasons with at least one observed-SNPP detection; exclude adjusted/modeled rows. Eligible seasons require at least 90% SNPP operating days in the season window, subject to the operating-versus-perfect-observation caveat.
+3. Include eligible zero-detection cells; zero eligible seasons is unsupported, not zero recurrence. Derive actual eligible years/n_years and mean_detections; never hardcode 2012-2025.
+4. Add /aoi/recurrence and contract/types using the same cell membership as other AOI endpoints. Cache only bounded results with the current artifact revision.
+5. Add a sequential map layer/season selector and legend: share of eligible seasons with detected hotspots. Popup uses numerator/denominator and actual years; never says proven burned in N years.
+6. Test 7/10, outages, quiet cells, no eligible years, cross-year windows, adjusted/model exclusion and catalog/polygon equivalence. Observe both primary demo regions in the live UI.
 
 ## Acceptance
-- [ ] Tests pass. The recurrence layer works in both modes with a correct legend.
-- [ ] `snapshot.json` doesn't grow; each `recurrence_<key>.json` is under 200 KB; measured sizes in the PR.
+- [ ] Numerators, eligible denominators, years and source are visible and tested.
+- [ ] No snapshot files or offline transport introduced.
+- [ ] Sparse support/missing coverage cannot masquerade as no fire.
 
 ## Stop and ask if
-- No cell in Punjab paddy has a share of 0.5 or more (that would suggest a data problem).
+Observation eligibility cannot be reconstructed from saved metadata. Report limited support; a low recurrence result alone is not evidence of a code defect.

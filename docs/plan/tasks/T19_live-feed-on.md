@@ -1,42 +1,32 @@
 ---
-id: T19
+id: "T19"
 title: "Live season feed, part 2: verify it on Render and record the result"
-kind: agent
-owner: Sheikh
-authors: [Sheikh]
-phase: P2
-size: S
-needs: [T18, T17]
-requires: [env:RENDER_URL, secret:FIRMS_MAP_KEY, network]
-branch: ws1/T19-live-feed-on
-touches: [docs/guides/deployment.md]
+kind: "agent"
+owner: "Sheikh"
+authors: ["Sheikh"]
+phase: "P2"
+size: "S"
+needs: ["T18","T17","T51"]
+requires: ["env:RENDER_URL","secret:FIRMS_MAP_KEY","network"]
+branch: "ws1/T19-live-feed-on"
+touches: ["docs/guides/deployment.md"]
 creates: []
-checks: [CHECK-PLAN]
+checks: ["CHECK-PLAN"]
 ---
 ## Goal
-Prove that the live season feed from T18 works on the deployed service, and that it leaks nothing.
+Deferred optional extension. It is outside the default challenge-critical implementation path; no work is executed while this card is cut.
 
 ## Steps
-1. **Local dry run first.** Start the API locally with the key from `.env`: `uvicorn ws2_platform.api.app:app --port 8000`.
-   Then call `/live/season?area=<Punjab's id from areas.json>`.
-   - Check that `status` is `ok`, `data_through` is yesterday or today, and the days have plausible values.
-   - Search the response for the key's first 6 characters, read from `.env` inside a short Python check that prints
-     only `found` or `not found`. It must be `not found`.
-   - Stop the server.
-2. Once Sheikh has committed T18 and Render has rebuilt, run `python scripts/check_render.py` (T17). All checks must
-   pass.
-3. Call `$RENDER_URL/live/season?area=<Punjab's id>`.
-   - If the status is `off`, the key isn't set in Render: stop and point Sheikh to H01, step 2.
-   - Otherwise check the same three things as in step 1.
-4. Open the site and confirm that the status card shows "Data through <date>".
-5. Record the date, the status, `data_through` and the last 5 days for Punjab in `docs/guides/deployment.md`, "Live season feed",
-   marked measured.
-6. Run the checks, mark the card done, and hand over for commit.
+1. Reopen only through an explicit scope/capacity decision after science, core user evidence and release gates are stable.
+2. Rewrite the historical design against the current live/English architecture and exact output contracts before implementation. No snapshot files or Bangla restoration.
+3. For NRT: freeze pinned/live boundary, late-arrival reconciliation, coverage, cross-year windows, saved adjustment applicability, failure/cache/redaction behavior and actual freshness verification. Never append unknown gaps as zeros or imply validated warning.
+4. Declare revised file scopes and tests, read all named implementation paths, then use the authorized scientific lane if fitting is needed.
+5. No favorable metric, additional feature count or claimed originality is an acceptance condition.
 
 ## Acceptance
-- [ ] The deployed endpoint returns `ok` with yesterday's or today's data.
-- [ ] The key is not in any response (`not found`, pasted).
+- [ ] A new reviewed spec/scope and demonstrated user benefit exist before reopening.
+- [ ] Scientific meaning, source/freshness, support and limitations are explicit.
+- [ ] Default release remains functional when this extension is absent.
 
 ## Stop and ask if
-- The status is `failed` or `suspect`.
-- The service runs out of memory on the free tier. Sheikh checks the Render metrics.
+The scope decision, required data, authority or dependency is absent. Keep the card cut and the final submission free of undelivered claims.
