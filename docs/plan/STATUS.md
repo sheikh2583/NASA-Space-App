@@ -47,7 +47,7 @@ Use plan.py board --fix for structural columns and plan.py set for status/notes.
 | H03 | human | Sheikh: final training run for the release (by 12 Nov) | Sheikh | H02 | done | Historical 5 Nov: H02 run 20261104-211232 accepted as final. The no-more-training freeze was explicitly superseded by Sheikh on 6 Nov; new agent-operated runs use new scientific-run cards/specs (AGENTS.md). |
 | T50 | agent | Repair partial-month, calendar and snapshot regressions | Sattyam | T48 | done | 8 API and 42 web tests pass; live/static builds pass; five product regressions repaired |
 | T51 | agent | Freeze the baseline and register challenge claims | Sheikh | T00 | done | Protected 29 files / 116187230 bytes with source+copy SHA256 verification; baseline and 22-claim register recorded; CHECK-PLAN passed; science unchanged. |
-| T61 | agent | Prepare neutral user tasks and evidence collection | Samiul | T51 | todo | Installed scaffold; implementation and acceptance not yet performed. |
+| T61 | agent | Prepare neutral user tasks and evidence collection | Samiul | T51 | done | Neutral task/consent/comprehension protocol and submission linkage verified; no participant outreach or observed-impact claim. |
 | T52 | agent | Add an explicit scientific validation lane with preserved baselines | Sheikh | T51 | todo | Installed scaffold; implementation and acceptance not yet performed. |
 | T53 | agent | Audit and freeze targets, splits and scientific acceptance | Sheikh | T51, T52 | todo | Installed scaffold; implementation and acceptance not yet performed. |
 | T54 | agent | Diagnose conditional interval failures and deployment support | Samin | T53 | todo | Installed scaffold; implementation and acceptance not yet performed. |

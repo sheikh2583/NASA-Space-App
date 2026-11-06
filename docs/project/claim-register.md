@@ -10,7 +10,7 @@ Established by T51 from the [protected baseline](../results/BASELINE_2026-11-06.
 - **E4:** saved `outlook_region.json` / skill report; revised forward-evaluation evidence pending.
 - **E5:** current season/anomaly/weather/period source over existing saved artifacts; derived meanings do not establish causal or physical fire truth.
 - **E6:** committed runtime manifest and dated live-check record; no fresh post-scaffold deployment observation in T51.
-- **E7:** observed intended-user evidence is currently missing. T61 prepares a protocol; H06 supplies real observations.
+- **E7:** observed intended-user evidence is currently missing. T61 supplies the neutral [study protocol](../../ws6_validation/USER_STUDY.md); H06 supplies actual observations. A prepared protocol is not impact validation.
 - **E8:** external corroboration and final submission assets are incomplete; current resource/format verification remains limited.
 
 Exact hashes, dates, row counts and backup/recovery locations are in the baseline. A claim supported by source code is not automatically supported by numerical/user evidence.
