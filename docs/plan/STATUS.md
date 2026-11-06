@@ -46,7 +46,7 @@ Use plan.py board --fix for structural columns and plan.py set for status/notes.
 | T26 | agent | Add a third region (cut by default; reopen only if ahead on 10 Nov) | Sheikh | T40 | cut | one-person team; reopen if all P0-P1 done by 10 Nov |
 | H03 | human | Sheikh: final training run for the release (by 12 Nov) | Sheikh | H02 | done | Historical 5 Nov: H02 run 20261104-211232 accepted as final. The no-more-training freeze was explicitly superseded by Sheikh on 6 Nov; new agent-operated runs use new scientific-run cards/specs (AGENTS.md). |
 | T50 | agent | Repair partial-month, calendar and snapshot regressions | Sattyam | T48 | done | 8 API and 42 web tests pass; live/static builds pass; five product regressions repaired |
-| T51 | agent | Freeze the baseline and register challenge claims | Sheikh | T00 | todo | Installed scaffold; implementation and acceptance not yet performed. |
+| T51 | agent | Freeze the baseline and register challenge claims | Sheikh | T00 | done | Protected 29 files / 116187230 bytes with source+copy SHA256 verification; baseline and 22-claim register recorded; CHECK-PLAN passed; science unchanged. |
 | T61 | agent | Prepare neutral user tasks and evidence collection | Samiul | T51 | todo | Installed scaffold; implementation and acceptance not yet performed. |
 | T52 | agent | Add an explicit scientific validation lane with preserved baselines | Sheikh | T51 | todo | Installed scaffold; implementation and acceptance not yet performed. |
 | T53 | agent | Audit and freeze targets, splits and scientific acceptance | Sheikh | T51, T52 | todo | Installed scaffold; implementation and acceptance not yet performed. |
