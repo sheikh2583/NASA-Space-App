@@ -13,9 +13,8 @@ Cards live in docs/plan/tasks/<ID>_<slug>.md with YAML front matter (docs/plan/R
 Status lives only in docs/plan/STATUS.md. Team, authors and path ownership live in docs/plan/team.yaml.
 Standard library + PyYAML only.
 
-Training policy (AGENTS.md): a card's `checks` must be agent-safe, meaning no training, no fitting, no blanket pytest,
-no smoke or QA workflow. `check` rejects anything else, and `checks --run` refuses it again at run time and scans each
-test file for fitting code first. Human-only checks go in `human_checks`; they are printed for Sheikh, never run.
+Routine checks never fit or probe. Authorized scientific commands remain in the legacy `human_checks` field;
+`checks <ID> --scientific --run` executes only that lane with its specification, writer lock and verified backup.
 """
 from __future__ import annotations
 
@@ -26,6 +25,7 @@ import re
 import shlex
 import subprocess
 import sys
+import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -84,8 +84,7 @@ CHECKS = {
     "CHECK-FILES": [(["python", "tools/verify_files.py", "--all"], ".", {})],
     "CHECK-GUARD": [(["python", "scripts/git/guard.py", "--range", "origin/main...HEAD", "--user", "{pr_user}",
                       "--branch", "{branch}"], ".", {})],
-    # Human-only under AGENTS.md: some tests fit learners, smoke trains, and QA runs whole test folders and rewrites
-    # data/processed/validation/qa.json. Cards list these under `human_checks`; Sheikh runs them.
+    # Legacy field names retained for compatibility; explicit scientific execution is authorized by AGENTS.md.
     "CHECK-PY": [(["python", "-m", "pytest", "-q"], ".", {})],
     "CHECK-SMOKE": [(["python", "scripts/workflow.py", "smoke"], ".", {})],
     "CHECK-QA": [(["python", "scripts/workflow.py", "validate"], ".", {})],
@@ -303,7 +302,7 @@ def validate(plan: Plan) -> Plan:
             if ch not in CHECKS and not LITERAL.match(str(ch)):
                 E.append(f"{cid}: check '{ch}' is neither a named check ({', '.join(CHECKS)}) nor a python/npm/git command")
             elif ch in HUMAN_ONLY:
-                E.append(f"{cid}: check '{ch}' is human-only (AGENTS.md); move it to human_checks")
+                E.append(f"{cid}: check '{ch}' requires the scientific lane; move it to human_checks")
             elif ch not in CHECKS:
                 why = unsafe_reason(shlex.split(str(ch)), c, created_by_plan(plan, c))
                 if why:
@@ -311,6 +310,12 @@ def validate(plan: Plan) -> Plan:
         for ch in m.get("human_checks") or []:
             if ch not in CHECKS and not LITERAL.match(str(ch)):
                 E.append(f"{cid}: human check '{ch}' is neither a named check nor a python/npm/git command")
+        if m.get("scientific_spec") is not None:
+            why = scientific_spec_reason(plan.root, m["scientific_spec"])
+            if why:
+                E.append(f"{cid}: {why}")
+            if not m.get("human_checks"):
+                E.append(f"{cid}: scientific_spec requires declared scientific commands in human_checks")
         for p in m.get("creates") or []:
             creators.setdefault(p, []).append(cid)
         authors = set(m.get("authors") or [])
@@ -424,7 +429,7 @@ def created_by_plan(plan: Plan, card: Card) -> set:
 
 
 def unsafe_reason(cmd: list, card: Card | None = None, created: set | None = None) -> str | None:
-    """Why a literal check command is human-only under AGENTS.md, or None when an agent may run it."""
+    """Why a command is excluded from routine checks; scientific authorization is a separate lane."""
     if not cmd:
         return "empty command"
     if cmd[0] != "python":
@@ -455,7 +460,7 @@ def unsafe_reason(cmd: list, card: Card | None = None, created: set | None = Non
     name = script.rsplit("/", 1)[-1]
     if name == "workflow.py":
         sub = args[1] if len(args) > 1 else ""
-        return None if sub in WORKFLOW_SAFE else f"workflow.py {sub or '(no command)'} is human-only"
+        return None if sub in WORKFLOW_SAFE else f"workflow.py {sub or '(no command)'} requires the scientific lane"
     if name in HUMAN_SCRIPTS:
         return f"{name} trains, probes or runs fitting tests"
     return None
@@ -505,7 +510,7 @@ def _resolve(cmd):
 def refusal(plan: Plan, card: Card, name: str, cmd: list) -> str | None:
     """Why this step must not run from an agent session, or None. Checked again here, whatever the card says."""
     if name in HUMAN_ONLY:
-        return f"{name} is human-only (AGENTS.md)"
+        return f"{name} requires the explicit scientific lane and a run specification"
     why = unsafe_reason(cmd, card, created_by_plan(plan, card))
     if why:
         return why
@@ -513,14 +518,14 @@ def refusal(plan: Plan, card: Card, name: str, cmd: list) -> str | None:
         for f in (a for a in cmd[3:] if not a.startswith("-")):
             hits = fitting_hits(plan.root, f)
             if hits:
-                return "possible fitting code in a test; Sheikh must review it first: " + "; ".join(hits[:3])
+                return "possible fitting code in a test; review and use the scientific lane: " + "; ".join(hits[:3])
     return None
 
 
 def print_human_checks(plan: Plan, card: Card) -> None:
     steps = expand_checks(plan, card, key="human_checks")
     if steps:
-        print("Sheikh runs (human-only; list these under 'Needs Sheikh'):")
+        print("Scientific validation (legacy 'Sheikh runs' field; use --scientific with a run specification):")
         for name, cmd, cwd, env in steps:
             envs = " ".join(f"{k}={v}" for k, v in env.items())
             print(f"    {name}: {(envs + ' ') if envs else ''}{' '.join(cmd)}  (in {cwd})")
@@ -543,6 +548,97 @@ def run_checks(plan: Plan, card: Card) -> int:
     print(f"ALL AGENT CHECKS PASSED for {card.id}")
     print_human_checks(plan, card)
     return 0
+
+
+def scientific_spec_reason(root: Path, value) -> str | None:
+    if not isinstance(value, str) or not value or Path(value).is_absolute():
+        return "scientific_spec must name a relative Markdown file"
+    path = (root / value).resolve()
+    if not path.is_relative_to(root.resolve()) or path.suffix != ".md" or not path.is_file():
+        return "scientific_spec must exist inside the repository as a Markdown file"
+    body = path.read_text(encoding="utf-8")
+    if not body.startswith("# ") or len(re.findall(r"^## ", body, re.M)) < 2:
+        return "scientific_spec must contain a title and at least two protocol sections"
+    return None
+
+
+def scientific_steps(plan: Plan, card: Card):
+    if card.kind != "agent":
+        raise ValueError("Scientific execution requires an agent card; human evidence tasks are not automated")
+    why = scientific_spec_reason(plan.root, card.get("scientific_spec"))
+    if why:
+        raise ValueError(why)
+    steps = expand_checks(plan, card, key="human_checks")
+    if not steps:
+        raise ValueError("No scientific commands declared in human_checks")
+    for _, command, cwd, _ in steps:
+        if not command or command[0] != "python" or len(command) < 2:
+            raise ValueError("Scientific commands must explicitly name a Python script/module/test command")
+        if command[1] in {"-c", "-", "-i"} or any(part in {";", "&&", "|"} for part in command):
+            raise ValueError("Inline/shell scientific commands are not supported; use a reviewed entry point")
+        if not (plan.root / cwd).resolve().is_relative_to(plan.root.resolve()):
+            raise ValueError("Scientific working directory is outside the checkout")
+    return steps
+
+
+def _scientific_tools():
+    # The existing pipeline module owns shared backups/run records; importing it executes no probe or stage.
+    source_root = str(Path(__file__).resolve().parents[1])
+    if source_root not in sys.path:
+        sys.path.insert(0, source_root)
+    from scripts import run_pipeline
+    return run_pipeline
+
+
+def _execute_scientific(command, *, cwd, env, log):
+    return subprocess.run(_resolve(command), cwd=cwd, env=env, stdout=log, stderr=subprocess.STDOUT)
+
+
+def run_scientific_checks(plan: Plan, card: Card) -> int:
+    try:
+        steps = scientific_steps(plan, card)
+        committed = load(plan.root, status_from_main=True)
+        pending = [n for n in card.get("needs") or [] if status_of(committed, n) not in FINISHED]
+        if pending:
+            raise ValueError("Scientific prerequisites are not committed complete: " + ", ".join(pending))
+        missing = [r for r in card.get("requires") or [] if not requirement_met(plan.root, r)]
+        if missing:
+            raise ValueError("Missing scientific requirements: " + ", ".join(missing))
+        tools = _scientific_tools()
+        with tools.scientific_session(plan.root, card.id, plan.root / card.get("scientific_spec"),
+                                      [cmd for _, cmd, _, _ in steps],
+                                      require_real="real-data" in (card.get("requires") or [])) as context:
+            print(f"Scientific run: {context['manifest'].relative_to(plan.root)}", flush=True)
+            for index, (name, command, cwd, extra) in enumerate(steps, 1):
+                logfile = context["manifest"].parent / f"command-{index:02}.log"
+                record = {"name": name, "command": command, "cwd": cwd, "log": logfile.name,
+                          "configuration": extra, "status": "running"}
+                context["receipt"]["steps"].append(record)
+                tools.save_json(context["manifest"], context["receipt"])
+                print(f"--- SCIENTIFIC {name}: {' '.join(command)}; log {logfile.name}", flush=True)
+                started = time.perf_counter()
+                try:
+                    with logfile.open("w", encoding="utf-8") as log:
+                        result = _execute_scientific(command, cwd=plan.root / cwd,
+                                                     env={**os.environ, **extra, **context["env"]}, log=log)
+                except BaseException as error:
+                    record.update(status="failed", error_type=type(error).__name__,
+                                  seconds=round(time.perf_counter() - started, 3))
+                    tools.save_json(context["manifest"], context["receipt"])
+                    raise
+                record.update(exit_code=result.returncode, seconds=round(time.perf_counter() - started, 3),
+                              status="passed" if result.returncode == 0 else "failed")
+                tools.save_json(context["manifest"], context["receipt"])
+                if result.returncode:
+                    raise subprocess.CalledProcessError(result.returncode, command)
+        print(f"SCIENTIFIC COMMANDS PASSED for {card.id}; inspect scientific acceptance separately")
+        return 0
+    except subprocess.CalledProcessError as error:
+        print(f"Scientific command failed (exit {error.returncode}); retained run/logs, no further commands ran.")
+        return error.returncode
+    except (OSError, ValueError, RuntimeError) as error:
+        print(f"Scientific run refused/failed: {error}")
+        return 2
 
 
 def owner_of(team: dict, path: str) -> str | None:
@@ -632,7 +728,7 @@ def write_board(plan: Plan):
     path.write_text("\n".join(lines[:first] + table + lines[last:]).rstrip("\n") + "\n", encoding="utf-8")
 
 
-def show(plan: Plan, card: Card):
+def show(plan: Plan, card: Card, scientific: bool = False):
     team = plan.team["people"]
     print(f"{card.id}  {card.get('title')}")
     print(f"  file:     {card.path.relative_to(plan.root).as_posix()}")
@@ -644,11 +740,13 @@ def show(plan: Plan, card: Card):
         print(f"  branch:   {card.get('branch')}")
         for a in card.get("authors") or []:
             print(f"  author:   {a}: --author \"{team[a]['author']}\"")
-        print("  checks (agent-safe; plan.py checks --run):")
-        for name, cmd, cwd, env in expand_checks(plan, card):
+        print("  scientific commands:" if scientific else "  routine checks:")
+        steps = scientific_steps(plan, card) if scientific else expand_checks(plan, card)
+        for name, cmd, cwd, env in steps:
             envs = " ".join(f"{k}={v}" for k, v in env.items())
             print(f"    {name}: {(envs + ' ') if envs else ''}{' '.join(cmd)}  (in {cwd})")
-        print_human_checks(plan, card)
+        if not scientific:
+            print_human_checks(plan, card)
     print(card.body)
 
 
@@ -665,9 +763,11 @@ def main(argv=None) -> int:
     n.add_argument("--all", action="store_true")
     s = sub.add_parser("show")
     s.add_argument("id")
+    s.add_argument("--scientific", action="store_true")
     c = sub.add_parser("checks")
     c.add_argument("id")
     c.add_argument("--run", action="store_true")
+    c.add_argument("--scientific", action="store_true")
     sp = sub.add_parser("split")
     sp.add_argument("--card", required=True)
     sp.add_argument("-m", "--message", required=True)
@@ -704,10 +804,28 @@ def main(argv=None) -> int:
     if a.cmd in ("show", "checks") and a.id not in plan.cards:
         raise SystemExit(f"unknown card {a.id}")
     if a.cmd == "show":
-        show(plan, plan.cards[a.id])
+        try:
+            show(plan, plan.cards[a.id], scientific=a.scientific)
+        except ValueError as error:
+            print(f"Invalid scientific card: {error}")
+            return 2
         return 0
     if a.cmd == "checks":
         card = plan.cards[a.id]
+        if a.scientific:
+            validate(plan)
+            if plan.errors:
+                print("Invalid plan; scientific commands were not started: " + "; ".join(plan.errors))
+                return 2
+            if a.run:
+                return run_scientific_checks(plan, card)
+            try:
+                for name, cmd, cwd, _ in scientific_steps(plan, card):
+                    print(f"SCIENTIFIC {name}: {' '.join(cmd)}  (in {cwd}); spec {card.get('scientific_spec')}")
+                return 0
+            except ValueError as error:
+                print(f"Invalid scientific card: {error}")
+                return 2
         if a.run:
             return run_checks(plan, card)
         for name, cmd, cwd, env in expand_checks(plan, card):

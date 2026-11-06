@@ -47,11 +47,15 @@ WAITING ON Sheikh means a genuinely human task such as H06 observations or submi
 
 ## 4. Routine and scientific lanes
 
-Current `plan.py` supports check/next/show/checks/board/set/split. Its routine checks stay non-fitting and scan test files/conftest. This isolation is intentional.
+Current `plan.py` supports check/next/show/checks/board/set/split. Routine checks stay non-fitting and scan test files/conftest. Scientific preview/execution uses the explicit `--scientific` selector on show/checks.
 
-T52 will implement `python scripts/plan.py checks <ID> --scientific --run` and accurate scientific-lane messages. **That selector is planned, not implemented by this scaffolding change.** It will execute only the invoking card's scientific command list after spec/preservation checks.
+T52 implements `python scripts/plan.py checks <ID> --scientific --run`. It executes only that card's declared scientific command list after plan/spec, committed-prerequisite, requirement, writer-lock and baseline checks. It does not rerun routine checks. Without `--run`, `checks --scientific` and `show --scientific` only preview commands and create no run/backup.
 
-For compatibility, scientific commands currently live in the legacy human_checks field. The helper's old “Sheikh runs/human-only” messages are superseded by AGENTS.md, not a request for another training permission. The current policy permits documented separate scientific execution, but the installed dependency graph puts T52 before new scientific runs.
+For compatibility, scientific commands live in the legacy human_checks field and need an existing relative Markdown scientific_spec with protocol sections. Older routine-only cards may retain legacy lists without a spec; scientific execution of such a card is refused until its protocol is declared. No additional training permission prompt is introduced.
+
+Each owned run writes `results/runs/scientific-<timestamp>/scientific.json`, copied source/patch identity, raw input hashes, command logs and a fit log. Outputs are backed up under `data/runs/<run-id>/baseline` and checksummed before commands. An exclusive `results/.scientific-writer.lock` prevents a second cooperating writer; authenticated child workflows reuse it. Raw/source mutations or a changed protected backup reject successful completion; generated contract-fixture JSON is recorded separately. Direct workflow/pipeline CLIs use the same protection before fitting readiness probes. Low-level stage/library calls belong inside the declared lane.
+
+An interrupted process may leave a lock. Inspect its PID/receipt and confirm no writer remains before deliberate recovery; never delete an active lock automatically. Failure reports/backups remain for diagnosis. A passed command batch still requires separate scientific-acceptance inspection.
 
 | Lane | Examples | Execution conditions |
 |---|---|---|

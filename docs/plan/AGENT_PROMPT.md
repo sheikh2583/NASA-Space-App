@@ -15,7 +15,8 @@ Read docs/project/training-authorization.md, then CLAUDE.md,
 CONTRIBUTING.md, docs/README.md (the docs index), docs/guides/deployment.md and docs/plan/README.md.
 Then read docs/project/hardening-scaffold.md, docs/plan/CHALLENGE_CONTRACT.md and
 docs/specs/I13_SCIENTIFIC_ACCEPTANCE.md. The first new implementation card is T51. Read the invoking scientific
-run spec before any fit. T52's --scientific selector is planned until that card actually implements it.
+run spec before any fit. T52 provides show/checks --scientific previews and checks --scientific --run execution;
+previews never fit, and execution requires the declared spec, completed prerequisites and verified preservation.
 
 COMMIT FLOW (updated 6 November): I (Sheikh) authorize you to auto-commit verified scaffold/card work and push to
 the existing repository using this PC's configured SSH credentials. Use the configured identity, stage only

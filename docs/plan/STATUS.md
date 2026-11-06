@@ -48,7 +48,7 @@ Use plan.py board --fix for structural columns and plan.py set for status/notes.
 | T50 | agent | Repair partial-month, calendar and snapshot regressions | Sattyam | T48 | done | 8 API and 42 web tests pass; live/static builds pass; five product regressions repaired |
 | T51 | agent | Freeze the baseline and register challenge claims | Sheikh | T00 | done | Protected 29 files / 116187230 bytes with source+copy SHA256 verification; baseline and 22-claim register recorded; CHECK-PLAN passed; science unchanged. |
 | T61 | agent | Prepare neutral user tasks and evidence collection | Samiul | T51 | done | Neutral task/consent/comprehension protocol and submission linkage verified; no participant outreach or observed-impact claim. |
-| T52 | agent | Add an explicit scientific validation lane with preserved baselines | Sheikh | T51 | todo | Installed scaffold; implementation and acceptance not yet performed. |
+| T52 | agent | Add an explicit scientific validation lane with preserved baselines | Sheikh | T51 | done | Explicit scientific previews/execution, verified backups, source/input identity and writer isolation implemented; 58 mocked/non-fitting checks pass; no learner run. |
 | T53 | agent | Audit and freeze targets, splits and scientific acceptance | Sheikh | T51, T52 | todo | Installed scaffold; implementation and acceptance not yet performed. |
 | T54 | agent | Diagnose conditional interval failures and deployment support | Samin | T53 | todo | Installed scaffold; implementation and acceptance not yet performed. |
 | T55 | agent | Implement the registered aggregate-interval repair | Samin | T54 | todo | Installed scaffold; implementation and acceptance not yet performed. |

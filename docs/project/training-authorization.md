@@ -18,9 +18,9 @@ Training permission is not a scientific result. Conditional interval failures st
 
 ## Current plan-runner integration
 
-`scripts/plan.py` is intentionally left unchanged in this policy update. Its routine `checks` lane still rejects fitting, pipeline stages and blanket suites. That protects unrelated tasks from surprise execution. Its `human_checks` field and "Sheikh runs" messages are legacy names, not a current prohibition on agent execution.
+T52 adds an explicit `checks <ID> --scientific --run` lane to `scripts/plan.py`; show/checks --scientific without --run only previews. Routine checks still reject fitting, stages and blanket suites. The legacy `human_checks` field stores scientific commands, paired with `scientific_spec`; its old name does not reserve execution for Sheikh.
 
-For scientific work, read the commands, fixtures/imports and side effects, document the scientific-run card/spec, preserve outputs and execute the declared commands separately. This is the explicitly authorized scientific lane; it is not permission to disguise fitting as a routine check. Do not disable assertions or delete guard tests. A future runner enhancement should represent scientific commands explicitly rather than remove routine isolation.
+For scientific work, review commands/fixtures/imports and side effects, declare the card/spec, then use the scientific lane. It validates the plan/protocol/prerequisites, captures source/patch/input identity, checksums fresh output backups and holds an exclusive cooperating-writer lock. Workflow/pipeline children reuse its verified receipt; direct workflow/pipeline invocations create the same protection before probes. Low-level stage/library calls require the declared lane. Failed commands stop the batch and retain evidence; mutations cannot be called a successful run. Routine isolation and scientific assertions remain intact.
 
 H02/H03 remain completed historical runs. Their old "no more training" note has been superseded, not erased. New runs need new attributable scientific work items; a training authorization does not justify marking an old run as revalidated.
 

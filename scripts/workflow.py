@@ -24,17 +24,27 @@ def run(*command: str, cwd: Path = ROOT, env: dict | None = None) -> None:
     subprocess.run(command, cwd=cwd, env=env, check=True)
 
 
+def science_tools():
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    from scripts import run_pipeline
+    return run_pipeline
+
+
 def train(quick: bool, start: str | None, backend: str = "cuda", gpu_id: int = 0, threads: int = 8) -> None:
     if backend != 'cuda':
         raise ValueError('Training requires the CUDA backend; run gpu-check before training.')
-    os.environ.update(FIRESENSE_BACKEND=backend, FIRESENSE_GPU_ID=str(gpu_id), FIRESENSE_THREADS=str(threads))
-    run(PY, "scripts/prepare_training.py")
     command = [PY, "scripts/run_pipeline.py", "--backend", backend, "--gpu-id", str(gpu_id), "--threads", str(threads)]
     if quick:
         command.append("--quick")
     if start:
         command.extend(["--from", start])
-    run(*command)
+    tools = science_tools()
+    with tools.scientific_session(ROOT, "workflow.train", ROOT / "docs/guides/training.md", [command],
+                                  require_real=True, inherit=True) as context:
+        configuration = {"FIRESENSE_BACKEND": backend, "FIRESENSE_GPU_ID": str(gpu_id), "FIRESENSE_THREADS": str(threads)}
+        with tools.scientific_environment({**context["env"], **configuration}):
+            run(PY, "scripts/prepare_training.py")
+            run(*command)
 
 
 def test() -> None:
@@ -111,6 +121,19 @@ def main(argv=None) -> None:
     parser.add_argument("--gpu-id", type=int, default=0)
     parser.add_argument("--threads", type=int, default=8, help="CPU workers for model libraries and matrix construction")
     args = parser.parse_args(argv)
+
+    if args.workflow in {"prepare", "gpu-check", "smoke", "train", "validate", "test", "all"}:
+        tools = science_tools()
+        with tools.scientific_session(ROOT, "workflow." + args.workflow, ROOT / "docs/guides/training.md",
+                                      [argv if argv is not None else sys.argv[1:]],
+                                      require_real=args.workflow in {"train", "all"}, inherit=True) as context:
+            with tools.scientific_environment(context["env"]):
+                _dispatch(args)
+    else:
+        _dispatch(args)
+
+
+def _dispatch(args):
 
     if args.workflow == "prepare":
         os.environ.update(FIRESENSE_BACKEND=args.backend, FIRESENSE_GPU_ID=str(args.gpu_id), FIRESENSE_THREADS=str(args.threads))

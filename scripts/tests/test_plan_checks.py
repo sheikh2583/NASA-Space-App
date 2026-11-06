@@ -89,7 +89,7 @@ def test_human_only_named_checks_are_rejected(tmp_path):
     for name in ("CHECK-PY", "CHECK-SMOKE", "CHECK-QA"):
         shutil.rmtree(tmp_path, ignore_errors=True)
         p = one_card(tmp_path, f'"{name}"')
-        assert any("is human-only" in e for e in p.errors), (name, p.errors)
+        assert any("requires the scientific lane" in e for e in p.errors), (name, p.errors)
 
 
 def test_unsafe_literal_commands_are_rejected(tmp_path):

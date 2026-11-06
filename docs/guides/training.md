@@ -4,6 +4,19 @@
 
 Training needs an NVIDIA GPU on Windows or Linux, the [setup](setup.md) in training or everything mode, and the [input data](data.md). Training a teammate's laptop from an input ZIP? Use [teammate training](teammate-training.md) instead.
 
+## Declared scientific runs
+
+For plan work, preview `python scripts/plan.py show T56 --scientific` or `checks T56 --scientific`; execute only after its protocol/prerequisites are complete with `python scripts/plan.py checks T56 --scientific --run`. Routine checks are separate. T59 declares outlook evaluation; S03 covers integration/release validation.
+
+The runner records source commit (or an explicitly identified source-tree snapshot), working source/patch, spec/input hashes, configuration/commands, logs and run status in `results/runs/scientific-<timestamp>/`. A new checksummed `data/runs/<run-id>/baseline` precedes fitting commands. Keep these ignored dossiers and backups; credentials/.env/data are excluded from source copies.
+
+Direct workflow/pipeline invocations use the same preservation/lock before readiness probes. Child commands reuse their parent's verified receipt. A second cooperating writer is refused; an interrupted run's lock requires owner/process inspection before recovery. Real-data training refuses a missing-input synthetic fallback. Low-level stage/library calls must run inside the declared scientific context.
+
+Direct `scripts/run_pipeline.py` also requires real FIRMS inputs by default. Synthetic development requires its explicit `--allow-synthetic` flag and never counts as real-data evidence; a strict real-data parent run cannot be downgraded by that flag.
+An explicitly synthetic development run records generated `data/raw/firms/synthetic_*.csv[.gz]` separately; every other raw input remains protected. Existing real inputs keep the run in real mode even when that opt-in is present.
+
+The raw inputs, source and protected backup are verified at batch completion. Regenerated contract-fixture JSON is explicitly recorded as an output rather than mistaken for an arbitrary source edit. Command success does not imply scientific acceptance.
+
 ## The one command
 
 It runs: setup (if `.venv` is missing) → weather cache (if missing) → readiness → **quick run** → pause → **full run** → QA → results summary.
